@@ -4,10 +4,7 @@ import 'package:stephen_farmer/core/utils/images.dart';
 import '../../domain/entities/progress_entity.dart';
 
 class ProgressOverviewCard extends StatelessWidget {
-  const ProgressOverviewCard({
-    super.key,
-    required this.project,
-  });
+  const ProgressOverviewCard({super.key, required this.project});
 
   final ProjectProgressEntity project;
 
@@ -29,10 +26,7 @@ class ProgressOverviewCard extends StatelessWidget {
             Image.network(
               project.heroImageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(
-                fallbackAsset,
-                fit: BoxFit.cover,
-              ),
+              errorBuilder: (_, __, ___) => Image.asset(fallbackAsset, fit: BoxFit.cover),
             ),
             Container(
               decoration: BoxDecoration(
@@ -52,55 +46,35 @@ class ProgressOverviewCard extends StatelessWidget {
               left: 16,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE3D2AA),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFE3D2AA), borderRadius: BorderRadius.circular(999)),
                 child: const Text(
                   'Active Project',
-                  style: TextStyle(
-                    color: Color(0xFF151515),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(color: Color(0xFF151515), fontSize: 12, fontWeight: FontWeight.w500),
                 ),
               ),
             ),
             Positioned(
               left: 16,
               right: 16,
-              bottom: 14,
+              bottom: 16,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     project.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 38,
-                      height: 1.05,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 80),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
                         'Overall completion',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
                       ),
                       Text(
                         '${project.overallCompletion}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -120,17 +94,11 @@ class ProgressOverviewCard extends StatelessWidget {
                     children: [
                       Text(
                         'Started: ${project.startedDate}',
-                        style: const TextStyle(
-                          color: Color(0xFFD7D7D7),
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: Color(0xFFD7D7D7), fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         'EST. Handover: ${project.handoverDate}',
-                        style: const TextStyle(
-                          color: Color(0xFFD7D7D7),
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: Color(0xFFD7D7D7), fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),

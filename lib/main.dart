@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stephen_farmer/app_ground_view.dart';
 
-
 import 'feature/app_di.dart';
 import 'feature/auth/presentation/view/role_screen_view.dart';
 
@@ -23,8 +22,8 @@ class MyApp extends StatelessWidget {
 
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
 
-      home: AppGroundView(),
-     // home: const RoleSelectScreenView(),
+      //home: AppGroundView(),
+      home: const RoleSelectScreenView(),
     );
   }
 }

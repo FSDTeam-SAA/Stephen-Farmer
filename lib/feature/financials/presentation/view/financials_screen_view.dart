@@ -3,13 +3,14 @@ import 'package:get/get.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
-import '../controller/document_controller.dart';
-import '../widgets/document_category_card.dart';
-import '../widgets/document_project_dropdown_card.dart';
-import '../widgets/recent_document_item_card.dart';
+import '../controller/financials_controller.dart';
+import '../widgets/financials_budget_metric_card.dart';
+import '../widgets/financials_project_dropdown_card.dart';
+import '../widgets/financials_payment_schedule_item_card.dart';
+import '../widgets/financials_remaining_balance_card.dart';
 
-class DocumentScreenView extends GetView<DocumentController> {
-  const DocumentScreenView({super.key});
+class FinancialsScreenView extends GetView<FinancialsController> {
+  const FinancialsScreenView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,16 +24,16 @@ class DocumentScreenView extends GetView<DocumentController> {
           child: Container(
             decoration: RoleBgColor.decoration(role),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Center(
                     child: Text(
-                      'Documents',
+                      'Financials',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -47,17 +48,18 @@ class DocumentScreenView extends GetView<DocumentController> {
                       child: Center(
                         child: Text(
                           controller.errorMessage.value.isEmpty
-                              ? 'No document data available'
+                              ? 'No financial data available'
                               : controller.errorMessage.value,
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white70,
-                            fontSize: 14,
+                            fontSize: 13,
                           ),
                         ),
                       ),
                     )
                   else ...[
-                    DocumentProjectDropdownCard(
+                    FinancialsProjectDropdownCard(
                       projects: controller.projects,
                       selectedProjectIndex:
                           controller.selectedProjectIndex.value,
@@ -65,67 +67,37 @@ class DocumentScreenView extends GetView<DocumentController> {
                       onToggle: controller.toggleProjectMenu,
                       onSelect: controller.selectProject,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        FinancialsBudgetMetricCard(
+                          title: 'Total Budget',
+                          amountText: _formatAed(project.totalBudget),
+                          subtitle: 'incl. AED 1,130 Variations',
+                        ),
+                        const SizedBox(width: 15),
+                        FinancialsBudgetMetricCard(
+                          title: 'Paid to Date',
+                          amountText: _formatAed(project.paidToDate),
+                          subtitle: '${project.paidPercent}% of total',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    FinancialsRemainingBalanceCard(
+                      amountText: _formatAed(project.remainingBalance),
+                      paidPercent: project.paidPercent,
+                    ),
+                    const SizedBox(height: 8),
                     const Text(
-                      'Documents',
+                      'Payment Schedule',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'All project files organized by type',
-                      style: TextStyle(
-                        color: Color(0xFFD5DDE1),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Builder(
-                      builder: (_) {
-                        final categories = project.categories.take(4).toList();
-                        return GridView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: categories.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 15,
-                                mainAxisSpacing: 15,
-                                childAspectRatio: 160 / 110,
-                              ),
-                          itemBuilder: (_, index) {
-                            return DocumentCategoryCard(
-                              item: categories[index],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Recent Documents',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Latest Uploads',
-                      style: TextStyle(
-                        color: Color(0xFFD5DDE1),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: controller.refreshProjects,
@@ -133,12 +105,31 @@ class DocumentScreenView extends GetView<DocumentController> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.zero,
                           children: [
-                            ...project.recentDocuments.map(
-                              (item) => RecentDocumentItemCard(item: item),
-                            ),
+                            for (final section in project.scheduleSections) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Text(
+                                  section.title,
+                                  style: const TextStyle(
+                                    color: Color(0xFFD5D5D5),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              ...section.items.map(
+                                (item) => FinancialsPaymentScheduleItemCard(
+                                  item: item,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                            ],
                             if (controller.errorMessage.value.isNotEmpty)
                               Padding(
-                                padding: const EdgeInsets.only(top: 6),
+                                padding: const EdgeInsets.only(
+                                  top: 8,
+                                  bottom: 10,
+                                ),
                                 child: Text(
                                   controller.errorMessage.value,
                                   style: const TextStyle(
@@ -160,4 +151,12 @@ class DocumentScreenView extends GetView<DocumentController> {
       );
     });
   }
+}
+
+String _formatAed(int amount) {
+  final formatted = amount.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (match) => ',',
+  );
+  return 'AED $formatted';
 }

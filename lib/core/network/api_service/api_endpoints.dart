@@ -86,6 +86,26 @@ class UpdateEndpoints {
   static const String getUpdates = "/updates";
 }
 
+// ================= PROGRESS =================
+class ProgressEndpoints {
+  static const String getProjects = "/progress/projects";
+}
+
+// ================= TASK =================
+class TaskEndpoints {
+  static const String getProjects = "/tasks/projects";
+}
+
+// ================= FINANCIALS =================
+class FinancialsEndpoints {
+  static const String getProjects = "/tasks/financial-projects";
+}
+
+// ================= DOCUMENTS =================
+class DocumentEndpoints {
+  static const String getProjects = "/documents/projects";
+}
+
 // ================= NOTIFICATION =================
 class NotificationEndpoints {
   static const String getAll = "/notifications";

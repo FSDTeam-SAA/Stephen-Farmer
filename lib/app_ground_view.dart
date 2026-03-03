@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
+import 'package:stephen_farmer/feature/financials/presentation/view/financials_screen_view.dart';
 
 import 'package:stephen_farmer/feature/progress/presentation/view/progress_screen_view.dart';
 import 'package:stephen_farmer/feature/tasks/presentation/view/task_screen_view.dart';
@@ -21,11 +22,9 @@ class _AppGroundViewState extends State<AppGroundView> {
   int _currentIndex = 0;
 
   List<Widget> get _tabs => [
-    UpdateScreenView(
-      loginCategory: _auth.role.value,
-      userRole: _auth.userRole.value,
-    ),
+    UpdateScreenView(loginCategory: _auth.role.value, userRole: _auth.userRole.value),
     const ProgressScreenView(),
+    const FinancialsScreenView(),
     const TaskScreenView(),
     const DocumentScreenView(),
   ];

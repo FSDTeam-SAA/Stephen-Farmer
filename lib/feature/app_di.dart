@@ -5,6 +5,22 @@ import '../core/network/api_service/api_endpoints.dart';
 import 'auth/data/repo/auth_repo_impl.dart';
 import 'auth/domain/repo/auth_repo.dart';
 import 'auth/presentation/controller/login_controller.dart';
+import 'documents/data/repository/document_repository_impl.dart';
+import 'documents/domain/repository/document_repository.dart';
+import 'documents/domain/usecase/get_document_projects_usecase.dart';
+import 'documents/presentation/controller/document_controller.dart';
+import 'financials/data/repository/financials_repository_impl.dart';
+import 'financials/domain/repository/financials_repository.dart';
+import 'financials/domain/usecase/get_financials_projects_usecase.dart';
+import 'financials/presentation/controller/financials_controller.dart';
+import 'progress/data/repository/progress_repository_impl.dart';
+import 'progress/domain/repository/progress_repository.dart';
+import 'progress/domain/usecase/get_progress_projects_usecase.dart';
+import 'progress/presentation/controller/progress_controller.dart';
+import 'tasks/data/repository/task_repository_impl.dart';
+import 'tasks/domain/repository/task_repository.dart';
+import 'tasks/domain/usecase/get_task_projects_usecase.dart';
+import 'tasks/presentation/controller/task_controller.dart';
 
 class AppDependencies {
   static void init() {
@@ -22,6 +38,94 @@ class AppDependencies {
 
     Get.lazyPut<LoginController>(
       () => LoginController(Get.find<AuthRepository>()),
+      fenix: true,
+    );
+
+    Get.lazyPut<ProgressRepository>(
+      () => ProgressRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        useMockData: true,
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetProgressProjectsUseCase>(
+      () => GetProgressProjectsUseCase(
+        repository: Get.find<ProgressRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<ProgressController>(
+      () => ProgressController(
+        getProjectsUseCase: Get.find<GetProgressProjectsUseCase>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<FinancialsRepository>(
+      () => FinancialsRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        useMockData: true,
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetFinancialsProjectsUseCase>(
+      () => GetFinancialsProjectsUseCase(
+        repository: Get.find<FinancialsRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<FinancialsController>(
+      () => FinancialsController(
+        getProjectsUseCase: Get.find<GetFinancialsProjectsUseCase>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<TaskRepository>(
+      () => TaskRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        useMockData: true,
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetTaskProjectsUseCase>(
+      () => GetTaskProjectsUseCase(
+        repository: Get.find<TaskRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<TaskController>(
+      () => TaskController(
+        getProjectsUseCase: Get.find<GetTaskProjectsUseCase>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<DocumentRepository>(
+      () => DocumentRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        useMockData: true,
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetDocumentProjectsUseCase>(
+      () => GetDocumentProjectsUseCase(
+        repository: Get.find<DocumentRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<DocumentController>(
+      () => DocumentController(
+        getProjectsUseCase: Get.find<GetDocumentProjectsUseCase>(),
+      ),
       fenix: true,
     );
   }

@@ -1,24 +1,11 @@
 import 'package:get/get.dart';
-import 'package:stephen_farmer/core/network/api_service/api_client.dart';
-
-import '../../data/repository/progress_repository_impl.dart';
 import '../../domain/entities/progress_entity.dart';
-import '../../domain/repository/progress_repository.dart';
 import '../../domain/usecase/get_progress_projects_usecase.dart';
 
 class ProgressController extends GetxController {
   ProgressController({
     GetProgressProjectsUseCase? getProjectsUseCase,
-    ProgressRepository? repository,
-    ApiClient? apiClient,
-  }) : _getProjectsUseCase = getProjectsUseCase ??
-            GetProgressProjectsUseCase(
-              repository: repository ??
-                  ProgressRepositoryImpl(
-                    apiClient: apiClient ?? _findApiClient(),
-                    useMockData: true,
-                  ),
-            );
+  }) : _getProjectsUseCase = getProjectsUseCase ?? Get.find<GetProgressProjectsUseCase>();
 
   final GetProgressProjectsUseCase _getProjectsUseCase;
 
@@ -31,7 +18,7 @@ class ProgressController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchProjects();
+    refreshProjects();
   }
 
   bool get hasProjects => projects.isNotEmpty;
@@ -44,15 +31,15 @@ class ProgressController extends GetxController {
     return projects[safeIndex];
   }
 
-  Future<void> fetchProjects() async {
+  Future<void> refreshProjects() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
       final result = await _getProjectsUseCase.call();
       projects.assignAll(result);
       _normalizeSelectedProject();
-    } catch (e) {
-      errorMessage.value = e.toString();
+    } catch (_) {
+      errorMessage.value = 'Failed to load progress data. Please try again.';
       projects.clear();
       _normalizeSelectedProject();
     } finally {
@@ -85,11 +72,4 @@ class ProgressController extends GetxController {
       isProjectMenuOpen.value = false;
     }
   }
-}
-
-ApiClient? _findApiClient() {
-  if (Get.isRegistered<ApiClient>()) {
-    return Get.find<ApiClient>();
-  }
-  return null;
 }

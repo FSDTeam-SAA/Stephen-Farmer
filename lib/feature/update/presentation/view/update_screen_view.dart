@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import '../../../../core/utils/images.dart';
 import '../../data/model/update_model.dart';
 import '../controller/update_controller.dart';
@@ -44,22 +45,13 @@ class UpdateScreenView extends StatelessWidget {
 
     return Obx(() {
       final isInterior = loginCategory.toLowerCase() == "interior";
-      final isClientInterior =
-          userRole.toLowerCase() == "client" && isInterior;
+      final isClientInterior = userRole.toLowerCase() == "client" && isInterior;
 
       return Scaffold(
-        backgroundColor: isInterior ? Colors.transparent : Colors.black,
+        backgroundColor: RoleBgColor.scaffoldColor(loginCategory),
         body: SafeArea(
           child: Container(
-            decoration: isInterior
-                ? const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xffE6E1DB), Color(0xff847C69)],
-                    ),
-                  )
-                : null,
+            decoration: RoleBgColor.decoration(loginCategory),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -69,8 +61,16 @@ class UpdateScreenView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       isInterior
-                          ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
-                          : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
+                          ? Image.asset(
+                              AssetsImages.interiorImg,
+                              height: 50,
+                              width: 54,
+                            )
+                          : Image.asset(
+                              AssetsImages.constructionIgm,
+                              height: 32,
+                              width: 87,
+                            ),
                       const Icon(Icons.notifications, color: Colors.amber),
                     ],
                   ),
@@ -83,7 +83,11 @@ class UpdateScreenView extends StatelessWidget {
                         ? Center(
                             child: Text(
                               "No Project",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: isInterior ? Colors.black : Colors.white),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: isInterior ? Colors.black : Colors.white,
+                              ),
                             ),
                           )
                         : Column(
@@ -93,10 +97,15 @@ class UpdateScreenView extends StatelessWidget {
                                 UpdateCategoryDropdownCard(
                                   isInterior: isInterior,
                                   items: controller.categoryFilters.toList(),
-                                  selectedItem: controller.selectedCategory.value,
-                                  isMenuOpen: controller.isCategoryMenuOpen.value,
+                                  selectedItem:
+                                      controller.selectedCategory.value,
+                                  isMenuOpen:
+                                      controller.isCategoryMenuOpen.value,
                                   previewBuilder: (item) =>
-                                      _resolveUpdatePreview(item, controller.updateList.toList()),
+                                      _resolveUpdatePreview(
+                                        item,
+                                        controller.updateList.toList(),
+                                      ),
                                   onToggle: controller.toggleCategoryMenu,
                                   onSelect: controller.selectCategory,
                                 ),
@@ -106,7 +115,8 @@ class UpdateScreenView extends StatelessWidget {
                               Expanded(
                                 child: Builder(
                                   builder: (context) {
-                                    final filteredList = controller.filteredUpdates;
+                                    final filteredList =
+                                        controller.filteredUpdates;
 
                                     return ListView.builder(
                                       itemCount: filteredList.length,

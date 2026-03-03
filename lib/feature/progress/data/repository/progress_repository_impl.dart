@@ -1,4 +1,5 @@
 import 'package:stephen_farmer/core/network/api_service/api_client.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
 
 import '../../domain/entities/progress_entity.dart';
 import '../../domain/repository/progress_repository.dart';
@@ -13,24 +14,22 @@ class ProgressRepositoryImpl implements ProgressRepository {
   final ApiClient? _apiClient;
   final bool useMockData;
 
-  static const String _projectsEndpoint = "/progress/projects";
-
   @override
   Future<List<ProjectProgressEntity>> fetchProjects() async {
-    if (useMockData || _apiClient == null) {
+    if (useMockData) {
       return ProjectProgressModel.dummyData;
     }
 
+    if (_apiClient == null) {
+      throw StateError('ApiClient is required when useMockData is false.');
+    }
+
     try {
-      final response = await _apiClient.get(_projectsEndpoint);
+      final response = await _apiClient.get(ProgressEndpoints.getProjects);
       final rows = _extractProjectRows(response.data);
-      if (rows.isEmpty) {
-        return ProjectProgressModel.dummyData;
-      }
       return rows.map(ProjectProgressModel.fromJson).toList();
-    } catch (_) {
-      // Keep UI usable while endpoint integration is incomplete.
-      return ProjectProgressModel.dummyData;
+    } catch (e) {
+      throw Exception('Failed to fetch progress projects: $e');
     }
   }
 

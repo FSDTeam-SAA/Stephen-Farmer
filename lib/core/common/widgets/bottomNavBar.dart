@@ -10,6 +10,7 @@ class BottomNavBar extends StatelessWidget {
   static const List<_NavItemData> _items = [
     _NavItemData(label: 'Update', iconPath: AssetsImages.navHome),
     _NavItemData(label: 'Progress', iconPath: AssetsImages.navProgress),
+        _NavItemData(label: 'Financials', iconPath: AssetsImages.navFinancials),
     _NavItemData(label: 'Tasks', iconPath: AssetsImages.navTask),
     _NavItemData(label: 'Documents', iconPath: AssetsImages.navDocument),
   ];

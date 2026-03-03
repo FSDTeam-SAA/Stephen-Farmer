@@ -13,6 +13,7 @@ class AssetsImages {
   static const String constructionIgm = "$_basePath/constru.png";
   static const String interiorImg = "$_basePath/nidor.png";
   static const String navHome = "$_logoPath/home.png";
+  static const String navFinancials = "$_logoPath/financials.png";
   static const String navProgress = "$_logoPath/progress.png";
   static const String navTask = "$_logoPath/task.png";
   static const String navDocument = "$_logoPath/doc.png";
