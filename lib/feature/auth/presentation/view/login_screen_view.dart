@@ -8,18 +8,18 @@ import 'package:stephen_farmer/feature/auth/presentation/controller/login_contro
 import 'forget_password_view.dart';
 
 class LoginScreenView extends GetView<LoginController> {
-  final String loginRole;
+  final String category;
 
-  const LoginScreenView({super.key, required this.loginRole});
+  const LoginScreenView({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    final controller = Get.find<LoginController>();
 
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
 
-    bool isInterior = loginRole == "interior";
+    bool isInterior = category   == "interior";
 
     return Scaffold(
       backgroundColor: isInterior ? Colors.transparent : Colors.black,
@@ -126,9 +126,15 @@ class LoginScreenView extends GetView<LoginController> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: controller.isLoading.value ? null : () => controller.login(),
+                      onPressed: () {
+                        controller.loginUser(
+                          email: emailController.text,
+                          password: passwordController.text,
+                          category: category, // "interior" / "construction"
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isInterior ? Colors.black : Colors.white.withOpacity(0.9),
+                        backgroundColor: isInterior ? Colors.black : Colors.white.withValues(alpha: 0.9),
                         foregroundColor: isInterior ? Colors.white : Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),

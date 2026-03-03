@@ -3,6 +3,7 @@ class AssetsImages {
 
   // ================== Base Path ==================
   static const String _basePath = "assets/images";
+  static const String _logoPath = "assets/logo";
 
   // ================== App Logo ==================
   static const String appLogo = "$_basePath/app_logo.png";
@@ -11,6 +12,10 @@ class AssetsImages {
   // ================== Icons ==================
   static const String constructionIgm = "$_basePath/constru.png";
   static const String interiorImg = "$_basePath/nidor.png";
+  static const String navHome = "$_logoPath/home.png";
+  static const String navProgress = "$_logoPath/progress.png";
+  static const String navTask = "$_logoPath/task.png";
+  static const String navDocument = "$_logoPath/doc.png";
 
   // ================== Onboarding ==================
   static const String onboarding1 = "$_basePath/onboarding_1.png";

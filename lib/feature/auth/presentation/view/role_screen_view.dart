@@ -37,7 +37,7 @@ class RoleSelectScreenView extends StatelessWidget {
                   image: AssetsImages.constructionIgm,
                   subtitle: 'Construction Management',
                   onTap: () {
-                    Get.to(() => LoginScreenView(loginRole: "construction"));
+                    Get.to(() => LoginScreenView(category: "construction"));
                   },
                 ),
 
@@ -50,7 +50,7 @@ class RoleSelectScreenView extends StatelessWidget {
                   imageWidth: 64,
                   subtitle: 'Interior Design',
                   onTap: () {
-                    Get.to(() => LoginScreenView(loginRole: "interior"));
+                    Get.to(() => LoginScreenView(category: "interior"));
                   },
                 ),
               ],

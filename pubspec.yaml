@@ -37,9 +37,9 @@ dependencies:
 
   # GetX for state management, routing, and dependency injection
   get: ^4.6.6
-
-  # Dio for HTTP client
   dio: ^5.4.0
+  flutter_secure_storage: ^10.0.0
+  pretty_dio_logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:
