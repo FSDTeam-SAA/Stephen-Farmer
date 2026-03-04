@@ -1,23 +1,18 @@
+import 'package:flutter/material.dart';
 
+class AppDecorations {
+  static const BoxDecoration interiorGradientBg = BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xffE6E1DB),
+        Color(0xff847C69),
+      ],
+    ),
+  );
 
-enum UserRole {
-  constructionUser,
-  constructionManager,
-  interiorUser,
-  interiorManager,
-}
-
-UserRole parseRole(String role) {
-  switch (role) {
-    case "construction_user":
-      return UserRole.constructionUser;
-    case "construction_manager":
-      return UserRole.constructionManager;
-    case "interior_user":
-      return UserRole.interiorUser;
-    case "interior_manager":
-      return UserRole.interiorManager;
-    default:
-      return UserRole.constructionUser;
-  }
+  static const BoxDecoration constructionBlackBg = BoxDecoration(
+    color: Colors.black,
+  );
 }

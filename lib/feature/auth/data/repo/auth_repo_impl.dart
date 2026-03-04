@@ -13,7 +13,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<LoginResponse> login(LoginRequest request) async {
     try {
-      final Response response = await apiClient.post(AuthEndpoints.login, data: request.toJson());
+      final Response response = await apiClient.post(
+        AuthEndpoints.login,
+        data: request.toJson(),
+      );
 
       if (response.data is Map<String, dynamic>) {
         return LoginResponse.fromJson(response.data);
@@ -22,6 +25,20 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> logout({String? refreshToken}) async {
+    try {
+      await apiClient.post(
+        AuthEndpoints.logout,
+        data: refreshToken == null || refreshToken.trim().isEmpty
+            ? {}
+            : {"refreshToken": refreshToken},
+      );
+    } catch (_) {
+      // Local logout will still proceed from controller.
     }
   }
 }

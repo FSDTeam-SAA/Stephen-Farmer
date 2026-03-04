@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stephen_farmer/app_ground_view.dart';
 
+import 'app_ground_view.dart';
 import 'feature/app_di.dart';
+import 'feature/auth/presentation/controller/login_controller.dart';
 import 'feature/auth/presentation/view/role_screen_view.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   AppDependencies.init();
-  runApp(const MyApp());
+
+  final LoginController loginController = Get.find<LoginController>();
+  final bool hasSession = await loginController.restoreSession();
+
+  runApp(MyApp(hasSession: hasSession));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasSession;
+  const MyApp({super.key, required this.hasSession});
 
   // This widget is the root of your application.
   @override
@@ -20,10 +27,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
 
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
 
-      //home: AppGroundView(),
-      home: const RoleSelectScreenView(),
+      home: hasSession ? const AppGroundView() : const RoleSelectScreenView(),
     );
   }
 }

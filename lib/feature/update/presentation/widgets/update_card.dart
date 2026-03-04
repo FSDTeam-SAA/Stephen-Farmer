@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
 
 class UpdatePostCard extends StatelessWidget {
-  const UpdatePostCard({super.key, this.isClientInterior = false});
+  const UpdatePostCard({super.key, this.isInteriorTheme = false});
 
-  final bool isClientInterior;
+  final bool isInteriorTheme;
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isClientInterior ? Colors.transparent : Colors.transparent;
-    final borderColor = isClientInterior ? Colors.transparent : Colors.white.withValues(alpha: .08);
-    final primaryTextColor = isClientInterior ? const Color(0xFF1B1B1B) : Colors.white;
-    final secondaryTextColor = isClientInterior ? const Color(0xFF6F6B62) : Colors.white.withValues(alpha: .55);
-    final contentTextColor = isClientInterior ? const Color(0xFF1D1D1D) : Colors.white.withValues(alpha: .85);
-    final metaStatColor = isClientInterior ? const Color(0xFFF3EEDD) : Colors.white.withValues(alpha: .65);
+    final backgroundColor = isInteriorTheme
+        ? Colors.transparent
+        : Colors.transparent;
+    final borderColor = isInteriorTheme
+        ? Colors.transparent
+        : Colors.white.withValues(alpha: .08);
+    final primaryTextColor = isInteriorTheme
+        ? const Color(0xFF1B1B1B)
+        : Colors.white;
+    final secondaryTextColor = isInteriorTheme
+        ? const Color(0xFF6F6B62)
+        : Colors.white.withValues(alpha: .55);
+    final contentTextColor = isInteriorTheme
+        ? const Color(0xFF1D1D1D)
+        : Colors.white.withValues(alpha: .85);
+    final metaStatColor = isInteriorTheme
+        ? const Color(0xFFF3EEDD)
+        : Colors.white.withValues(alpha: .65);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -28,7 +40,9 @@ class UpdatePostCard extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 22,
-                backgroundImage: NetworkImage("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop"),
+                backgroundImage: NetworkImage(
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop",
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -37,12 +51,21 @@ class UpdatePostCard extends StatelessWidget {
                   children: [
                     Text(
                       "Rain Altmann",
-                      style: TextStyle(color: primaryTextColor, fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: primaryTextColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       "SITE MANAGER  ·  2H AGO",
-                      style: TextStyle(color: secondaryTextColor, fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: .4),
+                      style: TextStyle(
+                        color: secondaryTextColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: .4,
+                      ),
                     ),
                   ],
                 ),
@@ -56,7 +79,11 @@ class UpdatePostCard extends StatelessWidget {
           // Post text
           Text(
             "Foundation work completed today. The concrete has been poured and cured, ready for next phrase of framing starting monday.",
-            style: TextStyle(color: contentTextColor, fontSize: 13.5, height: 1.35),
+            style: TextStyle(
+              color: contentTextColor,
+              fontSize: 13.5,
+              height: 1.35,
+            ),
           ),
 
           const SizedBox(height: 12),
@@ -148,26 +175,57 @@ class UpdatePostCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 "3",
-                style: TextStyle(color: isClientInterior ? const Color(0xFFF3EEDD) : Colors.white.withValues(alpha: .75), fontSize: 12.5),
+                style: TextStyle(
+                  color: isInteriorTheme
+                      ? const Color(0xFFF3EEDD)
+                      : Colors.white.withValues(alpha: .75),
+                  fontSize: 12.5,
+                ),
               ),
               const Spacer(),
-              Text("3 Comments", style: TextStyle(color: metaStatColor, fontSize: 12.5)),
+              Text(
+                "3 Comments",
+                style: TextStyle(color: metaStatColor, fontSize: 12.5),
+              ),
               const SizedBox(width: 12),
-              Text("2 Shares", style: TextStyle(color: metaStatColor, fontSize: 12.5)),
+              Text(
+                "2 Shares",
+                style: TextStyle(color: metaStatColor, fontSize: 12.5),
+              ),
             ],
           ),
 
           const SizedBox(height: 10),
-          Divider(color: isClientInterior ? const Color(0xCCCDC1A7) : Colors.white.withValues(alpha: .10), height: 1),
+          Divider(
+            color: isInteriorTheme
+                ? const Color(0xCCCDC1A7)
+                : Colors.white.withValues(alpha: .10),
+            height: 1,
+          ),
           const SizedBox(height: 6),
 
           // Action buttons row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _ActionBtn(icon: Icons.favorite_border, label: "Heart", onTap: () {}, isClientInterior: isClientInterior),
-              _ActionBtn(icon: Icons.mode_comment_outlined, label: "Comment", onTap: () {}, isClientInterior: isClientInterior),
-              _ActionBtn(icon: Icons.share_outlined, label: "Share", onTap: () {}, isClientInterior: isClientInterior),
+              _ActionBtn(
+                icon: Icons.favorite_border,
+                label: "Heart",
+                onTap: () {},
+                isInteriorTheme: isInteriorTheme,
+              ),
+              _ActionBtn(
+                icon: Icons.mode_comment_outlined,
+                label: "Comment",
+                onTap: () {},
+                isInteriorTheme: isInteriorTheme,
+              ),
+              _ActionBtn(
+                icon: Icons.share_outlined,
+                label: "Share",
+                onTap: () {},
+                isInteriorTheme: isInteriorTheme,
+              ),
             ],
           ),
         ],
@@ -180,9 +238,14 @@ class _ActionBtn extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isClientInterior;
+  final bool isInteriorTheme;
 
-  const _ActionBtn({required this.icon, required this.label, required this.onTap, this.isClientInterior = false});
+  const _ActionBtn({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isInteriorTheme = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -193,12 +256,20 @@ class _ActionBtn extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Icon(icon, color: isClientInterior ? const Color(0xFFD8C79A) : Colors.white.withValues(alpha: .75), size: 18),
+            Icon(
+              icon,
+              color: isInteriorTheme
+                  ? const Color(0xFFD8C79A)
+                  : Colors.white.withValues(alpha: .75),
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isClientInterior ? const Color(0xFFD8C79A) : Colors.white.withValues(alpha: .75),
+                color: isInteriorTheme
+                    ? const Color(0xFFD8C79A)
+                    : Colors.white.withValues(alpha: .75),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

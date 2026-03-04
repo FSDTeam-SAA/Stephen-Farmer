@@ -22,7 +22,7 @@ class _AppGroundViewState extends State<AppGroundView> {
   int _currentIndex = 0;
 
   List<Widget> get _tabs => [
-    UpdateScreenView(loginCategory: _auth.role.value, userRole: _auth.userRole.value),
+    UpdateScreenView(loginCategory: _auth.role.value),
     const ProgressScreenView(),
     const FinancialsScreenView(),
     const TaskScreenView(),

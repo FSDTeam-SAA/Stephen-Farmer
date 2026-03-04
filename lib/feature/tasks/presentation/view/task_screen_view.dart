@@ -17,21 +17,13 @@ class TaskScreenView extends GetView<TaskController> {
     return Obx(() {
       final project = controller.selectedProject;
       final role = Get.find<LoginController>().role.value;
-      final isInterior = role.toLowerCase() == "interior";
+      final isInterior = RoleBgColor.isInterior(role);
 
       return Scaffold(
         backgroundColor: RoleBgColor.scaffoldColor(role),
         body: SafeArea(
           child: Container(
-            decoration: isInterior
-                ? const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xffE6E1DB), Color(0xff847C69)],
-                    ),
-                  )
-                : null,
+            decoration: RoleBgColor.decoration(role),
             // color: isInterior ? null : const Color(0xFF0B1419),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),

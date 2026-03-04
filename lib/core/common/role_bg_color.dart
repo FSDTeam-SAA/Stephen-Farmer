@@ -29,10 +29,19 @@ class RoleBackground extends StatelessWidget {
 }
  */
 
-
 import 'package:flutter/material.dart';
 
 class RoleBgColor {
+  static const LinearGradient interiorGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xffE6E1DB), Color(0xff847C69)],
+  );
+
+  static const BoxDecoration interiorDecoration = BoxDecoration(
+    gradient: interiorGradient,
+  );
+
   static bool isInterior(String role) {
     final r = role.toLowerCase().trim();
 
@@ -41,16 +50,7 @@ class RoleBgColor {
 
   static BoxDecoration? decoration(String role) {
     if (isInterior(role)) {
-      return const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xffE6E1DB),
-            Color(0xff847C69),
-          ],
-        ),
-      );
+      return interiorDecoration;
     }
 
     return null; // construction হলে gradient নাই
