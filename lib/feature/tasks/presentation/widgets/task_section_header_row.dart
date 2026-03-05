@@ -17,29 +17,41 @@ class TaskSectionHeaderRow extends StatelessWidget {
     return Row(
       children: [
         if (showLeadingIcon)
-          const Icon(Icons.person_outline_rounded, color: Colors.white, size: 18),
-        if (showLeadingIcon) const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
+          const Icon(
+            Icons.person_outline_rounded,
             color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            size: 18,
+          ),
+        if (showLeadingIcon) const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF7C715E),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            '$pendingCount PENDING',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF7C715E),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              '$pendingCount PENDING',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

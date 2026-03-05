@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
+import 'package:stephen_farmer/feature/financials/domain/entities/financials_project_entity.dart';
 
 import '../controller/financials_controller.dart';
 import '../widgets/financials_budget_metric_card.dart';
-import '../widgets/financials_project_dropdown_card.dart';
 import '../widgets/financials_payment_schedule_item_card.dart';
 import '../widgets/financials_remaining_balance_card.dart';
 
@@ -17,6 +19,9 @@ class FinancialsScreenView extends GetView<FinancialsController> {
     return Obx(() {
       final project = controller.selectedProject;
       final role = Get.find<LoginController>().role.value;
+      final bool isInterior = RoleBgColor.isInterior(role);
+      final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+      final Color sectionColor = isInterior ? const Color(0xFF45413C) : const Color(0xFFD5D5D5);
 
       return Scaffold(
         backgroundColor: RoleBgColor.scaffoldColor(role),
@@ -28,76 +33,40 @@ class FinancialsScreenView extends GetView<FinancialsController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
                       'Financials',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: titleColor, fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                   ),
                   const SizedBox(height: 10),
                   if (controller.isLoading.value && project == null)
-                    const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
+                    const Expanded(child: Center(child: CircularProgressIndicator()))
                   else if (project == null)
                     Expanded(
                       child: Center(
                         child: Text(
-                          controller.errorMessage.value.isEmpty
-                              ? 'No financial data available'
-                              : controller.errorMessage.value,
+                          controller.errorMessage.value.isEmpty ? 'No financial data available' : controller.errorMessage.value,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
+                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 13),
                         ),
                       ),
                     )
                   else ...[
-                    FinancialsProjectDropdownCard(
-                      projects: controller.projects,
-                      selectedProjectIndex:
-                          controller.selectedProjectIndex.value,
+                    CategoryDropdownWidget(
+                      items: controller.projects,
+                      selectedIndex: controller.selectedProjectIndex.value,
                       isMenuOpen: controller.isProjectMenuOpen.value,
+                      isInteriorTheme: isInterior,
                       onToggle: controller.toggleProjectMenu,
                       onSelect: controller.selectProject,
+                      titleBuilder: (item) => item.projectName,
+                      subtitleBuilder: (item) => item.projectAddress,
+                      thumbnailBuilder: (item) => item.thumbnailUrl,
+                      fallbackAsset: AssetsImages.constructionIgm,
                     ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        FinancialsBudgetMetricCard(
-                          title: 'Total Budget',
-                          amountText: _formatAed(project.totalBudget),
-                          subtitle: 'incl. AED 1,130 Variations',
-                        ),
-                        const SizedBox(width: 15),
-                        FinancialsBudgetMetricCard(
-                          title: 'Paid to Date',
-                          amountText: _formatAed(project.paidToDate),
-                          subtitle: '${project.paidPercent}% of total',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    FinancialsRemainingBalanceCard(
-                      amountText: _formatAed(project.remainingBalance),
-                      paidPercent: project.paidPercent,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Payment Schedule',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
+                    // _buildProjectSelector(isInterior),
+                    const SizedBox(height: 12),
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: controller.refreshProjects,
@@ -105,38 +74,23 @@ class FinancialsScreenView extends GetView<FinancialsController> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.zero,
                           children: [
-                            for (final section in project.scheduleSections) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Text(
-                                  section.title,
-                                  style: const TextStyle(
-                                    color: Color(0xFFD5D5D5),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                              ...section.items.map(
-                                (item) => FinancialsPaymentScheduleItemCard(
-                                  item: item,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                            ],
+                            _buildMetricRow(project),
+                            const SizedBox(height: 16),
+                            FinancialsRemainingBalanceCard(
+                              amountText: _formatAed(project.remainingBalance),
+                              paidPercent: project.paidPercent,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Payment Schedule',
+                              style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 4),
+                            ..._buildScheduleSections(project, sectionColor),
                             if (controller.errorMessage.value.isNotEmpty)
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 8,
-                                  bottom: 10,
-                                ),
-                                child: Text(
-                                  controller.errorMessage.value,
-                                  style: const TextStyle(
-                                    color: Color(0xFFFF7A7A),
-                                    fontSize: 12,
-                                  ),
-                                ),
+                                padding: const EdgeInsets.only(top: 8, bottom: 10),
+                                child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12)),
                               ),
                           ],
                         ),
@@ -151,12 +105,62 @@ class FinancialsScreenView extends GetView<FinancialsController> {
       );
     });
   }
+
+  /*   Widget _buildProjectSelector(bool isInterior) {
+    return CategoryDropdownWidget(
+      items: controller.projects,
+      selectedIndex: controller.selectedProjectIndex.value,
+      isMenuOpen: controller.isProjectMenuOpen.value,
+      isInteriorTheme: isInterior,
+      onToggle: controller.toggleProjectMenu,
+      onSelect: controller.selectProject,
+      titleBuilder: (item) => item.projectName,
+      subtitleBuilder: (item) => item.projectAddress,
+      thumbnailBuilder: (item) => item.thumbnailUrl,
+      fallbackAsset: AssetsImages.constructionIgm,
+    );
+  } */
+
+  Widget _buildMetricRow(FinancialsProjectEntity project) {
+    return Row(
+      children: [
+        FinancialsBudgetMetricCard(
+          title: 'Total Budget',
+          amountText: _formatAed(project.totalBudget),
+          subtitle: 'incl. AED 1,130 Variations',
+        ),
+        const SizedBox(width: 15),
+        FinancialsBudgetMetricCard(
+          title: 'Paid to Date',
+          amountText: _formatAed(project.paidToDate),
+          subtitle: '${project.paidPercent}% of total',
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildScheduleSections(FinancialsProjectEntity project, Color sectionColor) {
+    final widgets = <Widget>[];
+
+    for (final section in project.scheduleSections) {
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            section.title,
+            style: TextStyle(color: sectionColor, fontSize: 16, fontWeight: FontWeight.w400),
+          ),
+        ),
+      );
+      widgets.addAll(section.items.map((item) => FinancialsPaymentScheduleItemCard(item: item)));
+      widgets.add(const SizedBox(height: 2));
+    }
+
+    return widgets;
+  }
 }
 
 String _formatAed(int amount) {
-  final formatted = amount.toString().replaceAllMapped(
-    RegExp(r'\B(?=(\d{3})+(?!\d))'),
-    (match) => ',',
-  );
+  final formatted = amount.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ',');
   return 'AED $formatted';
 }

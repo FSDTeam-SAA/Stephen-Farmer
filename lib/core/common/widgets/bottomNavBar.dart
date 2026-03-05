@@ -5,12 +5,16 @@ class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const BottomNavBar({super.key, required this.currentIndex, required this.onTap});
+  const BottomNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   static const List<_NavItemData> _items = [
     _NavItemData(label: 'Update', iconPath: AssetsImages.navHome),
     _NavItemData(label: 'Progress', iconPath: AssetsImages.navProgress),
-        _NavItemData(label: 'Financials', iconPath: AssetsImages.navFinancials),
+    _NavItemData(label: 'Financials', iconPath: AssetsImages.navFinancials),
     _NavItemData(label: 'Tasks', iconPath: AssetsImages.navTask),
     _NavItemData(label: 'Documents', iconPath: AssetsImages.navDocument),
   ];
@@ -42,11 +46,23 @@ class BottomNavBar extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(item.iconPath, height: 24, width: 24, color: isSelected ? selectedColor : unselectedColor),
+                      Image.asset(
+                        item.iconPath,
+                        height: 24,
+                        width: 24,
+                        color: isSelected ? selectedColor : unselectedColor,
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         item.label,
-                        style: TextStyle(color: isSelected ? selectedColor : unselectedColor, fontSize: 12, fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: TextStyle(
+                          color: isSelected ? selectedColor : unselectedColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),

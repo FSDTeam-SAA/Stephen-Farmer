@@ -13,7 +13,11 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
     return Container(
       height: 88,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: const Color(0xFFD8D5CD), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD8D5CD),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white, width: 2),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -29,6 +33,8 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   amountText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Color(0xFF232323), fontSize: 20, fontWeight: FontWeight.w600),
                 ),
               ],

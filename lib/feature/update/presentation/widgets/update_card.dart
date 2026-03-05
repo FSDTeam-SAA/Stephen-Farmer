@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
-class UpdatePostCard extends StatelessWidget {
-  const UpdatePostCard({super.key, this.isInteriorTheme = false});
+import '../../data/model/update_model.dart';
 
+class UpdatePostCard extends StatelessWidget {
+  const UpdatePostCard({
+    super.key,
+    required this.item,
+    this.isInteriorTheme = false,
+  });
+
+  final UpdateModel item;
   final bool isInteriorTheme;
 
   @override
@@ -25,8 +32,14 @@ class UpdatePostCard extends StatelessWidget {
     final metaStatColor = isInteriorTheme
         ? const Color(0xFFF3EEDD)
         : Colors.white.withValues(alpha: .65);
+    final fallbackImage =
+        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop";
+    final postImage = (item.thumbnailUrl?.trim().isNotEmpty ?? false)
+        ? item.thumbnailUrl!.trim()
+        : fallbackImage;
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      // padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
@@ -39,7 +52,7 @@ class UpdatePostCard extends StatelessWidget {
           Row(
             children: [
               const CircleAvatar(
-                radius: 22,
+                radius: 30,
                 backgroundImage: NetworkImage(
                   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop",
                 ),
@@ -50,27 +63,27 @@ class UpdatePostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Rain Altmann",
+                      item.title,
                       style: TextStyle(
                         color: primaryTextColor,
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "SITE MANAGER  ·  2H AGO",
+                      item.category.toUpperCase(),
                       style: TextStyle(
                         color: secondaryTextColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: .4,
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.more_horiz, color: secondaryTextColor),
+              //Icon(Icons.more_horiz, color: secondaryTextColor),
             ],
           ),
 
@@ -78,91 +91,27 @@ class UpdatePostCard extends StatelessWidget {
 
           // Post text
           Text(
-            "Foundation work completed today. The concrete has been poured and cured, ready for next phrase of framing starting monday.",
+            item.description.trim().isEmpty ? item.title : item.description,
             style: TextStyle(
               color: contentTextColor,
-              fontSize: 13.5,
-              height: 1.35,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
             ),
           ),
 
           const SizedBox(height: 12),
 
-          // Image Grid (screenshot-like)
           SizedBox(
-            height: 250,
-            child: Row(
-              children: [
-                // Left big image
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop",
-                      fit: BoxFit.cover,
-                      height: double.infinity,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Right column: top big + bottom 3 small
-                Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=900&auto=format&fit=crop",
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop",
-                                  fit: BoxFit.cover,
-                                  height: double.infinity,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=600&auto=format&fit=crop",
-                                  fit: BoxFit.cover,
-                                  height: double.infinity,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&auto=format&fit=crop",
-                                  fit: BoxFit.cover,
-                                  height: double.infinity,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            height: 220,
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                postImage,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Image.network(fallbackImage, fit: BoxFit.cover),
+              ),
             ),
           ),
 
@@ -176,37 +125,39 @@ class UpdatePostCard extends StatelessWidget {
               Text(
                 "3",
                 style: TextStyle(
-                  color: isInteriorTheme
-                      ? const Color(0xFFF3EEDD)
-                      : Colors.white.withValues(alpha: .75),
-                  fontSize: 12.5,
+                  color: isInteriorTheme ? Colors.white : Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const Spacer(),
               Text(
                 "3 Comments",
-                style: TextStyle(color: metaStatColor, fontSize: 12.5),
+                style: TextStyle(
+                  color: metaStatColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 "2 Shares",
-                style: TextStyle(color: metaStatColor, fontSize: 12.5),
+                style: TextStyle(
+                  color: metaStatColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
 
           const SizedBox(height: 10),
-          Divider(
-            color: isInteriorTheme
-                ? const Color(0xCCCDC1A7)
-                : Colors.white.withValues(alpha: .10),
-            height: 1,
-          ),
+          // Divider(color: isInteriorTheme ? const Color(0xCCCDC1A7) : Colors.white.withValues(alpha: .10), height: 1),
           const SizedBox(height: 6),
 
           // Action buttons row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _ActionBtn(
                 icon: Icons.favorite_border,
@@ -253,24 +204,20 @@ class _ActionBtn extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isInteriorTheme
-                  ? const Color(0xFFD8C79A)
-                  : Colors.white.withValues(alpha: .75),
+              color: isInteriorTheme ? const Color(0xFFD7C5A4) : Colors.white,
               size: 18,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isInteriorTheme
-                    ? const Color(0xFFD8C79A)
-                    : Colors.white.withValues(alpha: .75),
-                fontSize: 13,
+                color: isInteriorTheme ? const Color(0xFFD7C5A4) : Colors.white,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),

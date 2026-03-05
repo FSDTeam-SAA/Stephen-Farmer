@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
 import '../controller/task_controller.dart';
 import '../widgets/task_action_attention_card.dart';
 import '../widgets/task_action_item_card.dart';
-import '../widgets/task_project_dropdown_card.dart';
 import '../widgets/task_section_header_row.dart';
 
 class TaskScreenView extends GetView<TaskController> {
@@ -81,14 +82,19 @@ class TaskScreenView extends GetView<TaskController> {
                       ),
                     )
                   else ...[
-                    TaskProjectDropdownCard(
-                      projects: controller.projects,
-                      selectedProjectIndex:
-                          controller.selectedProjectIndex.value,
+                    CategoryDropdownWidget(
+                      items: controller.projects,
+                      selectedIndex: controller.selectedProjectIndex.value,
                       isMenuOpen: controller.isProjectMenuOpen.value,
+                      isInteriorTheme: isInterior,
                       onToggle: controller.toggleProjectMenu,
                       onSelect: controller.selectProject,
+                      titleBuilder: (item) => item.projectName,
+                      subtitleBuilder: (item) => item.projectAddress,
+                      thumbnailBuilder: (item) => item.thumbnailUrl,
+                      fallbackAsset: AssetsImages.constructionIgm,
                     ),
+
                     const SizedBox(height: 10),
                     TaskActionAttentionCard(
                       count: project.actionsNeededCount,

@@ -5,11 +5,9 @@ import '../../data/model/update_model.dart';
 import '../../domain/usecase/update_usecase.dart';
 
 class UpdateController extends GetxController {
-  UpdateController({
-    ApiClient? apiClient,
-    UpdateUseCase? useCase,
-  })  : _apiClient = apiClient ?? Get.find<ApiClient>(),
-        _useCase = useCase ?? UpdateUseCase();
+  UpdateController({ApiClient? apiClient, UpdateUseCase? useCase})
+    : _apiClient = apiClient ?? Get.find<ApiClient>(),
+      _useCase = useCase ?? UpdateUseCase();
 
   final ApiClient _apiClient;
   final UpdateUseCase _useCase;

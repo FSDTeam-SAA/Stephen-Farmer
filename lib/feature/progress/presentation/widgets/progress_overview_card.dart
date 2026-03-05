@@ -18,7 +18,9 @@ class ProgressOverviewCard extends StatelessWidget {
         height: 250,
         decoration: BoxDecoration(
           color: const Color(0xFF111A1E),
-          border: Border.all(color: const Color(0xFFB9A77D).withValues(alpha: 0.2)),
+          border: Border.all(
+            color: const Color(0xFFB9A77D).withValues(alpha: 0.2),
+          ),
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -26,7 +28,8 @@ class ProgressOverviewCard extends StatelessWidget {
             Image.network(
               project.heroImageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(fallbackAsset, fit: BoxFit.cover),
+              errorBuilder: (_, __, ___) =>
+                  Image.asset(fallbackAsset, fit: BoxFit.cover),
             ),
             Container(
               decoration: BoxDecoration(
@@ -45,11 +48,21 @@ class ProgressOverviewCard extends StatelessWidget {
               top: 16,
               left: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                decoration: BoxDecoration(color: const Color(0xFFE3D2AA), borderRadius: BorderRadius.circular(999)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3D2AA),
+                  borderRadius: BorderRadius.circular(999),
+                ),
                 child: const Text(
                   'Active Project',
-                  style: TextStyle(color: Color(0xFF151515), fontSize: 12, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Color(0xFF151515),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -62,19 +75,39 @@ class ProgressOverviewCard extends StatelessWidget {
                 children: [
                   Text(
                     project.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 24),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Overall completion',
-                        style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                      const Expanded(
+                        child: Text(
+                          'Overall completion',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       Text(
                         '${project.overallCompletion}%',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -90,15 +123,32 @@ class ProgressOverviewCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Started: ${project.startedDate}',
-                        style: const TextStyle(color: Color(0xFFD7D7D7), fontSize: 12, fontWeight: FontWeight.w600),
+                      Expanded(
+                        child: Text(
+                          'Started: ${project.startedDate}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFFD7D7D7),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                      Text(
-                        'EST. Handover: ${project.handoverDate}',
-                        style: const TextStyle(color: Color(0xFFD7D7D7), fontSize: 12, fontWeight: FontWeight.w600),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'EST. Handover: ${project.handoverDate}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            color: Color(0xFFD7D7D7),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),

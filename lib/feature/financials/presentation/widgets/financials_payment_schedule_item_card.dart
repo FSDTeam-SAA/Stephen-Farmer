@@ -16,7 +16,15 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-      decoration: BoxDecoration(color: const Color(0xFFD8D5CD), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        border: Border.all(
+          color: item.isPaid ? const Color(0xFF7D9975).withValues(alpha: 0.55) : const Color(0xFFC08A2B).withValues(alpha: 0.55),
+
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         children: [
           Container(
@@ -42,23 +50,33 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
                 ),
                 Text(
                   item.dateLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Color(0xFF5A5A5A), fontSize: 16, fontWeight: FontWeight.w400),
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                _formatAed(item.amount),
-                style: const TextStyle(color: Color(0xFF1D1D1D), fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              Text(
-                statusText,
-                style: TextStyle(color: statusColor, fontSize: 16, fontWeight: FontWeight.w400),
-              ),
-            ],
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  _formatAed(item.amount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(color: Color(0xFF1D1D1D), fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  statusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: statusColor, fontSize: 16, fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
           ),
         ],
       ),
