@@ -8,6 +8,7 @@ class AssetsImages {
   // ================== App Logo ==================
   static const String appLogo = "$_basePath/app_logo.png";
   static const String splashLogo = "$_basePath/splash_logo.png";
+  static const String logout = "$_basePath/logout.png";
 
   // ================== Icons ==================
   static const String constructionIgm = "$_basePath/constru.png";
