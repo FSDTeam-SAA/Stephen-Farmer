@@ -56,6 +56,7 @@ class BottomNavBar extends StatelessWidget {
                         item.iconPath,
                         height: 24,
                         width: 24,
+                        fit: BoxFit.contain,
                         color: isSelected ? selectedColor : unselectedColor,
                       ),
                       const SizedBox(height: 4),

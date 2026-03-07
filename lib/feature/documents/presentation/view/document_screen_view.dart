@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -62,17 +63,30 @@ class DocumentScreenView extends GetView<DocumentController> {
                             physics: const AlwaysScrollableScrollPhysics(),
                             padding: EdgeInsets.zero,
                             children: [
-                              _buildSectionHeader(title: 'Documents', subtitle: 'All project files organized by type', titleColor: titleColor, subtitleColor: subtitleColor),
+                              _buildSectionHeader(
+                                title: 'Documents',
+                                subtitle: 'All project files organized by type',
+                                titleColor: titleColor,
+                                subtitleColor: subtitleColor,
+                              ),
                               const SizedBox(height: 10),
                               _buildCategoryGrid(project.categories),
                               const SizedBox(height: 12),
-                              _buildSectionHeader(title: 'Recent Documents', subtitle: 'Latest Uploads', titleColor: titleColor, subtitleColor: subtitleColor),
+                              _buildSectionHeader(
+                                title: 'Recent Documents',
+                                subtitle: 'Latest Uploads',
+                                titleColor: titleColor,
+                                subtitleColor: subtitleColor,
+                              ),
                               const SizedBox(height: 8),
                               ...project.recentDocuments.map((item) => RecentDocumentItemCard(item: item)),
                               if (controller.errorMessage.value.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 6),
-                                  child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12)),
+                                  child: Text(
+                                    controller.errorMessage.value,
+                                    style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12),
+                                  ),
                                 ),
                             ],
                           ),
@@ -129,7 +143,12 @@ class DocumentScreenView extends GetView<DocumentController> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: visibleCategories.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15, mainAxisExtent: 130),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+        mainAxisExtent: 130,
+      ),
       itemBuilder: (_, index) {
         return DocumentCategoryCard(item: visibleCategories[index]);
       },

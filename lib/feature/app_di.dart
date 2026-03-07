@@ -8,6 +8,7 @@ import 'auth/presentation/controller/login_controller.dart';
 import 'documents/data/repository/document_repository_impl.dart';
 import 'documents/domain/repository/document_repository.dart';
 import 'documents/domain/usecase/get_document_projects_usecase.dart';
+import 'documents/domain/usecase/upload_project_document_usecase.dart';
 import 'documents/presentation/controller/document_controller.dart';
 import 'financials/data/repository/financials_repository_impl.dart';
 import 'financials/domain/repository/financials_repository.dart';
@@ -118,7 +119,7 @@ class AppDependencies {
     Get.lazyPut<DocumentRepository>(
       () => DocumentRepositoryImpl(
         apiClient: Get.find<ApiClient>(),
-        useMockData: true,
+        useMockData: false,
       ),
       fenix: true,
     );
@@ -130,9 +131,17 @@ class AppDependencies {
       fenix: true,
     );
 
+    Get.lazyPut<UploadProjectDocumentUseCase>(
+      () => UploadProjectDocumentUseCase(
+        repository: Get.find<DocumentRepository>(),
+      ),
+      fenix: true,
+    );
+
     Get.lazyPut<DocumentController>(
       () => DocumentController(
         getProjectsUseCase: Get.find<GetDocumentProjectsUseCase>(),
+        uploadProjectDocumentUseCase: Get.find<UploadProjectDocumentUseCase>(),
       ),
       fenix: true,
     );
