@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:stephen_farmer/core/colors/app_color.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
@@ -70,25 +72,7 @@ class UpdateScreenView extends StatelessWidget {
                               width: 87,
                             ),
                       const SizedBox(width: 10),
-                      Expanded(
-                        child: Obx(() {
-                          final isInteriorRole = authController.isInterior;
-                          final roleLabel =
-                              authController.normalizedRoleKey == 'manager'
-                              ? 'Manager'
-                              : 'User';
-                          return Text(
-                            "${isInteriorRole ? "Interior" : "Construction"} $roleLabel",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: isInterior ? Colors.black : Colors.white,
-                            ),
-                          );
-                        }),
-                      ),
+                      const Spacer(),
                       GestureDetector(
                         onTap: () {
                           Get.to(() => const NotificationScreenView());
@@ -262,10 +246,13 @@ class UpdateScreenView extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "Active Projects",
-                    style: TextStyle(
+                    "Active Project",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      height: 22 / 16,
+                      letterSpacing: 0,
                       color: isInterior ? Colors.black : Colors.white,
                     ),
                   ),
@@ -299,6 +286,24 @@ class UpdateScreenView extends StatelessWidget {
                                 subtitleBuilder: (item) => item.address,
                                 thumbnailBuilder: (item) => item.thumbnailUrl,
                                 fallbackAsset: AssetsImages.constructionIgm,
+                                thumbnailWidth: 70,
+                                thumbnailHeight: 39,
+                                thumbnailBorderRadius: 4,
+                                subtitleColor: isInterior
+                                    ? const Color(0xFF6E6860)
+                                    : const Color(0xFF8E8E93),
+                                titleTextStyle: GoogleFonts.manrope(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1,
+                                  letterSpacing: 0,
+                                ),
+                                subtitleTextStyle: GoogleFonts.manrope(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1,
+                                  letterSpacing: 0,
+                                ),
                               ),
                               if (controller.shouldShowCategoryDropdown) ...[
                                 const SizedBox(height: 10),
@@ -349,6 +354,7 @@ class UpdateScreenView extends StatelessWidget {
                                           onPostSuccess: () {
                                             controller.refreshAll();
                                           },
+                                          isInteriorTheme: isInterior,
                                         ),
                                       );
                                     },
@@ -369,62 +375,96 @@ class UpdateScreenView extends StatelessWidget {
                                       child: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
-                                            CircleAvatar(
-                                              child: Icon(
-                                                Icons.photo_camera_rounded,
-                                                size: 18,
+                                            Container(
+                                              width: 40,
+                                              height: 40,
+                                              decoration: BoxDecoration(
                                                 color: isInterior
-                                                    ? const Color(0xFF2E2E2E)
-                                                    : Colors.grey.shade300,
+                                                    ? const Color(0xFFD6CCB9)
+                                                    : const Color(0xFF2D3232),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.photo_camera_rounded,
+                                                  size: 18,
+                                                  color: isInterior
+                                                      ? const Color(0xFF5A5246)
+                                                      : const Color(0xFFD7C5A4),
+                                                ),
                                               ),
                                             ),
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
                                                   Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
                                                       Text(
-                                                        "Create Update ",
-                                                        style: TextStyle(
-                                                          color: isInterior
-                                                              ? const Color(
-                                                                  0xFF2F2A24,
-                                                                )
-                                                              : Colors.white,
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
+                                                        "Create Update",
+                                                        style:
+                                                            GoogleFonts.manrope(
+                                                              color: isInterior
+                                                                  ? const Color(
+                                                                      0xFF2F2A24,
+                                                                    )
+                                                                  : Colors
+                                                                        .white,
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              height: 1,
+                                                              letterSpacing: 0,
+                                                            ),
                                                       ),
                                                       Text(
                                                         "Share progress from the site",
-                                                        style: TextStyle(
-                                                          color: isInterior
-                                                              ? const Color(
-                                                                  0xFF2E2E2E,
-                                                                )
-                                                              : Colors.white70,
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                        ),
+                                                        style:
+                                                            GoogleFonts.manrope(
+                                                              color: isInterior
+                                                                  ? const Color(
+                                                                      0xFF6E6860,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFF8E8E93,
+                                                                    ),
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              height: 1,
+                                                              letterSpacing: 0,
+                                                            ),
                                                       ),
                                                     ],
                                                   ),
-                                                  Icon(
-                                                    Icons.add_circle_outline,
-                                                    size: 30,
-                                                    color: AppColor.appColor,
+                                                  SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Icon(
+                                                      Icons.add_circle_outline,
+                                                      size: 24,
+                                                      color: AppColor.appColor,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -458,8 +498,11 @@ class UpdateScreenView extends StatelessWidget {
                                             isInteriorTheme: isInterior,
                                             onLike: () =>
                                                 controller.toggleLike(item),
-                                            onShare: () =>
-                                                controller.shareUpdate(item),
+                                            onShare: () => _shareUpdate(
+                                              context: context,
+                                              controller: controller,
+                                              item: item,
+                                            ),
                                             onComment: () => _showCommentsSheet(
                                               context: context,
                                               controller: controller,
@@ -662,6 +705,32 @@ class UpdateScreenView extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _shareUpdate({
+    required BuildContext context,
+    required UpdateController controller,
+    required UpdateModel item,
+  }) async {
+    await controller.shareUpdate(item);
+
+    final lines = <String>[
+      item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
+      if (item.description.trim().isNotEmpty) item.description.trim(),
+      if (item.thumbnailUrl?.trim().isNotEmpty ?? false)
+        item.thumbnailUrl!.trim(),
+    ];
+
+    try {
+      await Share.share(lines.join('\n'));
+    } catch (_) {
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Share text copied to clipboard')),
+      );
+    }
   }
 
   String _timeLabel(DateTime dateTime) {
