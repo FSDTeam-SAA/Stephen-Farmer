@@ -127,12 +127,12 @@ class DocumentScreenView extends GetView<DocumentController> {
       children: [
         Text(
           title,
-          style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.w600, height: 1),
+          style: GoogleFonts.outfit(color: titleColor, fontSize: 20, fontWeight: FontWeight.w600, height: 1),
         ),
         const SizedBox(height: 2),
         Text(
           subtitle,
-          style: TextStyle(color: subtitleColor, fontSize: 16, fontWeight: FontWeight.w400, height: 1),
+          style: GoogleFonts.manrope(color: subtitleColor, fontSize: 16, fontWeight: FontWeight.w400, height: 1),
         ),
       ],
     );
