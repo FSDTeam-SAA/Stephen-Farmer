@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:stephen_farmer/core/colors/app_color.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
@@ -65,7 +66,9 @@ class UpdateScreenView extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                CircleAvatar(child: Icon(Icons.photo_camera_rounded, size: 18, color: isInterior ? const Color(0xFF2E2E2E) : Colors.grey.shade300)),
+                CircleAvatar(
+                  child: Icon(Icons.photo_camera_rounded, size: 18, color: isInterior ? const Color(0xFF2E2E2E) : Colors.grey.shade300),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Row(
@@ -76,11 +79,19 @@ class UpdateScreenView extends StatelessWidget {
                         children: [
                           Text(
                             "Create Update ",
-                            style: TextStyle(color: isInterior ? const Color(0xFF2F2A24) : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           Text(
                             "Share progress from the site",
-                            style: TextStyle(color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70, fontSize: 12, fontWeight: FontWeight.w400),
+                            style: TextStyle(
+                              color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ],
                       ),
@@ -126,7 +137,9 @@ class UpdateScreenView extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        isInterior ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54) : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
+                        isInterior
+                            ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
+                            : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Obx(() {
@@ -157,7 +170,11 @@ class UpdateScreenView extends StatelessWidget {
                                 final dialogBorderColor = isInterior ? const Color(0xFFCFCFCF) : const Color(0xFF5D6570);
                                 final dialogBackground = isInterior
                                     ? null
-                                    : const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF0F1A20), Color(0xFF0A141A)]);
+                                    : const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
+                                      );
                                 final dialogSolidBackground = isInterior ? const Color(0xFFF2F0EC) : null;
                                 final promptColor = Colors.white;
                                 final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
@@ -180,7 +197,12 @@ class UpdateScreenView extends StatelessWidget {
                                         const SizedBox(height: 14),
                                         Text(
                                           "Are you sure ?",
-                                          style: GoogleFonts.manrope(color: promptColor, fontSize: 14, fontWeight: FontWeight.w600, height: 1.4),
+                                          style: GoogleFonts.manrope(
+                                            color: promptColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.4,
+                                          ),
                                         ),
                                         const SizedBox(height: 10),
                                         Row(
@@ -198,7 +220,12 @@ class UpdateScreenView extends StatelessWidget {
                                                 ),
                                                 child: Text(
                                                   "Cancel",
-                                                  style: GoogleFonts.manrope(color: accentColor, fontSize: 14, fontWeight: FontWeight.w600, height: 1.4),
+                                                  style: GoogleFonts.manrope(
+                                                    color: accentColor,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.4,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -217,7 +244,12 @@ class UpdateScreenView extends StatelessWidget {
                                                 ),
                                                 child: Text(
                                                   "Yes",
-                                                  style: GoogleFonts.manrope(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600, height: 1.4),
+                                                  style: GoogleFonts.manrope(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.4,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -247,7 +279,10 @@ class UpdateScreenView extends StatelessWidget {
                       const Expanded(child: Center(child: CircularProgressIndicator()))
                     else if (project == null)
                       Expanded(
-                        child: _emptyState(isInterior: isInterior, message: controller.errorMessage.value.isEmpty ? 'No update data available' : controller.errorMessage.value),
+                        child: _emptyState(
+                          isInterior: isInterior,
+                          message: controller.errorMessage.value.isEmpty ? 'No update data available' : controller.errorMessage.value,
+                        ),
                       )
                     else
                       Expanded(
@@ -302,14 +337,20 @@ class UpdateScreenView extends StatelessWidget {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24),
                                         child: Center(
-                                          child: Text(controller.errorMessage.value, style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                          child: Text(
+                                            controller.errorMessage.value,
+                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                          ),
                                         ),
                                       )
                                     else if (filteredList.isEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24),
                                         child: Center(
-                                          child: Text("No updates found", style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                          child: Text(
+                                            "No updates found",
+                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                          ),
                                         ),
                                       )
                                     else
@@ -319,7 +360,12 @@ class UpdateScreenView extends StatelessWidget {
                                           isInteriorTheme: isInterior,
                                           onLike: () => controller.toggleLike(item),
                                           onShare: () => controller.shareUpdate(item),
-                                          onComment: () => _showCommentsSheet(context: context, controller: controller, updateId: item.id, isInterior: isInterior),
+                                          onComment: () => _showCommentsSheet(
+                                            context: context,
+                                            controller: controller,
+                                            updateId: item.id,
+                                            isInterior: isInterior,
+                                          ),
                                         ),
                                       ),
                                   ],
@@ -339,7 +385,12 @@ class UpdateScreenView extends StatelessWidget {
     });
   }
 
-  Future<void> _showCommentsSheet({required BuildContext context, required UpdateController controller, required String updateId, required bool isInterior}) async {
+  Future<void> _showCommentsSheet({
+    required BuildContext context,
+    required UpdateController controller,
+    required String updateId,
+    required bool isInterior,
+  }) async {
     final textController = TextEditingController();
     final comments = await controller.fetchComments(updateId);
 
@@ -371,7 +422,10 @@ class UpdateScreenView extends StatelessWidget {
                       child: localComments.isEmpty
                           ? Padding(
                               padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Text('No comments yet', style: TextStyle(color: isInterior ? const Color(0xFF555555) : Colors.white70, fontSize: 13)),
+                              child: Text(
+                                'No comments yet',
+                                style: TextStyle(color: isInterior ? const Color(0xFF555555) : Colors.white70, fontSize: 13),
+                              ),
                             )
                           : ListView.builder(
                               shrinkWrap: true,
@@ -398,13 +452,23 @@ class UpdateScreenView extends StatelessWidget {
                                           children: [
                                             Text(
                                               comment.userName,
-                                              style: TextStyle(color: isInterior ? Colors.black : Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                                              style: TextStyle(
+                                                color: isInterior ? Colors.black : Colors.white,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                            Text(comment.text, style: TextStyle(color: isInterior ? const Color(0xFF333333) : Colors.white70, fontSize: 13)),
+                                            Text(
+                                              comment.text,
+                                              style: TextStyle(color: isInterior ? const Color(0xFF333333) : Colors.white70, fontSize: 13),
+                                            ),
                                           ],
                                         ),
                                       ),
-                                      Text(_timeLabel(comment.createdAt), style: TextStyle(color: isInterior ? const Color(0xFF7A7A7A) : Colors.white54, fontSize: 11)),
+                                      Text(
+                                        _timeLabel(comment.createdAt),
+                                        style: TextStyle(color: isInterior ? const Color(0xFF7A7A7A) : Colors.white54, fontSize: 11),
+                                      ),
                                     ],
                                   ),
                                 );
@@ -452,6 +516,25 @@ class UpdateScreenView extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _shareUpdate({required BuildContext context, required UpdateController controller, required UpdateModel item}) async {
+    await controller.shareUpdate(item);
+
+    final lines = <String>[
+      item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
+      if (item.description.trim().isNotEmpty) item.description.trim(),
+      if (item.thumbnailUrl?.trim().isNotEmpty ?? false) item.thumbnailUrl!.trim(),
+    ];
+
+    try {
+      await Share.share(lines.join('\n'));
+    } catch (_) {
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+      messenger.showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
+    }
   }
 
   String _timeLabel(DateTime dateTime) {
