@@ -15,6 +15,7 @@ class TaskController extends GetxController {
   final RxList<TaskProjectEntity> projects = <TaskProjectEntity>[].obs;
   final RxInt selectedProjectIndex = 0.obs;
   final RxBool isProjectMenuOpen = false.obs;
+  final RxInt managerPhaseTab = 0.obs;
 
   @override
   void onInit() {
@@ -60,6 +61,12 @@ class TaskController extends GetxController {
     if (index < 0 || index >= projects.length) return;
     selectedProjectIndex.value = index;
     isProjectMenuOpen.value = false;
+    managerPhaseTab.value = 0;
+  }
+
+  void setManagerPhaseTab(int index) {
+    if (index < 0 || index > 1) return;
+    managerPhaseTab.value = index;
   }
 
   void _normalizeState() {

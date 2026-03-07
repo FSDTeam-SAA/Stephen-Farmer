@@ -21,25 +21,31 @@ class _AppGroundViewState extends State<AppGroundView> {
   final LoginController _auth = Get.find<LoginController>();
   int _currentIndex = 0;
 
+  bool get _isManager => _auth.normalizedRoleKey == 'manager';
+
   List<Widget> get _tabs => [
-    UpdateScreenView(loginCategory: _auth.role.value),
-    const ProgressScreenView(),
-    const FinancialsScreenView(),
-    const TaskScreenView(),
-    const DocumentScreenView(),
-  ];
+        UpdateScreenView(loginCategory: _auth.role.value),
+        const ProgressScreenView(),
+        if (!_isManager) const FinancialsScreenView(),
+        const TaskScreenView(),
+        const DocumentScreenView(),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final tabs = _tabs;
+    final int safeIndex = _currentIndex < tabs.length ? _currentIndex : 0;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B1218),
       body: SafeArea(
-        child: IndexedStack(index: _currentIndex, children: _tabs),
+        child: IndexedStack(index: safeIndex, children: tabs),
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
+        currentIndex: safeIndex,
+        includeFinancials: !_isManager,
         onTap: (int index) {
-          if (_currentIndex == index) {
+          if (safeIndex == index) {
             return;
           }
           setState(() {

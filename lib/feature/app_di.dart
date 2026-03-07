@@ -16,6 +16,7 @@ import 'financials/presentation/controller/financials_controller.dart';
 import 'progress/data/repository/progress_repository_impl.dart';
 import 'progress/domain/repository/progress_repository.dart';
 import 'progress/domain/usecase/get_progress_projects_usecase.dart';
+import 'progress/domain/usecase/submit_progress_usecase.dart';
 import 'progress/presentation/controller/progress_controller.dart';
 import 'tasks/data/repository/task_repository_impl.dart';
 import 'tasks/domain/repository/task_repository.dart';
@@ -56,9 +57,17 @@ class AppDependencies {
       fenix: true,
     );
 
+    Get.lazyPut<SubmitProgressUseCase>(
+      () => SubmitProgressUseCase(
+        repository: Get.find<ProgressRepository>(),
+      ),
+      fenix: true,
+    );
+
     Get.lazyPut<ProgressController>(
       () => ProgressController(
         getProjectsUseCase: Get.find<GetProgressProjectsUseCase>(),
+        submitProgressUseCase: Get.find<SubmitProgressUseCase>(),
       ),
       fenix: true,
     );

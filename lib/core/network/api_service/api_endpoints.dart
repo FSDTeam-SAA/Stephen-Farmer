@@ -89,6 +89,7 @@ class UpdateEndpoints {
 // ================= PROGRESS =================
 class ProgressEndpoints {
   static const String getProjects = "/progress/projects";
+  static const String submitProgress = "/progress";
 }
 
 // ================= TASK =================

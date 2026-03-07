@@ -5,6 +5,7 @@ import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
+import '../../domain/entities/task_project_entity.dart';
 import '../controller/task_controller.dart';
 import '../widgets/task_action_attention_card.dart';
 import '../widgets/task_action_item_card.dart';
@@ -16,8 +17,10 @@ class TaskScreenView extends GetView<TaskController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final authController = Get.find<LoginController>();
       final project = controller.selectedProject;
-      final role = Get.find<LoginController>().role.value;
+      final role = authController.role.value;
+      final bool isManager = authController.normalizedRoleKey == 'manager';
       final isInterior = RoleBgColor.isInterior(role);
 
       return Scaffold(
@@ -33,50 +36,26 @@ class TaskScreenView extends GetView<TaskController> {
                 children: [
                   Text(
                     'Active Project',
-                    style: TextStyle(
-                      color: isInterior
-                          ? const Color(0xFF1D1D1D)
-                          : Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
                   if (controller.isLoading.value && project == null)
-                    const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
+                    const Expanded(child: Center(child: CircularProgressIndicator()))
                   else if (project == null)
                     Expanded(
                       child: Center(
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 24,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
                           decoration: BoxDecoration(
-                            color: isInterior
-                                ? const Color(0xFFD5D2CA)
-                                : const Color(0xFF111A1E),
+                            color: isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isInterior
-                                  ? const Color(0xFF77716A)
-                                  : const Color(0xFFB9A77D),
-                            ),
+                            border: Border.all(color: isInterior ? const Color(0xFF77716A) : const Color(0xFFB9A77D)),
                           ),
                           child: Text(
-                            controller.errorMessage.value.isEmpty
-                                ? 'No task data available'
-                                : controller.errorMessage.value,
+                            controller.errorMessage.value.isEmpty ? 'No task data available' : controller.errorMessage.value,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isInterior
-                                  ? const Color(0xFF2E2E2E)
-                                  : Colors.white70,
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70, fontSize: 14),
                           ),
                         ),
                       ),
@@ -94,46 +73,14 @@ class TaskScreenView extends GetView<TaskController> {
                       thumbnailBuilder: (item) => item.thumbnailUrl,
                       fallbackAsset: AssetsImages.constructionIgm,
                     ),
-
                     const SizedBox(height: 10),
-                    TaskActionAttentionCard(
-                      count: project.actionsNeededCount,
-                      message: project.actionsNeededMessage,
-                    ),
-                    const SizedBox(height: 12),
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: controller.refreshProjects,
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.zero,
-                          children: [
-                            for (final section in project.sections) ...[
-                              TaskSectionHeaderRow(
-                                title: section.title,
-                                pendingCount: section.pendingCount,
-                                showLeadingIcon:
-                                    section.title.trim().toLowerCase() ==
-                                    'your actions',
-                              ),
-                              const SizedBox(height: 8),
-                              ...section.items.map(
-                                (item) => TaskActionItemCard(item: item),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                            if (controller.errorMessage.value.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text(
-                                  controller.errorMessage.value,
-                                  style: const TextStyle(
-                                    color: Color(0xFF8C2323),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                          ],
+                          children: isManager ? _buildManagerContent(project, isInterior) : _buildUserContent(project),
                         ),
                       ),
                     ),
@@ -146,4 +93,292 @@ class TaskScreenView extends GetView<TaskController> {
       );
     });
   }
+
+  List<Widget> _buildUserContent(TaskProjectEntity project) {
+    return [
+      TaskActionAttentionCard(count: project.actionsNeededCount, message: project.actionsNeededMessage),
+      const SizedBox(height: 12),
+      for (final section in project.sections) ...[
+        TaskSectionHeaderRow(
+          title: section.title,
+          pendingCount: section.pendingCount,
+          showLeadingIcon: section.title.trim().toLowerCase() == 'your actions',
+        ),
+        const SizedBox(height: 8),
+        ...section.items.map((item) => TaskActionItemCard(item: item)),
+        const SizedBox(height: 12),
+      ],
+      if (controller.errorMessage.value.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12)),
+        ),
+    ];
+  }
+
+  List<Widget> _buildManagerContent(TaskProjectEntity project, bool isInterior) {
+    final phaseItems = _resolvePhaseItems(project);
+    final bool showFinished = controller.managerPhaseTab.value == 1;
+    final List<TaskItemEntity> visibleItems = showFinished ? phaseItems.finished : phaseItems.active;
+
+    final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+    final Color mutedTextColor = isInterior ? const Color(0xFF585858) : const Color(0xFF90A0A6);
+
+    return [
+      _TaskPhaseToggleRow(
+        activeCount: phaseItems.active.length,
+        finishedCount: phaseItems.finished.length,
+        selectedTab: controller.managerPhaseTab.value,
+        onTabChanged: controller.setManagerPhaseTab,
+        isInterior: isInterior,
+      ),
+      const SizedBox(height: 14),
+      Text(
+        showFinished ? 'Finished Phases' : 'Active Phases',
+        style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 10),
+      if (visibleItems.isEmpty)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            color: isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: isInterior ? const Color(0xFF77716A) : const Color(0xFF39474D)),
+          ),
+          child: Text(
+            showFinished ? 'No finished phases yet' : 'No active phases right now',
+            style: TextStyle(color: mutedTextColor, fontSize: 13),
+          ),
+        )
+      else
+        ...visibleItems.map((item) => _TaskPhaseItemCard(item: item, isInterior: isInterior, showFinishedBadge: showFinished)),
+      if (controller.errorMessage.value.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 8),
+          child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12)),
+        ),
+    ];
+  }
+
+  _PhaseItems _resolvePhaseItems(TaskProjectEntity project) {
+    final List<TaskItemEntity> active = <TaskItemEntity>[];
+    final List<TaskItemEntity> finished = <TaskItemEntity>[];
+
+    // Preferred API mapping:
+    // when backend returns phaseStatus/status on each item,
+    // use that directly for active/finished split.
+    bool usedStatusSplit = false;
+    for (final section in project.sections) {
+      for (final item in section.items) {
+        if (item.isFinished) {
+          finished.add(item);
+          usedStatusSplit = true;
+        } else if (item.isActive) {
+          active.add(item);
+          usedStatusSplit = true;
+        }
+      }
+    }
+    if (usedStatusSplit) {
+      return _PhaseItems(active: active, finished: finished);
+    }
+
+    bool usedExplicitSplit = false;
+
+    for (final section in project.sections) {
+      final normalized = section.title.trim().toLowerCase();
+      final isFinishedSection = _hasAnyKeyword(normalized, const ['finish', 'finished', 'complete', 'completed', 'done']);
+      final isActiveSection = _hasAnyKeyword(normalized, const ['active', 'pending', 'in progress', 'ongoing']);
+
+      if (isFinishedSection) {
+        finished.addAll(section.items);
+        usedExplicitSplit = true;
+      } else if (isActiveSection) {
+        active.addAll(section.items);
+        usedExplicitSplit = true;
+      }
+    }
+
+    if (!usedExplicitSplit) {
+      for (final section in project.sections) {
+        final int splitIndex = section.pendingCount.clamp(0, section.items.length).toInt();
+        active.addAll(section.items.take(splitIndex));
+        finished.addAll(section.items.skip(splitIndex));
+      }
+    }
+
+    if (active.isEmpty && finished.isEmpty) {
+      for (final section in project.sections) {
+        active.addAll(section.items);
+      }
+    }
+
+    return _PhaseItems(active: active, finished: finished);
+  }
+
+  bool _hasAnyKeyword(String source, List<String> keywords) {
+    for (final keyword in keywords) {
+      if (source.contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+class _TaskPhaseToggleRow extends StatelessWidget {
+  const _TaskPhaseToggleRow({
+    required this.activeCount,
+    required this.finishedCount,
+    required this.selectedTab,
+    required this.onTabChanged,
+    required this.isInterior,
+  });
+
+  final int activeCount;
+  final int finishedCount;
+  final int selectedTab;
+  final ValueChanged<int> onTabChanged;
+  final bool isInterior;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color selectedColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+    final Color unselectedColor = isInterior ? const Color(0xFF4B4B4B) : const Color(0xFF8B989E);
+    final Color underlineColor = isInterior ? const Color(0xFF6E6458) : const Color(0xFFD09A2F);
+
+    return Row(
+      children: [
+        _TaskPhaseToggleItem(
+          label: 'Active ($activeCount)',
+          isSelected: selectedTab == 0,
+          selectedColor: selectedColor,
+          unselectedColor: unselectedColor,
+          underlineColor: underlineColor,
+          onTap: () => onTabChanged(0),
+        ),
+        const SizedBox(width: 14),
+        _TaskPhaseToggleItem(
+          label: 'Finished ($finishedCount)',
+          isSelected: selectedTab == 1,
+          selectedColor: selectedColor,
+          unselectedColor: unselectedColor,
+          underlineColor: underlineColor,
+          onTap: () => onTabChanged(1),
+        ),
+      ],
+    );
+  }
+}
+
+class _TaskPhaseToggleItem extends StatelessWidget {
+  const _TaskPhaseToggleItem({
+    required this.label,
+    required this.isSelected,
+    required this.selectedColor,
+    required this.unselectedColor,
+    required this.underlineColor,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final Color selectedColor;
+  final Color unselectedColor;
+  final Color underlineColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: isSelected ? selectedColor : unselectedColor, fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 6),
+            Container(width: 70, height: 2, color: isSelected ? underlineColor : Colors.transparent),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskPhaseItemCard extends StatelessWidget {
+  const _TaskPhaseItemCard({required this.item, required this.isInterior, required this.showFinishedBadge});
+
+  final TaskItemEntity item;
+  final bool isInterior;
+  final bool showFinishedBadge;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color cardColor = isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E);
+    final Color borderColor = isInterior ? const Color(0xFF77716A) : const Color(0xFF3A474D);
+    final Color titleColor = isInterior ? const Color(0xFF1E1E1E) : Colors.white;
+    final Color subtitleColor = isInterior ? const Color(0xFF373737) : const Color(0xFF90A0A6);
+    final Color arrowColor = isInterior ? const Color(0xFF8A6B37) : const Color(0xFFD2A463);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: arrowColor, size: 24),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            item.subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: subtitleColor, fontSize: 12),
+          ),
+          if (showFinishedBadge) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(color: const Color(0xFF0C9B2F), borderRadius: BorderRadius.circular(999)),
+              child: const Text(
+                'Finished',
+                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PhaseItems {
+  const _PhaseItems({required this.active, required this.finished});
+
+  final List<TaskItemEntity> active;
+  final List<TaskItemEntity> finished;
 }

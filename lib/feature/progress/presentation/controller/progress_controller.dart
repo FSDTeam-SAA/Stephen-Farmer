@@ -1,16 +1,22 @@
 import 'package:get/get.dart';
 import '../../domain/entities/progress_entity.dart';
 import '../../domain/usecase/get_progress_projects_usecase.dart';
+import '../../domain/usecase/submit_progress_usecase.dart';
 
 class ProgressController extends GetxController {
   ProgressController({
     GetProgressProjectsUseCase? getProjectsUseCase,
-  }) : _getProjectsUseCase = getProjectsUseCase ?? Get.find<GetProgressProjectsUseCase>();
+    SubmitProgressUseCase? submitProgressUseCase,
+  }) : _getProjectsUseCase = getProjectsUseCase ?? Get.find<GetProgressProjectsUseCase>(),
+       _submitProgressUseCase = submitProgressUseCase ?? Get.find<SubmitProgressUseCase>();
 
   final GetProgressProjectsUseCase _getProjectsUseCase;
+  final SubmitProgressUseCase _submitProgressUseCase;
 
   final RxBool isLoading = false.obs;
+  final RxBool isSubmitting = false.obs;
   final RxString errorMessage = ''.obs;
+  final RxString submitErrorMessage = ''.obs;
   final RxList<ProjectProgressEntity> projects = <ProjectProgressEntity>[].obs;
   final RxInt selectedProjectIndex = 0.obs;
   final RxBool isProjectMenuOpen = false.obs;
@@ -44,6 +50,31 @@ class ProgressController extends GetxController {
       _normalizeSelectedProject();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<bool> submitProgress({
+    required String progressName,
+    required int percent,
+    required String note,
+  }) async {
+    try {
+      isSubmitting.value = true;
+      submitErrorMessage.value = '';
+
+      await _submitProgressUseCase.call(
+        progressName: progressName,
+        percent: percent,
+        note: note,
+      );
+
+      await refreshProjects();
+      return true;
+    } catch (_) {
+      submitErrorMessage.value = 'Failed to submit progress. Please try again.';
+      return false;
+    } finally {
+      isSubmitting.value = false;
     }
   }
 

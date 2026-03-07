@@ -5,13 +5,17 @@ class TaskItemModel extends TaskItemEntity {
     required super.title,
     required super.subtitle,
     required super.priority,
+    super.phaseStatus,
   });
 
   factory TaskItemModel.fromJson(Map<String, dynamic> json) {
+    // API compatibility:
+    // backend can send phase status as phaseStatus/status/taskStatus.
     return TaskItemModel(
       title: _readString(json, ["title", "name"], fallback: "Untitled task"),
       subtitle: _readString(json, ["subtitle", "description"], fallback: ""),
       priority: _readString(json, ["priority", "level"], fallback: "Medium"),
+      phaseStatus: _readString(json, ["phaseStatus", "status", "taskStatus"], fallback: ""),
     );
   }
 }
@@ -85,11 +89,13 @@ class TaskProjectModel extends TaskProjectEntity {
               title: "Approve bathroom tile layout",
               subtitle: "Review the update tile...",
               priority: "HIGH",
+              phaseStatus: "active",
             ),
             TaskItemModel(
               title: "Select Door handles",
               subtitle: "Review the update tile...",
               priority: "Medium",
+              phaseStatus: "finished",
             ),
           ],
         ),
@@ -101,11 +107,13 @@ class TaskProjectModel extends TaskProjectEntity {
               title: "Finalize furniture layout",
               subtitle: "Complete 3D renders for client...",
               priority: "HIGH",
+              phaseStatus: "active",
             ),
             TaskItemModel(
               title: "Order window treatments",
               subtitle: "Review the update tile...",
               priority: "Medium",
+              phaseStatus: "active",
             ),
           ],
         ),
@@ -126,6 +134,7 @@ class TaskProjectModel extends TaskProjectEntity {
               title: "Confirm kitchen island material",
               subtitle: "Approve the final finish option...",
               priority: "HIGH",
+              phaseStatus: "active",
             ),
           ],
         ),
@@ -137,6 +146,7 @@ class TaskProjectModel extends TaskProjectEntity {
               title: "Lighting mockup revisions",
               subtitle: "Update pendant placement render...",
               priority: "Medium",
+              phaseStatus: "finished",
             ),
           ],
         ),

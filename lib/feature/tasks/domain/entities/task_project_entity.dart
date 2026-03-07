@@ -2,12 +2,26 @@ class TaskItemEntity {
   final String title;
   final String subtitle;
   final String priority;
+  final String phaseStatus; // expected: active / finished
 
   const TaskItemEntity({
     required this.title,
     required this.subtitle,
     required this.priority,
+    this.phaseStatus = '',
   });
+
+  String get normalizedPhaseStatus => phaseStatus.trim().toLowerCase();
+
+  bool get isFinished {
+    final value = normalizedPhaseStatus;
+    return value == 'finished' || value == 'complete' || value == 'completed' || value == 'done';
+  }
+
+  bool get isActive {
+    final value = normalizedPhaseStatus;
+    return value == 'active' || value == 'pending' || value == 'in_progress' || value == 'in progress' || value == 'ongoing';
+  }
 }
 
 class TaskSectionEntity {

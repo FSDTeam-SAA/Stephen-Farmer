@@ -4,11 +4,13 @@ import 'package:stephen_farmer/core/utils/images.dart';
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final bool includeFinancials;
 
   const BottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.includeFinancials = true,
   });
 
   static const List<_NavItemData> _items = [
@@ -23,6 +25,14 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color selectedColor = Color(0xFFD09A2F);
     const Color unselectedColor = Colors.white;
+    final List<_NavItemData> visibleItems = includeFinancials
+        ? _items
+        : [
+            _items[0],
+            _items[1],
+            _items[3],
+            _items[4],
+          ];
 
     return SafeArea(
       top: false,
@@ -33,9 +43,9 @@ class BottomNavBar extends StatelessWidget {
           border: Border(top: BorderSide(color: Color(0xFF1E272E), width: 1)),
         ),
         child: Row(
-          children: List.generate(_items.length, (index) {
+          children: List.generate(visibleItems.length, (index) {
             final bool isSelected = index == currentIndex;
-            final _NavItemData item = _items[index];
+            final _NavItemData item = visibleItems[index];
 
             return Expanded(
               child: InkWell(

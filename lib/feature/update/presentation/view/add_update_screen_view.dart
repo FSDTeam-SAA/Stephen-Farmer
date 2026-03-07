@@ -22,7 +22,7 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
   void initState() {
     super.initState();
 
-    // ✅ Repo + RepoImpl + Controller wiring
+    // Repo + RepoImpl + Controller wiring
     final repo = PostRepositoryImpl(ImagePicker());
     _controller = AddUpdateController(repo: repo);
 
