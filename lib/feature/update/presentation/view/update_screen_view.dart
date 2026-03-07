@@ -8,8 +8,8 @@ import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
-import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
 import 'package:stephen_farmer/feature/notifications/presentation/view/notification_screen_view.dart';
+import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
 import 'package:stephen_farmer/feature/update/presentation/controller/update_controller.dart';
 import 'package:stephen_farmer/feature/update/presentation/view/add_update_screen_view.dart';
 import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.dart';
@@ -22,17 +22,8 @@ class UpdateScreenView extends StatelessWidget {
 
   Widget _emptyState({required bool isInterior, required String message}) {
     return Center(
-      child: Container(
-        width: double.infinity,
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-        decoration: BoxDecoration(
-          //color: isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E),
-          //: BorderRadius.circular(12),
-          /* border: Border.all(
-            color:
-                isInterior ? const Color(0xFF77716A) : const Color(0xFFB9A77D),
-          ), */
-        ),
         child: Text(
           message,
           textAlign: TextAlign.center,
@@ -52,7 +43,13 @@ class UpdateScreenView extends StatelessWidget {
             Get.snackbar('Error', 'Select a project first');
             return;
           }
-          Get.to(() => AddUpdateScreenView(projectId: controller.selectedProjectId, onPostSuccess: controller.refreshAll));
+          Get.to(
+            () => AddUpdateScreenView(
+              projectId: controller.selectedProjectId,
+              onPostSuccess: controller.refreshAll,
+              isInteriorTheme: isInterior,
+            ),
+          );
         },
         child: Container(
           height: 72,
@@ -65,28 +62,49 @@ class UpdateScreenView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                CircleAvatar(child: Icon(Icons.photo_camera_rounded, size: 18, color: isInterior ? const Color(0xFF2E2E2E) : Colors.grey.shade300)),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: isInterior ? const Color(0xFFD6CCB9) : const Color(0xFF2D3232), shape: BoxShape.circle),
+                  child: Center(
+                    child: Icon(
+                      Icons.photo_camera_rounded,
+                      size: 18,
+                      color: isInterior ? const Color(0xFF5A5246) : const Color(0xFFD7C5A4),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Create Update ",
-                            style: TextStyle(color: isInterior ? const Color(0xFF2F2A24) : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                            'Create Update',
+                            style: GoogleFonts.manrope(
+                              color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              height: 1,
+                            ),
                           ),
                           Text(
-                            "Share progress from the site",
-                            style: TextStyle(color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70, fontSize: 12, fontWeight: FontWeight.w400),
+                            'Share progress from the site',
+                            style: GoogleFonts.manrope(
+                              color: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              height: 1,
+                            ),
                           ),
                         ],
                       ),
-                      Icon(Icons.add_circle_outline, size: 30, color: AppColor.appColor),
+                      const SizedBox(width: 24, height: 24, child: Icon(Icons.add_circle_outline, size: 24, color: AppColor.appColor)),
                     ],
                   ),
                 ),
@@ -104,12 +122,19 @@ class UpdateScreenView extends StatelessWidget {
     final authController = Get.find<LoginController>();
 
     return Obx(() {
-      final isInterior = loginCategory.toLowerCase() == "interior";
+      final isInterior = loginCategory.toLowerCase() == 'interior';
       final isManager = authController.normalizedRoleKey == 'manager';
-      final project = controller.selectedProject;
+
+      final projectItems = controller.projects.toList();
+      final selectedProjectIndex = controller.selectedProjectIndex.value;
+      final safeProjectSelectedIndex = projectItems.isEmpty ? 0 : selectedProjectIndex.clamp(0, projectItems.length - 1);
+      final isProjectMenuOpen = controller.isProjectMenuOpen.value;
+
       final categoryItems = controller.categoryFilters.toList();
       final selectedCategoryIndex = categoryItems.indexOf(controller.selectedCategory.value);
       final safeCategorySelectedIndex = selectedCategoryIndex < 0 ? 0 : selectedCategoryIndex;
+      final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
+
       final filteredList = controller.filteredUpdates;
       final notificationIconColor = isInterior ? const Color(0xFF1D1D1D) : const Color(0xFFC9B089);
       final logoutIconColor = const Color(0xFFF24E4E);
@@ -120,305 +145,113 @@ class UpdateScreenView extends StatelessWidget {
           backgroundColor: RoleBgColor.scaffoldColor(loginCategory),
           body: Container(
             decoration: RoleBgColor.decoration(loginCategory),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      isInterior
-                          ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
-                          : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
-                      const SizedBox(width: 10),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          Get.to(() => const NotificationScreenView());
-                        },
-                        child: Icon(Icons.notifications_rounded, color: notificationIconColor, size: 24),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: "Logout",
-                        icon: Icon(Icons.logout_rounded, color: logoutIconColor),
-                        onPressed: () async {
-                          final shouldLogout = await showDialog<bool>(
-                            context: context,
-                            builder: (dialogContext) {
-                              final dialogBorderColor = isInterior ? const Color.fromRGBO(109, 111, 115, 1) : const Color(0xFF5D6570);
-                              final dialogBackground = isInterior
-                                  ? const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Color.fromRGBO(226, 221, 215, 1), Color.fromRGBO(144, 137, 120, 1)],
-                                    )
-                                  : const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
-                                    );
-                              final dialogSolidBackground = null;
-                              final promptColor = isInterior ? const Color(0xFF040404) : Colors.white;
-                              final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
-
-                              return Dialog(
-                                backgroundColor: Colors.transparent,
-                                insetPadding: const EdgeInsets.symmetric(horizontal: 18),
-                                child: Container(
-                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: dialogBorderColor, width: 2),
-                                    color: dialogSolidBackground,
-                                    gradient: dialogBackground,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(AssetsImages.logout, height: 48, width: 48),
-                                      const SizedBox(height: 14),
-                                      Text(
-                                        "Are you sure ?",
-                                        style: GoogleFonts.manrope(
-                                          color: promptColor,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 159.5,
-                                            height: 44,
-                                            child: OutlinedButton(
-                                              onPressed: () => Navigator.of(dialogContext).pop(false),
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor: accentColor,
-                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-                                                side: BorderSide(color: accentColor, width: 1),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              ),
-                                              child: Text(
-                                                "Cancel",
-                                                style: GoogleFonts.manrope(
-                                                  color: accentColor,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          SizedBox(
-                                            width: 159.5,
-                                            height: 44,
-                                            child: ElevatedButton(
-                                              onPressed: () => Navigator.of(dialogContext).pop(true),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: accentColor,
-                                                foregroundColor: Colors.white,
-                                                elevation: 0,
-                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              ),
-                                              child: Text(
-                                                "Yes",
-                                                style: GoogleFonts.manrope(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-
-                          if (shouldLogout == true) {
-                            await authController.logoutUser();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: 343,
-                    height: 22,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Active Project",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.left,
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          height: 22 / 16,
-                          letterSpacing: 0,
-                          color: isInterior ? Colors.black : Colors.white,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        isInterior
+                            ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
+                            : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
+                        const SizedBox(width: 10),
+                        const Spacer(),
+                        IconButton(
+                          tooltip: 'Notifications',
+                          onPressed: () => Get.to(() => const NotificationScreenView()),
+                          icon: Icon(Icons.notifications_rounded, color: notificationIconColor, size: 24),
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: controller.isLoading.value
-                        ? const Center(child: CircularProgressIndicator())
-                        : projectItems.isEmpty
-                        ? Center(
-                            child: Text(
-                              "No Project",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: isInterior ? Colors.black : Colors.white),
-                            ),
-                          )
-                        : Column(
-                            children: [
-                              CategoryDropdownWidget<UpdateProjectModel>(
-                                items: projectItems,
-                                selectedIndex: safeProjectSelectedIndex,
-                                isMenuOpen: isProjectMenuOpen,
-                                isInteriorTheme: isInterior,
-                                onToggle: controller.toggleProjectMenu,
-                                onSelect: (index) {
-                                  controller.selectProject(index);
-                                },
-                                titleBuilder: (item) => item.name,
-                                subtitleBuilder: (item) => item.address,
-                                thumbnailBuilder: (item) => item.thumbnailUrl,
-                                fallbackAsset: AssetsImages.constructionIgm,
-                                thumbnailWidth: 70,
-                                thumbnailHeight: 39,
-                                thumbnailBorderRadius: 4,
-                                subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
-                                titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1, letterSpacing: 0),
-                                subtitleTextStyle: GoogleFonts.manrope(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1,
-                                  letterSpacing: 0,
-                                ),
-                                subtitleWidth: 248,
-                                subtitleHeight: 16,
-                              ),
-                              if (controller.shouldShowCategoryDropdown) ...[
-                                const SizedBox(height: 10),
-                                CategoryDropdownWidget<String>(
-                                  items: categoryItems,
-                                  selectedIndex: safeCategorySelectedIndex,
-                                  isMenuOpen: isCategoryMenuOpen,
-                                  isInteriorTheme: isInterior,
-                                  onToggle: controller.toggleCategoryMenu,
-                                  onSelect: (index) => controller.selectCategory(categoryItems[index]),
-                                  titleBuilder: (item) => item,
-                                  subtitleBuilder: (item) => 'Filter updates by $item',
-                                  thumbnailBuilder: (_) => null,
-                                  fallbackAsset: AssetsImages.constructionIgm,
-                                  thumbnailWidth: 0,
-                                  thumbnailHeight: 0,
-                                  rowPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  minHeight: 46,
-                                ),
-                              ],
-                              const SizedBox(height: 10),
-                              if (isManager)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(10),
-                                    onTap: () {
-                                      if (controller.selectedProjectId.isEmpty) {
-                                        Get.snackbar('Error', 'Select a project first');
-                                        return;
-                                      }
-                                      Get.to(
-                                        () => AddUpdateScreenView(
-                                          projectId: controller.selectedProjectId,
-                                          onPostSuccess: () {
-                                            controller.refreshAll();
-                                          },
-                                          isInteriorTheme: isInterior,
-                                        ),
+                        IconButton(
+                          tooltip: 'Logout',
+                          icon: Icon(Icons.logout_rounded, color: logoutIconColor),
+                          onPressed: () async {
+                            final shouldLogout = await showDialog<bool>(
+                              context: context,
+                              builder: (dialogContext) {
+                                final dialogBorderColor = isInterior ? const Color.fromRGBO(109, 111, 115, 1) : const Color(0xFF5D6570);
+                                final dialogBackground = isInterior
+                                    ? const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [Color.fromRGBO(226, 221, 215, 1), Color.fromRGBO(144, 137, 120, 1)],
+                                      )
+                                    : const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
                                       );
-                                    },
-                                    child: Container(
-                                      height: 72,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: isInterior ? const Color(0xFF8A7F6C) : const Color(0xFF2B4756)),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.start,
+                                final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
+                                final promptColor = isInterior ? const Color(0xFF040404) : Colors.white;
+
+                                return Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  insetPadding: const EdgeInsets.symmetric(horizontal: 18),
+                                  child: Container(
+                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(color: dialogBorderColor, width: 2),
+                                      gradient: dialogBackground,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(AssetsImages.logout, height: 48, width: 48),
+                                        const SizedBox(height: 14),
+                                        Text(
+                                          'Are you sure ?',
+                                          style: GoogleFonts.manrope(
+                                            color: promptColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
                                           children: [
-                                            Container(
-                                              width: 40,
-                                              height: 40,
-                                              decoration: BoxDecoration(
-                                                color: isInterior ? const Color(0xFFD6CCB9) : const Color(0xFF2D3232),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Icon(
-                                                  Icons.photo_camera_rounded,
-                                                  size: 18,
-                                                  color: isInterior ? const Color(0xFF5A5246) : const Color(0xFFD7C5A4),
+                                            Expanded(
+                                              child: SizedBox(
+                                                height: 44,
+                                                child: OutlinedButton(
+                                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                  style: OutlinedButton.styleFrom(
+                                                    foregroundColor: accentColor,
+                                                    side: BorderSide(color: accentColor, width: 1),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  ),
+                                                  child: Text(
+                                                    'Cancel',
+                                                    style: GoogleFonts.manrope(
+                                                      color: accentColor,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
+                                            const SizedBox(width: 10),
                                             Expanded(
-                                              child: Row(
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        "Create Update",
-                                                        style: GoogleFonts.manrope(
-                                                          color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
-                                                          fontSize: 14,
-                                                          fontWeight: FontWeight.w600,
-                                                          height: 1,
-                                                          letterSpacing: 0,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "Share progress from the site",
-                                                        style: GoogleFonts.manrope(
-                                                          color: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w400,
-                                                          height: 1,
-                                                          letterSpacing: 0,
-                                                        ),
-                                                      ),
-                                                    ],
+                                              child: SizedBox(
+                                                height: 44,
+                                                child: ElevatedButton(
+                                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: accentColor,
+                                                    foregroundColor: Colors.white,
+                                                    elevation: 0,
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                                   ),
-                                                  SizedBox(
-                                                    width: 24,
-                                                    height: 24,
-                                                    child: Icon(Icons.add_circle_outline, size: 24, color: AppColor.appColor),
+                                                  child: Text(
+                                                    'Yes',
+                                                    style: GoogleFonts.manrope(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -441,25 +274,22 @@ class UpdateScreenView extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "Active Project",
-                      style: TextStyle(
+                      'Active Project',
+                      style: GoogleFonts.outfit(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
+                        height: 22 / 16,
                         color: isInterior ? Colors.black : Colors.white,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (controller.isLoading.value && !controller.hasProjects)
-                      const Expanded(
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    else if (project == null)
+                    if (controller.isLoading.value && projectItems.isEmpty)
+                      const Expanded(child: Center(child: CircularProgressIndicator()))
+                    else if (projectItems.isEmpty)
                       Expanded(
                         child: _emptyState(
                           isInterior: isInterior,
-                          message: controller.errorMessage.value.isEmpty
-                              ? 'No update data available'
-                              : controller.errorMessage.value,
+                          message: controller.errorMessage.value.isEmpty ? 'No project available' : controller.errorMessage.value,
                         ),
                       )
                     else
@@ -467,10 +297,9 @@ class UpdateScreenView extends StatelessWidget {
                         child: Column(
                           children: [
                             CategoryDropdownWidget<UpdateProjectModel>(
-                              items: controller.projects,
-                              selectedIndex:
-                                  controller.selectedProjectIndex.value,
-                              isMenuOpen: controller.isProjectMenuOpen.value,
+                              items: projectItems,
+                              selectedIndex: safeProjectSelectedIndex,
+                              isMenuOpen: isProjectMenuOpen,
                               isInteriorTheme: isInterior,
                               onToggle: controller.toggleProjectMenu,
                               onSelect: controller.selectProject,
@@ -478,48 +307,37 @@ class UpdateScreenView extends StatelessWidget {
                               subtitleBuilder: (item) => item.address,
                               thumbnailBuilder: (item) => item.thumbnailUrl,
                               fallbackAsset: AssetsImages.constructionIgm,
+                              thumbnailWidth: 70,
+                              thumbnailHeight: 39,
+                              thumbnailBorderRadius: 4,
+                              subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                              titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1),
+                              subtitleTextStyle: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w400, height: 1),
+                              subtitleWidth: 248,
+                              //subtitleHeight: 16
                             ),
                             if (controller.shouldShowCategoryDropdown) ...[
                               const SizedBox(height: 10),
                               CategoryDropdownWidget<String>(
                                 items: categoryItems,
                                 selectedIndex: safeCategorySelectedIndex,
-                                isMenuOpen: controller.isCategoryMenuOpen.value,
+                                isMenuOpen: isCategoryMenuOpen,
                                 isInteriorTheme: isInterior,
                                 onToggle: controller.toggleCategoryMenu,
-                                onSelect: (index) => controller.selectCategory(
-                                  categoryItems[index],
-                                ),
-                              if (isManager) const SizedBox(height: 10),
-                              Expanded(
-                                child: filteredList.isEmpty
-                                    ? Center(
-                                        child: Text(
-                                          "No updates found",
-                                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
-                                        ),
-                                      )
-                                    : ListView.builder(
-                                        itemCount: filteredList.length,
-                                        itemBuilder: (_, index) {
-                                          final item = filteredList[index];
-                                          return UpdatePostCard(
-                                            item: item,
-                                            isInteriorTheme: isInterior,
-                                            onLike: () => controller.toggleLike(item),
-                                            onShare: () => _shareUpdate(context: context, controller: controller, item: item),
-                                            onComment: () => _showCommentsSheet(
-                                              context: context,
-                                              controller: controller,
-                                              updateId: item.id,
-                                              isInterior: isInterior,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                  ],
-                                ),
+                                onSelect: (index) => controller.selectCategory(categoryItems[index]),
+                                titleBuilder: (item) => item,
+                                subtitleBuilder: (item) => 'Filter updates by $item',
+                                thumbnailBuilder: (_) => null,
+                                fallbackAsset: AssetsImages.constructionIgm,
+                                thumbnailWidth: 0,
+                                thumbnailHeight: 0,
+                                rowPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                minHeight: 46,
                               ),
+                            ],
+                            if (isManager) ...[
+                              const SizedBox(height: 10),
+                              _createUpdateCard(isInterior: isInterior, controller: controller),
                             ],
                             const SizedBox(height: 10),
                             Expanded(
@@ -529,7 +347,6 @@ class UpdateScreenView extends StatelessWidget {
                                   physics: const AlwaysScrollableScrollPhysics(),
                                   padding: EdgeInsets.zero,
                                   children: [
-                                    if (isManager) _createUpdateCard(isInterior: isInterior, controller: controller),
                                     if (controller.isLoading.value && controller.updateList.isEmpty)
                                       const Padding(
                                         padding: EdgeInsets.only(top: 24),
@@ -539,14 +356,20 @@ class UpdateScreenView extends StatelessWidget {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24),
                                         child: Center(
-                                          child: Text(controller.errorMessage.value, style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                          child: Text(
+                                            controller.errorMessage.value,
+                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                          ),
                                         ),
                                       )
                                     else if (filteredList.isEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24),
                                         child: Center(
-                                          child: Text("No updates found", style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                          child: Text(
+                                            'No updates found',
+                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                          ),
                                         ),
                                       )
                                     else
@@ -555,8 +378,13 @@ class UpdateScreenView extends StatelessWidget {
                                           item: item,
                                           isInteriorTheme: isInterior,
                                           onLike: () => controller.toggleLike(item),
-                                          onShare: () => controller.shareUpdate(item),
-                                          onComment: () => _showCommentsSheet(context: context, controller: controller, updateId: item.id, isInterior: isInterior),
+                                          onShare: () => _shareUpdate(context: context, controller: controller, item: item),
+                                          onComment: () => _showCommentsSheet(
+                                            context: context,
+                                            controller: controller,
+                                            updateId: item.id,
+                                            isInterior: isInterior,
+                                          ),
                                         ),
                                       ),
                                   ],
@@ -691,7 +519,9 @@ class UpdateScreenView extends StatelessWidget {
                                   final added = await controller.addComment(updateId: updateId, comment: text);
                                   if (added != null) {
                                     textController.clear();
-                                    localComments.add(added);
+                                    setState(() {
+                                      localComments.add(added);
+                                    });
                                   }
                                   setState(() => isSending = false);
                                 },
