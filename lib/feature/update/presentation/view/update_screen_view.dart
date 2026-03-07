@@ -34,18 +34,12 @@ class UpdateScreenView extends StatelessWidget {
                 ? (projectItems.isEmpty ? 0 : projectItems.length - 1)
                 : controller.selectedProjectIndex.value);
       final categoryItems = controller.categoryFilters.toList();
-      final selectedCategoryIndex = categoryItems.indexOf(
-        controller.selectedCategory.value,
-      );
-      final safeCategorySelectedIndex = selectedCategoryIndex < 0
-          ? 0
-          : selectedCategoryIndex;
+      final selectedCategoryIndex = categoryItems.indexOf(controller.selectedCategory.value);
+      final safeCategorySelectedIndex = selectedCategoryIndex < 0 ? 0 : selectedCategoryIndex;
       final filteredList = controller.filteredUpdates;
       final isProjectMenuOpen = controller.isProjectMenuOpen.value;
       final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
-      final notificationIconColor = isInterior
-          ? const Color(0xFF1D1D1D)
-          : const Color(0xFFC9B089);
+      final notificationIconColor = isInterior ? const Color(0xFF1D1D1D) : const Color(0xFFC9B089);
       final logoutIconColor = const Color(0xFFF24E4E);
 
       return Scaffold(
@@ -61,94 +55,60 @@ class UpdateScreenView extends StatelessWidget {
                   Row(
                     children: [
                       isInterior
-                          ? Image.asset(
-                              AssetsImages.interiorImg,
-                              height: 50,
-                              width: 54,
-                            )
-                          : Image.asset(
-                              AssetsImages.constructionIgm,
-                              height: 32,
-                              width: 87,
-                            ),
+                          ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
+                          : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
                       const SizedBox(width: 10),
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
                           Get.to(() => const NotificationScreenView());
                         },
-                        child: Icon(
-                          Icons.notifications_rounded,
-                          color: notificationIconColor,
-                          size: 24,
-                        ),
+                        child: Icon(Icons.notifications_rounded, color: notificationIconColor, size: 24),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
                         tooltip: "Logout",
-                        icon: Icon(
-                          Icons.logout_rounded,
-                          color: logoutIconColor,
-                        ),
+                        icon: Icon(Icons.logout_rounded, color: logoutIconColor),
                         onPressed: () async {
                           final shouldLogout = await showDialog<bool>(
                             context: context,
                             builder: (dialogContext) {
-                              final dialogBorderColor = isInterior
-                                  ? const Color(0xFFCFCFCF)
-                                  : const Color(0xFF5D6570);
+                              final dialogBorderColor = isInterior ? const Color.fromRGBO(109, 111, 115, 1) : const Color(0xFF5D6570);
                               final dialogBackground = isInterior
-                                  ? null
+                                  ? const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [Color.fromRGBO(226, 221, 215, 1), Color.fromRGBO(144, 137, 120, 1)],
+                                    )
                                   : const LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      colors: [
-                                        Color(0xFF0F1A20),
-                                        Color(0xFF0A141A),
-                                      ],
+                                      colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
                                     );
-                              final dialogSolidBackground = isInterior
-                                  ? const Color(0xFFF2F0EC)
-                                  : null;
-                              final promptColor = Colors.white;
-                              final accentColor = isInterior
-                                  ? const Color(0xFF8E6500)
-                                  : const Color(0xFFAF8C6A);
+                              final dialogSolidBackground = null;
+                              final promptColor = isInterior ? const Color(0xFF040404) : Colors.white;
+                              final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
 
                               return Dialog(
                                 backgroundColor: Colors.transparent,
-                                insetPadding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                ),
+                                insetPadding: const EdgeInsets.symmetric(horizontal: 18),
                                 child: Container(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    16,
-                                    16,
-                                    18,
-                                  ),
+                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(
-                                      color: dialogBorderColor,
-                                      width: 2,
-                                    ),
+                                    border: Border.all(color: dialogBorderColor, width: 2),
                                     color: dialogSolidBackground,
                                     gradient: dialogBackground,
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Image.asset(
-                                        AssetsImages.logout,
-                                        height: 48,
-                                        width: 48,
-                                      ),
+                                      Image.asset(AssetsImages.logout, height: 48, width: 48),
                                       const SizedBox(height: 14),
                                       Text(
                                         "Are you sure ?",
                                         style: GoogleFonts.manrope(
-                                          color: promptColor,
+                                          color: Colors.white,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           height: 1.4,
@@ -161,26 +121,12 @@ class UpdateScreenView extends StatelessWidget {
                                             width: 159.5,
                                             height: 44,
                                             child: OutlinedButton(
-                                              onPressed: () => Navigator.of(
-                                                dialogContext,
-                                              ).pop(false),
+                                              onPressed: () => Navigator.of(dialogContext).pop(false),
                                               style: OutlinedButton.styleFrom(
                                                 foregroundColor: accentColor,
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                      10,
-                                                      12,
-                                                      10,
-                                                      12,
-                                                    ),
-                                                side: BorderSide(
-                                                  color: accentColor,
-                                                  width: 1,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
+                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                                                side: BorderSide(color: accentColor, width: 1),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                               ),
                                               child: Text(
                                                 "Cancel",
@@ -198,24 +144,13 @@ class UpdateScreenView extends StatelessWidget {
                                             width: 159.5,
                                             height: 44,
                                             child: ElevatedButton(
-                                              onPressed: () => Navigator.of(
-                                                dialogContext,
-                                              ).pop(true),
+                                              onPressed: () => Navigator.of(dialogContext).pop(true),
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: accentColor,
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                      10,
-                                                      12,
-                                                      10,
-                                                      12,
-                                                    ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
+                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                               ),
                                               child: Text(
                                                 "Yes",
@@ -264,11 +199,7 @@ class UpdateScreenView extends StatelessWidget {
                         ? Center(
                             child: Text(
                               "No Project",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: isInterior ? Colors.black : Colors.white,
-                              ),
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: isInterior ? Colors.black : Colors.white),
                             ),
                           )
                         : Column(
@@ -289,15 +220,8 @@ class UpdateScreenView extends StatelessWidget {
                                 thumbnailWidth: 70,
                                 thumbnailHeight: 39,
                                 thumbnailBorderRadius: 4,
-                                subtitleColor: isInterior
-                                    ? const Color(0xFF6E6860)
-                                    : const Color(0xFF8E8E93),
-                                titleTextStyle: GoogleFonts.manrope(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  height: 1,
-                                  letterSpacing: 0,
-                                ),
+                                subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                                titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1, letterSpacing: 0),
                                 subtitleTextStyle: GoogleFonts.manrope(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
@@ -313,44 +237,31 @@ class UpdateScreenView extends StatelessWidget {
                                   isMenuOpen: isCategoryMenuOpen,
                                   isInteriorTheme: isInterior,
                                   onToggle: controller.toggleCategoryMenu,
-                                  onSelect: (index) => controller
-                                      .selectCategory(categoryItems[index]),
+                                  onSelect: (index) => controller.selectCategory(categoryItems[index]),
                                   titleBuilder: (item) => item,
-                                  subtitleBuilder: (item) =>
-                                      'Filter updates by $item',
+                                  subtitleBuilder: (item) => 'Filter updates by $item',
                                   thumbnailBuilder: (_) => null,
                                   fallbackAsset: AssetsImages.constructionIgm,
                                   thumbnailWidth: 0,
                                   thumbnailHeight: 0,
-                                  rowPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
+                                  rowPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                   minHeight: 46,
                                 ),
                               ],
                               const SizedBox(height: 10),
                               if (isManager)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 6,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(10),
                                     onTap: () {
-                                      if (controller
-                                          .selectedProjectId
-                                          .isEmpty) {
-                                        Get.snackbar(
-                                          'Error',
-                                          'Select a project first',
-                                        );
+                                      if (controller.selectedProjectId.isEmpty) {
+                                        Get.snackbar('Error', 'Select a project first');
                                         return;
                                       }
                                       Get.to(
                                         () => AddUpdateScreenView(
-                                          projectId:
-                                              controller.selectedProjectId,
+                                          projectId: controller.selectedProjectId,
                                           onPostSuccess: () {
                                             controller.refreshAll();
                                           },
@@ -362,109 +273,68 @@ class UpdateScreenView extends StatelessWidget {
                                       height: 72,
                                       width: double.infinity,
                                       decoration: BoxDecoration(
-                                        color: isInterior
-                                            ? const Color(0xFFE7DED0)
-                                            : Colors.transparent,
+                                        color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: isInterior
-                                              ? const Color(0xFF8A7F6C)
-                                              : const Color(0xFF2B4756),
-                                        ),
+                                        border: Border.all(color: isInterior ? const Color(0xFF8A7F6C) : const Color(0xFF2B4756)),
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.start,
                                           children: [
                                             Container(
                                               width: 40,
                                               height: 40,
                                               decoration: BoxDecoration(
-                                                color: isInterior
-                                                    ? const Color(0xFFD6CCB9)
-                                                    : const Color(0xFF2D3232),
+                                                color: isInterior ? const Color(0xFFD6CCB9) : const Color(0xFF2D3232),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Center(
                                                 child: Icon(
                                                   Icons.photo_camera_rounded,
                                                   size: 18,
-                                                  color: isInterior
-                                                      ? const Color(0xFF5A5246)
-                                                      : const Color(0xFFD7C5A4),
+                                                  color: isInterior ? const Color(0xFF5A5246) : const Color(0xFFD7C5A4),
                                                 ),
                                               ),
                                             ),
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: [
                                                   Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
                                                         "Create Update",
-                                                        style:
-                                                            GoogleFonts.manrope(
-                                                              color: isInterior
-                                                                  ? const Color(
-                                                                      0xFF2F2A24,
-                                                                    )
-                                                                  : Colors
-                                                                        .white,
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              height: 1,
-                                                              letterSpacing: 0,
-                                                            ),
+                                                        style: GoogleFonts.manrope(
+                                                          color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.w600,
+                                                          height: 1,
+                                                          letterSpacing: 0,
+                                                        ),
                                                       ),
                                                       Text(
                                                         "Share progress from the site",
-                                                        style:
-                                                            GoogleFonts.manrope(
-                                                              color: isInterior
-                                                                  ? const Color(
-                                                                      0xFF6E6860,
-                                                                    )
-                                                                  : const Color(
-                                                                      0xFF8E8E93,
-                                                                    ),
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              height: 1,
-                                                              letterSpacing: 0,
-                                                            ),
+                                                        style: GoogleFonts.manrope(
+                                                          color: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w400,
+                                                          height: 1,
+                                                          letterSpacing: 0,
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
                                                   SizedBox(
                                                     width: 24,
                                                     height: 24,
-                                                    child: Icon(
-                                                      Icons.add_circle_outline,
-                                                      size: 24,
-                                                      color: AppColor.appColor,
-                                                    ),
+                                                    child: Icon(Icons.add_circle_outline, size: 24, color: AppColor.appColor),
                                                   ),
                                                 ],
                                               ),
@@ -481,12 +351,7 @@ class UpdateScreenView extends StatelessWidget {
                                     ? Center(
                                         child: Text(
                                           "No updates found",
-                                          style: TextStyle(
-                                            color: isInterior
-                                                ? const Color(0xFF464646)
-                                                : Colors.white70,
-                                            fontSize: 14,
-                                          ),
+                                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
                                         ),
                                       )
                                     : ListView.builder(
@@ -496,13 +361,8 @@ class UpdateScreenView extends StatelessWidget {
                                           return UpdatePostCard(
                                             item: item,
                                             isInteriorTheme: isInterior,
-                                            onLike: () =>
-                                                controller.toggleLike(item),
-                                            onShare: () => _shareUpdate(
-                                              context: context,
-                                              controller: controller,
-                                              item: item,
-                                            ),
+                                            onLike: () => controller.toggleLike(item),
+                                            onShare: () => _shareUpdate(context: context, controller: controller, item: item),
                                             onComment: () => _showCommentsSheet(
                                               context: context,
                                               controller: controller,
@@ -539,9 +399,7 @@ class UpdateScreenView extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isInterior
-          ? const Color(0xFFF2EFE8)
-          : const Color(0xFF111B21),
+      backgroundColor: isInterior ? const Color(0xFFF2EFE8) : const Color(0xFF111B21),
       builder: (sheetContext) {
         final localComments = List<UpdateCommentModel>.from(comments);
         bool isSending = false;
@@ -550,22 +408,13 @@ class UpdateScreenView extends StatelessWidget {
           builder: (context, setState) {
             return SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 14,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 14,
-                ),
+                padding: EdgeInsets.only(left: 16, right: 16, top: 14, bottom: MediaQuery.of(context).viewInsets.bottom + 14),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Comments',
-                      style: TextStyle(
-                        color: isInterior ? Colors.black : Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: isInterior ? Colors.black : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
                     ConstrainedBox(
@@ -575,12 +424,7 @@ class UpdateScreenView extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               child: Text(
                                 'No comments yet',
-                                style: TextStyle(
-                                  color: isInterior
-                                      ? const Color(0xFF555555)
-                                      : Colors.white70,
-                                  fontSize: 13,
-                                ),
+                                style: TextStyle(color: isInterior ? const Color(0xFF555555) : Colors.white70, fontSize: 13),
                               ),
                             )
                           : ListView.builder(
@@ -591,16 +435,12 @@ class UpdateScreenView extends StatelessWidget {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
                                   child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       CircleAvatar(
                                         radius: 14,
                                         backgroundImage: NetworkImage(
-                                          comment.userAvatar
-                                                      ?.trim()
-                                                      .isNotEmpty ==
-                                                  true
+                                          comment.userAvatar?.trim().isNotEmpty == true
                                               ? comment.userAvatar!.trim()
                                               : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
                                         ),
@@ -608,39 +448,26 @@ class UpdateScreenView extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               comment.userName,
                                               style: TextStyle(
-                                                color: isInterior
-                                                    ? Colors.black
-                                                    : Colors.white,
+                                                color: isInterior ? Colors.black : Colors.white,
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                             Text(
                                               comment.text,
-                                              style: TextStyle(
-                                                color: isInterior
-                                                    ? const Color(0xFF333333)
-                                                    : Colors.white70,
-                                                fontSize: 13,
-                                              ),
+                                              style: TextStyle(color: isInterior ? const Color(0xFF333333) : Colors.white70, fontSize: 13),
                                             ),
                                           ],
                                         ),
                                       ),
                                       Text(
                                         _timeLabel(comment.createdAt),
-                                        style: TextStyle(
-                                          color: isInterior
-                                              ? const Color(0xFF7A7A7A)
-                                              : Colors.white54,
-                                          fontSize: 11,
-                                        ),
+                                        style: TextStyle(color: isInterior ? const Color(0xFF7A7A7A) : Colors.white54, fontSize: 11),
                                       ),
                                     ],
                                   ),
@@ -654,19 +481,11 @@ class UpdateScreenView extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             controller: textController,
-                            style: TextStyle(
-                              color: isInterior ? Colors.black : Colors.white,
-                            ),
+                            style: TextStyle(color: isInterior ? Colors.black : Colors.white),
                             decoration: InputDecoration(
                               hintText: 'Write a comment...',
-                              hintStyle: TextStyle(
-                                color: isInterior
-                                    ? const Color(0xFF777777)
-                                    : Colors.white54,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                              hintStyle: TextStyle(color: isInterior ? const Color(0xFF777777) : Colors.white54),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                         ),
@@ -678,22 +497,14 @@ class UpdateScreenView extends StatelessWidget {
                                   final text = textController.text.trim();
                                   if (text.isEmpty) return;
                                   setState(() => isSending = true);
-                                  final added = await controller.addComment(
-                                    updateId: updateId,
-                                    comment: text,
-                                  );
+                                  final added = await controller.addComment(updateId: updateId, comment: text);
                                   if (added != null) {
                                     textController.clear();
                                     localComments.add(added);
                                   }
                                   setState(() => isSending = false);
                                 },
-                          icon: Icon(
-                            Icons.send_rounded,
-                            color: isInterior
-                                ? const Color(0xFF8E6500)
-                                : const Color(0xFFD09A2F),
-                          ),
+                          icon: Icon(Icons.send_rounded, color: isInterior ? const Color(0xFF8E6500) : const Color(0xFFD09A2F)),
                         ),
                       ],
                     ),
@@ -707,18 +518,13 @@ class UpdateScreenView extends StatelessWidget {
     );
   }
 
-  Future<void> _shareUpdate({
-    required BuildContext context,
-    required UpdateController controller,
-    required UpdateModel item,
-  }) async {
+  Future<void> _shareUpdate({required BuildContext context, required UpdateController controller, required UpdateModel item}) async {
     await controller.shareUpdate(item);
 
     final lines = <String>[
       item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
       if (item.description.trim().isNotEmpty) item.description.trim(),
-      if (item.thumbnailUrl?.trim().isNotEmpty ?? false)
-        item.thumbnailUrl!.trim(),
+      if (item.thumbnailUrl?.trim().isNotEmpty ?? false) item.thumbnailUrl!.trim(),
     ];
 
     try {
@@ -727,9 +533,7 @@ class UpdateScreenView extends StatelessWidget {
       if (!context.mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       await Clipboard.setData(ClipboardData(text: lines.join('\n')));
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Share text copied to clipboard')),
-      );
+      messenger.showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
     }
   }
 
