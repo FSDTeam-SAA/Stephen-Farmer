@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
+import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/documents/domain/entities/document_project_entity.dart';
 
 import '../controller/document_controller.dart';
-import 'document_type_list_view.dart';
 import '../widgets/document_category_card.dart';
 import '../widgets/recent_document_item_card.dart';
+import 'document_type_list_view.dart';
 
 class DocumentScreenView extends GetView<DocumentController> {
   const DocumentScreenView({super.key});
@@ -20,11 +20,9 @@ class DocumentScreenView extends GetView<DocumentController> {
     return Obx(() {
       final project = controller.selectedProject;
       final role = Get.find<LoginController>().role.value;
-      final bool isInterior = RoleBgColor.isInterior(role);
-      final Color titleColor = isInterior
-          ? const Color(0xFF1D1D1D)
-          : Colors.white;
-      final Color subtitleColor = isInterior
+      final isInterior = RoleBgColor.isInterior(role);
+      final titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+      final subtitleColor = isInterior
           ? const Color(0xFF46413A)
           : const Color(0xFFD5DDE1);
 
@@ -52,38 +50,23 @@ class DocumentScreenView extends GetView<DocumentController> {
                     ),
                     const SizedBox(height: 10),
                     if (controller.isLoading.value && project == null)
-                      const Expanded(child: Center(child: CircularProgressIndicator()))
-                    else if (project == null)
-                      Center(
-                        child: Text(
-                          controller.errorMessage.value.isEmpty ? 'No document data available' : controller.errorMessage.value,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
-                        ),
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
                       )
-                    else ...[
-                      _buildProjectSelector(isInterior),
-                      const SizedBox(height: 12),
+                    else if (project == null)
                       Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: controller.refreshProjects,
-                          child: ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            children: [
-                              _buildSectionHeader(title: 'Documents', subtitle: 'All project files organized by type', titleColor: titleColor, subtitleColor: subtitleColor),
-                              const SizedBox(height: 10),
-                              _buildCategoryGrid(project.categories),
-                              const SizedBox(height: 12),
-                              _buildSectionHeader(title: 'Recent Documents', subtitle: 'Latest Uploads', titleColor: titleColor, subtitleColor: subtitleColor),
-                              const SizedBox(height: 8),
-                              ...project.recentDocuments.map((item) => RecentDocumentItemCard(item: item)),
-                              if (controller.errorMessage.value.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12)),
-                                ),
-                            ],
+                        child: Center(
+                          child: Text(
+                            controller.errorMessage.value.isEmpty
+                                ? 'No document data available'
+                                : controller.errorMessage.value,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isInterior
+                                  ? const Color(0xFF464646)
+                                  : Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       )
@@ -146,7 +129,7 @@ class DocumentScreenView extends GetView<DocumentController> {
   }
 
   Widget _buildProjectSelector(bool isInterior) {
-    return CategoryDropdownWidget(
+    return CategoryDropdownWidget<DocumentProjectEntity>(
       items: controller.projects,
       selectedIndex: controller.selectedProjectIndex.value,
       isMenuOpen: controller.isProjectMenuOpen.value,
@@ -160,7 +143,12 @@ class DocumentScreenView extends GetView<DocumentController> {
     );
   }
 
-  Widget _buildSectionHeader({required String title, required String subtitle, required Color titleColor, required Color subtitleColor}) {
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+    required Color titleColor,
+    required Color subtitleColor,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,7 +184,12 @@ class DocumentScreenView extends GetView<DocumentController> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: visibleCategories.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15, mainAxisExtent: 130),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+        mainAxisExtent: 130,
+      ),
       itemBuilder: (_, index) {
         final category = visibleCategories[index];
         return DocumentCategoryCard(

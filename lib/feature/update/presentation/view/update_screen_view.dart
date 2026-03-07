@@ -313,8 +313,6 @@ class UpdateScreenView extends StatelessWidget {
                               subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
                               titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1),
                               subtitleTextStyle: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w400, height: 1),
-                              subtitleWidth: 248,
-                              //subtitleHeight: 16
                             ),
                             if (controller.shouldShowCategoryDropdown) ...[
                               const SizedBox(height: 10),
