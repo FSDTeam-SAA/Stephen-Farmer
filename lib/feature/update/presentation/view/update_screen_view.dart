@@ -224,10 +224,17 @@ class UpdateScreenView extends StatelessWidget {
                               context: context,
                               builder: (dialogContext) {
                                 final dialogBorderColor = isInterior
-                                    ? const Color(0xFFCFCFCF)
+                                    ? const Color.fromRGBO(109, 111, 115, 1)
                                     : const Color(0xFF5D6570);
                                 final dialogBackground = isInterior
-                                    ? null
+                                    ? const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Color.fromRGBO(226, 221, 215, 1),
+                                          Color.fromRGBO(144, 137, 120, 1),
+                                        ],
+                                      )
                                     : const LinearGradient(
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
@@ -236,11 +243,8 @@ class UpdateScreenView extends StatelessWidget {
                                           Color(0xFF0A141A),
                                         ],
                                       );
-                                final dialogSolidBackground = isInterior
-                                    ? const Color(0xFFF2F0EC)
-                                    : null;
                                 final promptColor = isInterior
-                                    ? Colors.black
+                                    ? const Color(0xFF040404)
                                     : Colors.white;
                                 final accentColor = isInterior
                                     ? const Color(0xFF8E6500)
@@ -264,7 +268,6 @@ class UpdateScreenView extends StatelessWidget {
                                         color: dialogBorderColor,
                                         width: 2,
                                       ),
-                                      color: dialogSolidBackground,
                                       gradient: dialogBackground,
                                     ),
                                     child: Column(
@@ -277,7 +280,7 @@ class UpdateScreenView extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 14),
                                         Text(
-                                          'Are you sure?',
+                                          'Are you sure ?',
                                           style: GoogleFonts.manrope(
                                             color: promptColor,
                                             fontSize: 14,
@@ -469,16 +472,7 @@ class UpdateScreenView extends StatelessWidget {
                                           const SizedBox(height: 24),
                                           _emptyState(
                                             isInterior: isInterior,
-                                            message:
-                                                controller
-                                                        .errorMessage
-                                                        .value
-                                                        .isNotEmpty &&
-                                                    controller
-                                                        .updateList
-                                                        .isEmpty
-                                                ? controller.errorMessage.value
-                                                : 'No updates found',
+                                            message: 'No updates found',
                                           ),
                                         ],
                                       )
