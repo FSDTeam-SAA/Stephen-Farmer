@@ -1,18 +1,18 @@
-class UpdateModel {
-  final String category;
-  final String title;
-  final String description;
+class UpdateProjectModel {
+  final String id;
+  final String name;
+  final String address;
   final String? thumbnailUrl;
 
-  UpdateModel({
-    required this.category,
-    required this.title,
-    required this.description,
+  const UpdateProjectModel({
+    required this.id,
+    required this.name,
+    required this.address,
     this.thumbnailUrl,
   });
 
-  factory UpdateModel.fromJson(Map<String, dynamic> json) {
-    String readFirst(List<String> keys, {String fallback = ""}) {
+  factory UpdateProjectModel.fromJson(Map<String, dynamic> json) {
+    String readFirst(List<String> keys, {String fallback = ''}) {
       for (final key in keys) {
         final value = json[key];
         if (value != null && value.toString().trim().isNotEmpty) {
@@ -22,67 +22,247 @@ class UpdateModel {
       return fallback;
     }
 
+    final thumb = readFirst([
+      'thumbnailUrl',
+      'thumbnail',
+      'coverImage',
+      'image',
+      'imageUrl',
+    ]);
+
+    return UpdateProjectModel(
+      id: readFirst(['_id', 'id', 'projectId']),
+      name: readFirst(['projectName', 'name', 'title'], fallback: 'Project'),
+      address: readFirst(['address', 'location', 'projectAddress']),
+      thumbnailUrl: thumb.isEmpty ? null : thumb,
+    );
+  }
+}
+
+class UpdateCommentModel {
+  final String id;
+  final String updateId;
+  final String text;
+  final String userName;
+  final String? userAvatar;
+  final DateTime createdAt;
+
+  const UpdateCommentModel({
+    required this.id,
+    required this.updateId,
+    required this.text,
+    required this.userName,
+    this.userAvatar,
+    required this.createdAt,
+  });
+
+  factory UpdateCommentModel.fromJson(Map<String, dynamic> json) {
+    String readFirst(List<String> keys, {String fallback = ''}) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value != null && value.toString().trim().isNotEmpty) {
+          return value.toString().trim();
+        }
+      }
+      return fallback;
+    }
+
+    final userRaw = json['user'];
+    final user = userRaw is Map<String, dynamic>
+        ? userRaw
+        : <String, dynamic>{};
+    final avatar = (user['avatar'] ?? user['photoUrl'] ?? '').toString().trim();
+
+    return UpdateCommentModel(
+      id: readFirst(['_id', 'id', 'commentId']),
+      updateId: readFirst(['update', 'updateId']),
+      text: readFirst(['comment', 'text', 'message']),
+      userName: (user['name'] ?? user['fullName'] ?? 'User').toString(),
+      userAvatar: avatar.isEmpty ? null : avatar,
+      createdAt: _parseDateTime(json['createdAt'] ?? json['date']),
+    );
+  }
+}
+
+class UpdateModel {
+  final String id;
+  final String projectId;
+  final String category;
+  final String title;
+  final String description;
+  final String? thumbnailUrl;
+  final List<String> imageUrls;
+  final String authorName;
+  final String? authorAvatar;
+  final String authorRole;
+  final DateTime createdAt;
+  final int likeCount;
+  final int commentCount;
+  final int shareCount;
+  final bool isLiked;
+
+  const UpdateModel({
+    required this.id,
+    required this.projectId,
+    required this.category,
+    required this.title,
+    required this.description,
+    this.thumbnailUrl,
+    required this.imageUrls,
+    required this.authorName,
+    this.authorAvatar,
+    required this.authorRole,
+    required this.createdAt,
+    required this.likeCount,
+    required this.commentCount,
+    required this.shareCount,
+    required this.isLiked,
+  });
+
+  UpdateModel copyWith({
+    int? likeCount,
+    int? commentCount,
+    int? shareCount,
+    bool? isLiked,
+  }) {
     return UpdateModel(
-      category: readFirst(["category", "projectCategory", "type"], fallback: "Uncategorized"),
-      title: readFirst(["title", "projectName", "name"], fallback: "Untitled Update"),
-      description: readFirst(["description", "address", "subtitle"]),
-      thumbnailUrl: readFirst(["thumbnail", "image", "imageUrl", "photoUrl"]).isEmpty
-          ? null
-          : readFirst(["thumbnail", "image", "imageUrl", "photoUrl"]),
+      id: id,
+      projectId: projectId,
+      category: category,
+      title: title,
+      description: description,
+      thumbnailUrl: thumbnailUrl,
+      imageUrls: imageUrls,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
+      authorRole: authorRole,
+      createdAt: createdAt,
+      likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
+      shareCount: shareCount ?? this.shareCount,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 
+  factory UpdateModel.fromJson(Map<String, dynamic> json) {
+    String readFirst(List<String> keys, {String fallback = ''}) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value != null && value.toString().trim().isNotEmpty) {
+          return value.toString().trim();
+        }
+      }
+      return fallback;
+    }
+
+    final statsRaw = json['stats'];
+    final stats = statsRaw is Map<String, dynamic>
+        ? statsRaw
+        : <String, dynamic>{};
+
+    final uploadedByRaw = json['uploadedBy'];
+    final uploadedBy = uploadedByRaw is Map<String, dynamic>
+        ? uploadedByRaw
+        : <String, dynamic>{};
+
+    final imagesRaw = json['images'];
+    final imageUrls = <String>[];
+    if (imagesRaw is List) {
+      for (final image in imagesRaw) {
+        if (image is Map<String, dynamic>) {
+          final url = (image['url'] ?? image['imageUrl'] ?? '')
+              .toString()
+              .trim();
+          if (url.isNotEmpty) {
+            imageUrls.add(url);
+          }
+        } else {
+          final url = image.toString().trim();
+          if (url.isNotEmpty) {
+            imageUrls.add(url);
+          }
+        }
+      }
+    }
+
+    final likesRaw = json['likes'];
+    final likesCountFromList = likesRaw is List ? likesRaw.length : 0;
+
+    final title = readFirst([
+      'title',
+      'headline',
+      'name',
+      'projectName',
+    ], fallback: readFirst(['description'], fallback: 'Site Update'));
+
+    final roleText = (uploadedBy['role'] ?? 'Site Manager').toString().trim();
+
+    return UpdateModel(
+      id: readFirst(['_id', 'id', 'updateId']),
+      projectId: readFirst(['project', 'projectId']),
+      category: readFirst([
+        'category',
+        'projectCategory',
+        'type',
+      ], fallback: roleText),
+      title: title,
+      description: readFirst(['description', 'content', 'body']),
+      thumbnailUrl: imageUrls.isEmpty ? null : imageUrls.first,
+      imageUrls: imageUrls,
+      authorName:
+          (uploadedBy['name'] ?? uploadedBy['fullName'] ?? 'Site Manager')
+              .toString(),
+      authorAvatar:
+          (uploadedBy['avatar'] ?? uploadedBy['photoUrl'] ?? '')
+              .toString()
+              .trim()
+              .isEmpty
+          ? null
+          : (uploadedBy['avatar'] ?? uploadedBy['photoUrl']).toString().trim(),
+      authorRole: roleText,
+      createdAt: _parseDateTime(json['createdAt'] ?? json['updatedAt']),
+      likeCount: _asInt(stats['likeCount']) ?? likesCountFromList,
+      commentCount: _asInt(stats['commentCount']) ?? 0,
+      shareCount: _asInt(stats['shareCount']) ?? 0,
+      isLiked: false,
+    );
+  }
 
   static List<UpdateModel> dummyData = [
     UpdateModel(
-      category: "Foundation",
-      title: "Concrete Work Completed",
-      description: "The foundation concrete has been successfully poured and cured. Ready for framing phase starting Monday.",
-    ),
-    UpdateModel(
-      category: "Electrical",
-      title: "Wiring Installation Ongoing",
-      description: "Electrical wiring for ground floor is currently in progress and expected to complete within 2 days.",
-    ),
-    UpdateModel(
-      category: "Interior",
-      title: "Wall Painting Started",
-      description: "Interior wall base coating has begun using premium matte finish paint for smooth texture.",
-    ),
-    UpdateModel(
-      category: "Plumbing",
-      title: "Bathroom Pipeline Installed",
-      description: "All bathroom plumbing pipelines are installed and pressure tested successfully.",
-    ),
-    UpdateModel(
-      category: "Finishing",
-      title: "Tile Work Completed",
-      description: "Floor and kitchen tile work has been completed with high-quality ceramic finish.",
-    ),
-    UpdateModel(
-      category: "Exterior",
-      title: "Facade Coating Applied",
-      description: "Weather-resistant exterior coating has been applied on the north and west elevations.",
-    ),
-    UpdateModel(
-      category: "Landscaping",
-      title: "Garden Path Layout Finalized",
-      description: "Stone pathway alignment and softscape zones were finalized for the front yard.",
-    ),
-    UpdateModel(
-      category: "HVAC",
-      title: "Duct Routing Completed",
-      description: "Main HVAC duct routing is done across both floors and ready for insulation work.",
-    ),
-    UpdateModel(
-      category: "Safety",
-      title: "Site Safety Audit Passed",
-      description: "Weekly safety audit completed with zero critical findings and all corrective actions closed.",
-    ),
-    UpdateModel(
-      category: "Roofing",
-      title: "Waterproof Membrane Installed",
-      description: "Primary waterproof membrane installation completed and leak test scheduled tomorrow.",
+      id: 'demo-1',
+      projectId: 'project-1',
+      category: 'Foundation',
+      title: 'Concrete Work Completed',
+      description:
+          'The foundation concrete has been successfully poured and cured. Ready for framing phase starting Monday.',
+      thumbnailUrl:
+          'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop',
+      ],
+      authorName: 'Site Manager',
+      authorRole: 'manager',
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      likeCount: 3,
+      commentCount: 3,
+      shareCount: 2,
+      isLiked: false,
     ),
   ];
+}
+
+DateTime _parseDateTime(dynamic value) {
+  if (value is String && value.trim().isNotEmpty) {
+    final parsed = DateTime.tryParse(value.trim());
+    if (parsed != null) return parsed.toLocal();
+  }
+  return DateTime.now();
+}
+
+int? _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.round();
+  if (value is String) return int.tryParse(value.trim());
+  return null;
 }

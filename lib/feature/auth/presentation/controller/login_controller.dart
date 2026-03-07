@@ -36,6 +36,16 @@ class LoginController extends GetxController {
     rememberMe.value = !rememberMe.value;
   }
 
+  Future<void> setRememberMe(bool value, {required String category}) async {
+    rememberMe.value = value;
+    if (!value) {
+      await TokenManager.saveRememberedLogin(
+        enabled: false,
+        scopeKey: category,
+      );
+    }
+  }
+
   // Update email
   void updateEmail(String value) {
     email.value = value;
@@ -110,6 +120,22 @@ class LoginController extends GetxController {
     return true;
   }
 
+  Future<void> loadRememberedLoginData({required String category}) async {
+    final enabled = await TokenManager.isRememberMeEnabled(scopeKey: category);
+    if (!enabled) {
+      rememberMe.value = false;
+      email.value = '';
+      password.value = '';
+      return;
+    }
+
+    rememberMe.value = true;
+    email.value =
+        (await TokenManager.getRememberedEmail(scopeKey: category)) ?? '';
+    password.value =
+        (await TokenManager.getRememberedPassword(scopeKey: category)) ?? '';
+  }
+
   Future<void> loginUser({
     required String email,
     required String password,
@@ -140,6 +166,12 @@ class LoginController extends GetxController {
         userRole.value = response.data!.role.trim().toLowerCase();
         await TokenManager.saveCategory(role.value);
         await TokenManager.saveRole(userRole.value);
+        await TokenManager.saveRememberedLogin(
+          enabled: rememberMe.value,
+          scopeKey: normalizedCategory,
+          email: email.trim(),
+          password: password,
+        );
 
         Get.offAll(() => const AppGroundView());
       } else {

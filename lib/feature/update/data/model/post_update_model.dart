@@ -4,20 +4,14 @@ class PostDraftModel {
   final String description;
   final File? imageFile;
 
-  const PostDraftModel({
-    required this.description,
-    required this.imageFile,
-  });
+  const PostDraftModel({required this.description, required this.imageFile});
 
-  PostDraftModel copyWith({
-    String? description,
-    File? imageFile,
-  }) {
+  PostDraftModel copyWith({String? description, File? imageFile}) {
     return PostDraftModel(
       description: description ?? this.description,
       imageFile: imageFile ?? this.imageFile,
     );
   }
 
-  bool get canPost => description.trim().isNotEmpty || imageFile != null;
+  bool get canPost => description.trim().isNotEmpty;
 }

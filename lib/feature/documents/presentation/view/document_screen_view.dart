@@ -179,7 +179,7 @@ class DocumentScreenView extends GetView<DocumentController> {
         crossAxisCount: 2,
         crossAxisSpacing: 15,
         mainAxisSpacing: 15,
-        childAspectRatio: 160 / 110,
+        mainAxisExtent: 130,
       ),
       itemBuilder: (_, index) {
         return DocumentCategoryCard(item: visibleCategories[index]);

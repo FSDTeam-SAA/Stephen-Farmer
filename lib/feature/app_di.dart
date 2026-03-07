@@ -13,6 +13,12 @@ import 'financials/data/repository/financials_repository_impl.dart';
 import 'financials/domain/repository/financials_repository.dart';
 import 'financials/domain/usecase/get_financials_projects_usecase.dart';
 import 'financials/presentation/controller/financials_controller.dart';
+import 'notifications/data/repository/notification_repository_impl.dart';
+import 'notifications/domain/repository/notification_repository.dart';
+import 'notifications/domain/usecase/get_notifications_usecase.dart';
+import 'notifications/domain/usecase/mark_all_notifications_read_usecase.dart';
+import 'notifications/domain/usecase/mark_notification_read_usecase.dart';
+import 'notifications/presentation/controller/notification_controller.dart';
 import 'progress/data/repository/progress_repository_impl.dart';
 import 'progress/domain/repository/progress_repository.dart';
 import 'progress/domain/usecase/get_progress_projects_usecase.dart';
@@ -26,10 +32,7 @@ import 'tasks/presentation/controller/task_controller.dart';
 class AppDependencies {
   static void init() {
     // ApiClient globally
-    Get.put<ApiClient>(
-      ApiClient(baseUrl),
-      permanent: true,
-    );
+    Get.put<ApiClient>(ApiClient(baseUrl), permanent: true);
 
     // Repositories (lazy)
     Get.lazyPut<AuthRepository>(
@@ -58,9 +61,7 @@ class AppDependencies {
     );
 
     Get.lazyPut<SubmitProgressUseCase>(
-      () => SubmitProgressUseCase(
-        repository: Get.find<ProgressRepository>(),
-      ),
+      () => SubmitProgressUseCase(repository: Get.find<ProgressRepository>()),
       fenix: true,
     );
 
@@ -103,9 +104,7 @@ class AppDependencies {
     );
 
     Get.lazyPut<GetTaskProjectsUseCase>(
-      () => GetTaskProjectsUseCase(
-        repository: Get.find<TaskRepository>(),
-      ),
+      () => GetTaskProjectsUseCase(repository: Get.find<TaskRepository>()),
       fenix: true,
     );
 
@@ -134,6 +133,42 @@ class AppDependencies {
     Get.lazyPut<DocumentController>(
       () => DocumentController(
         getProjectsUseCase: Get.find<GetDocumentProjectsUseCase>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<NotificationRepository>(
+      () => NotificationRepositoryImpl(apiClient: Get.find<ApiClient>()),
+      fenix: true,
+    );
+
+    Get.lazyPut<GetNotificationsUseCase>(
+      () => GetNotificationsUseCase(
+        repository: Get.find<NotificationRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<MarkAllNotificationsReadUseCase>(
+      () => MarkAllNotificationsReadUseCase(
+        repository: Get.find<NotificationRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<MarkNotificationReadUseCase>(
+      () => MarkNotificationReadUseCase(
+        repository: Get.find<NotificationRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<NotificationController>(
+      () => NotificationController(
+        getNotificationsUseCase: Get.find<GetNotificationsUseCase>(),
+        markAllNotificationsReadUseCase:
+            Get.find<MarkAllNotificationsReadUseCase>(),
+        markNotificationReadUseCase: Get.find<MarkNotificationReadUseCase>(),
       ),
       fenix: true,
     );

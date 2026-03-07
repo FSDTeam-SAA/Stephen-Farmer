@@ -7,10 +7,16 @@ class UpdatePostCard extends StatelessWidget {
     super.key,
     required this.item,
     this.isInteriorTheme = false,
+    required this.onLike,
+    required this.onComment,
+    required this.onShare,
   });
 
   final UpdateModel item;
   final bool isInteriorTheme;
+  final VoidCallback onLike;
+  final VoidCallback onComment;
+  final VoidCallback onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +38,14 @@ class UpdatePostCard extends StatelessWidget {
     final metaStatColor = isInteriorTheme
         ? const Color(0xFFF3EEDD)
         : Colors.white.withValues(alpha: .65);
+
     final fallbackImage =
-        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop";
+        'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop';
     final postImage = (item.thumbnailUrl?.trim().isNotEmpty ?? false)
         ? item.thumbnailUrl!.trim()
         : fallbackImage;
 
     return Container(
-      // padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
@@ -48,13 +54,14 @@ class UpdatePostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 30,
                 backgroundImage: NetworkImage(
-                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop",
+                  item.authorAvatar?.trim().isNotEmpty == true
+                      ? item.authorAvatar!.trim()
+                      : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
                 ),
               ),
               const SizedBox(width: 10),
@@ -63,7 +70,7 @@ class UpdatePostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title,
+                      item.authorName,
                       style: TextStyle(
                         color: primaryTextColor,
                         fontSize: 16,
@@ -72,7 +79,7 @@ class UpdatePostCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      item.category.toUpperCase(),
+                      '${item.authorRole.toUpperCase()}  ·  ${_timeAgo(item.createdAt)}',
                       style: TextStyle(
                         color: secondaryTextColor,
                         fontSize: 12,
@@ -83,13 +90,9 @@ class UpdatePostCard extends StatelessWidget {
                   ],
                 ),
               ),
-              //Icon(Icons.more_horiz, color: secondaryTextColor),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // Post text
           Text(
             item.description.trim().isEmpty ? item.title : item.description,
             style: TextStyle(
@@ -98,9 +101,7 @@ class UpdatePostCard extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
           ),
-
           const SizedBox(height: 12),
-
           SizedBox(
             height: 220,
             width: double.infinity,
@@ -114,16 +115,17 @@ class UpdatePostCard extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // Reactions row
           Row(
             children: [
-              const Icon(Icons.favorite, color: Colors.red, size: 16),
+              Icon(
+                item.isLiked ? Icons.favorite : Icons.favorite_border,
+                color: item.isLiked ? Colors.red : metaStatColor,
+                size: 16,
+              ),
               const SizedBox(width: 6),
               Text(
-                "3",
+                '${item.likeCount}',
                 style: TextStyle(
                   color: isInteriorTheme ? Colors.white : Colors.white,
                   fontSize: 12,
@@ -132,7 +134,7 @@ class UpdatePostCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                "3 Comments",
+                '${item.commentCount} Comments',
                 style: TextStyle(
                   color: metaStatColor,
                   fontSize: 12,
@@ -141,7 +143,7 @@ class UpdatePostCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                "2 Shares",
+                '${item.shareCount} Shares',
                 style: TextStyle(
                   color: metaStatColor,
                   fontSize: 12,
@@ -150,31 +152,27 @@ class UpdatePostCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-          // Divider(color: isInteriorTheme ? const Color(0xCCCDC1A7) : Colors.white.withValues(alpha: .10), height: 1),
           const SizedBox(height: 6),
-
-          // Action buttons row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _ActionBtn(
-                icon: Icons.favorite_border,
-                label: "Heart",
-                onTap: () {},
+                icon: item.isLiked ? Icons.favorite : Icons.favorite_border,
+                label: 'Heart',
+                onTap: onLike,
                 isInteriorTheme: isInteriorTheme,
               ),
               _ActionBtn(
                 icon: Icons.mode_comment_outlined,
-                label: "Comment",
-                onTap: () {},
+                label: 'Comment',
+                onTap: onComment,
                 isInteriorTheme: isInteriorTheme,
               ),
               _ActionBtn(
                 icon: Icons.share_outlined,
-                label: "Share",
-                onTap: () {},
+                label: 'Share',
+                onTap: onShare,
                 isInteriorTheme: isInteriorTheme,
               ),
             ],
@@ -226,4 +224,14 @@ class _ActionBtn extends StatelessWidget {
       ),
     );
   }
+}
+
+String _timeAgo(DateTime dateTime) {
+  final now = DateTime.now();
+  final diff = now.difference(dateTime);
+
+  if (diff.inMinutes < 1) return 'NOW';
+  if (diff.inHours < 1) return '${diff.inMinutes}M AGO';
+  if (diff.inDays < 1) return '${diff.inHours}H AGO';
+  return '${diff.inDays}D AGO';
 }

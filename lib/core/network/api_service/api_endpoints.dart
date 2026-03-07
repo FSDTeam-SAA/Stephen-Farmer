@@ -30,7 +30,8 @@ class AdminEndpoints {
   static const String createProject = "/admin/projects";
   static const String getProjects = "/admin/projects";
 
-  static String assignManager(String projectId) => "/admin/projects/$projectId/assign-manager";
+  static String assignManager(String projectId) =>
+      "/admin/projects/$projectId/assign-manager";
 
   // Financial
   static const String financialOverview = "/admin/financial-overview";
@@ -40,28 +41,36 @@ class AdminEndpoints {
 class ManagerEndpoints {
   static const String getProjects = "/manager/projects";
 
-  static String getProjectDetails(String projectId) => "/manager/projects/$projectId";
+  static String getProjectDetails(String projectId) =>
+      "/manager/projects/$projectId";
 
-  static String updateProjectStatus(String projectId) => "/manager/projects/$projectId/status";
+  static String updateProjectStatus(String projectId) =>
+      "/manager/projects/$projectId/status";
 
-  static String addExpense(String projectId) => "/manager/projects/$projectId/expenses";
+  static String addExpense(String projectId) =>
+      "/manager/projects/$projectId/expenses";
 
-  static String getExpenses(String projectId) => "/manager/projects/$projectId/expenses";
+  static String getExpenses(String projectId) =>
+      "/manager/projects/$projectId/expenses";
 }
 
 // ================= CLIENT =================
 class ClientEndpoints {
   static const String getMyProjects = "/client/projects";
 
-  static String getProjectDetails(String projectId) => "/client/projects/$projectId";
+  static String getProjectDetails(String projectId) =>
+      "/client/projects/$projectId";
 
-  static String makePayment(String projectId) => "/client/projects/$projectId/payment";
+  static String makePayment(String projectId) =>
+      "/client/projects/$projectId/payment";
 
-  static String getPayments(String projectId) => "/client/projects/$projectId/payments";
+  static String getPayments(String projectId) =>
+      "/client/projects/$projectId/payments";
 }
 
 // ================= PROJECT =================
 class ProjectEndpoints {
+  static const String getAll = "/projects";
   static String getById(String id) => "/projects/$id";
   static String update(String id) => "/projects/$id";
   static String delete(String id) => "/projects/$id";
@@ -83,7 +92,12 @@ class DashboardEndpoints {
 
 // ================= UPDATE =================
 class UpdateEndpoints {
-  static const String getUpdates = "/updates";
+  static const String create = "/updates";
+  static String getByProject(String projectId) => "/updates/project/$projectId";
+  static String like(String updateId) => "/updates/$updateId/like";
+  static String share(String updateId) => "/updates/$updateId/share";
+  static String addComment(String updateId) => "/updates/$updateId/comments";
+  static String getComments(String updateId) => "/updates/$updateId/comments";
 }
 
 // ================= PROGRESS =================
@@ -110,6 +124,7 @@ class DocumentEndpoints {
 // ================= NOTIFICATION =================
 class NotificationEndpoints {
   static const String getAll = "/notifications";
+  static const String markAllAsRead = "/notifications/read-all";
 
   static String markAsRead(String id) => "/notifications/$id/read";
 }

@@ -8,7 +8,10 @@ class AddUpdateController extends ChangeNotifier {
 
   AddUpdateController({required this.repo});
 
-  PostDraftModel _draft = const PostDraftModel(description: '', imageFile: null);
+  PostDraftModel _draft = const PostDraftModel(
+    description: '',
+    imageFile: null,
+  );
   PostDraftModel get draft => _draft;
 
   bool _isLoading = false;
@@ -45,14 +48,13 @@ class AddUpdateController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> submit() async {
+  Future<void> submit({required String projectId}) async {
     _error = null;
 
     final hasDesc = _draft.description.trim().isNotEmpty;
-    final hasImage = _draft.imageFile != null;
 
-    if (!hasDesc && !hasImage) {
-      _error = 'Add photo or description';
+    if (!hasDesc) {
+      _error = 'Description is required';
       notifyListeners();
       return;
     }
@@ -61,7 +63,11 @@ class AddUpdateController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await repo.createPost(description: _draft.description.trim(), imageFile: _draft.imageFile);
+      await repo.createPost(
+        projectId: projectId,
+        description: _draft.description.trim(),
+        imageFile: _draft.imageFile,
+      );
     } catch (_) {
       _error = 'Failed to create post';
     } finally {

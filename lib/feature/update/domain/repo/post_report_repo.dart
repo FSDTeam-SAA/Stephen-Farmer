@@ -7,6 +7,7 @@ abstract class PostRepository {
 
   /// future এ API call যোগ করবেন—এখন placeholder
   Future<void> createPost({
+    required String projectId,
     required String description,
     required File? imageFile,
   });

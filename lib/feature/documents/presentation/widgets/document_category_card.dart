@@ -10,28 +10,47 @@ class DocumentCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      decoration: BoxDecoration(color: const Color(0xFFD4D1C8), borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD4D1C8),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 55,
-            width: 55,
-            decoration: BoxDecoration(color: const Color(0xFFE6E4DE), borderRadius: BorderRadius.circular(8)),
-            child: Icon(_resolveIcon(item.type), color: _resolveIconColor(item.type), size: 24),
+            height: 52,
+            width: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE6E4DE),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              _resolveIcon(item.type),
+              color: _resolveIconColor(item.type),
+              size: 24,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             item.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF1D1D1D), fontSize: 16, fontWeight: FontWeight.w600, height: 1.2),
+            style: const TextStyle(
+              color: Color(0xFF1D1D1D),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              height: 1.2,
+            ),
           ),
-          const SizedBox(height: 12),
+          const Spacer(),
           Text(
             '${item.fileCount} files',
-            style: const TextStyle(color: Color(0xFF2E2E2E), fontSize: 13, fontWeight: FontWeight.w400),
+            style: const TextStyle(
+              color: Color(0xFF2E2E2E),
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ],
       ),

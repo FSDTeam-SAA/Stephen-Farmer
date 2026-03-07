@@ -7,6 +7,7 @@ import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
+import 'package:stephen_farmer/feature/notifications/presentation/view/notification_screen_view.dart';
 import 'package:stephen_farmer/feature/update/presentation/controller/update_controller.dart';
 import 'package:stephen_farmer/feature/update/presentation/view/add_update_screen_view.dart';
 import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.dart';
@@ -16,61 +17,6 @@ class UpdateScreenView extends StatelessWidget {
 
   const UpdateScreenView({super.key, required this.loginCategory});
 
-  static const Map<String, String> _categoryThumbnailUrls = {
-    "foundation":
-        "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?w=600&auto=format&fit=crop",
-    "electrical":
-        "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&auto=format&fit=crop",
-    "interior":
-        "https://images.unsplash.com/photo-1616594039964-3f74d7c6a99c?w=600&auto=format&fit=crop",
-    "plumbing":
-        "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop",
-    "finishing":
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&auto=format&fit=crop",
-    "exterior":
-        "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&auto=format&fit=crop",
-    "landscaping":
-        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&auto=format&fit=crop",
-    "hvac":
-        "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=600&auto=format&fit=crop",
-    "safety":
-        "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=600&auto=format&fit=crop",
-    "roofing":
-        "https://images.unsplash.com/photo-1600047509782-20d39509f26d?w=600&auto=format&fit=crop",
-    "default":
-        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&auto=format&fit=crop",
-  };
-
-  UpdateModel _resolveUpdatePreview(String item, List<UpdateModel> updates) {
-    if (updates.isEmpty) {
-      return UpdateModel(category: item, title: item, description: "");
-    }
-
-    final preview = item.toLowerCase() == "all"
-        ? updates.first
-        : updates.firstWhere(
-            (e) => e.category.trim().toLowerCase() == item.trim().toLowerCase(),
-            orElse: () => updates.first,
-          );
-
-    return UpdateModel(
-      category: preview.category,
-      title: preview.title,
-      description: preview.description,
-      thumbnailUrl: preview.thumbnailUrl,
-    );
-  }
-
-  String? _resolvePreviewImageUrl(String item, List<UpdateModel> updates) {
-    final preview = _resolveUpdatePreview(item, updates);
-    final thumbnail = preview.thumbnailUrl?.trim() ?? "";
-    if (thumbnail.isNotEmpty) {
-      return thumbnail;
-    }
-    return _categoryThumbnailUrls[item.trim().toLowerCase()] ??
-        _categoryThumbnailUrls["default"];
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(UpdateController());
@@ -79,11 +25,26 @@ class UpdateScreenView extends StatelessWidget {
     return Obx(() {
       final isInterior = loginCategory.toLowerCase() == "interior";
       final isManager = authController.normalizedRoleKey == 'manager';
-      final items = controller.categoryFilters.toList();
-      final selectedIndex = items.indexOf(controller.selectedCategory.value);
-      final safeSelectedIndex = selectedIndex < 0 ? 0 : selectedIndex;
+      final projectItems = controller.projects.toList();
+      final safeProjectSelectedIndex = controller.selectedProjectIndex.value < 0
+          ? 0
+          : (controller.selectedProjectIndex.value >= projectItems.length
+                ? (projectItems.isEmpty ? 0 : projectItems.length - 1)
+                : controller.selectedProjectIndex.value);
+      final categoryItems = controller.categoryFilters.toList();
+      final selectedCategoryIndex = categoryItems.indexOf(
+        controller.selectedCategory.value,
+      );
+      final safeCategorySelectedIndex = selectedCategoryIndex < 0
+          ? 0
+          : selectedCategoryIndex;
       final filteredList = controller.filteredUpdates;
+      final isProjectMenuOpen = controller.isProjectMenuOpen.value;
       final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
+      final notificationIconColor = isInterior
+          ? const Color(0xFF1D1D1D)
+          : const Color(0xFFC9B089);
+      final logoutIconColor = const Color(0xFFF24E4E);
 
       return Scaffold(
         backgroundColor: RoleBgColor.scaffoldColor(loginCategory),
@@ -128,16 +89,48 @@ class UpdateScreenView extends StatelessWidget {
                           );
                         }),
                       ),
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(() => const NotificationScreenView());
+                        },
+                        child: Icon(
+                          Icons.notifications_rounded,
+                          color: notificationIconColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       IconButton(
                         tooltip: "Logout",
                         icon: Icon(
                           Icons.logout_rounded,
-                          color: isInterior ? Colors.black : Colors.amber,
+                          color: logoutIconColor,
                         ),
                         onPressed: () async {
                           final shouldLogout = await showDialog<bool>(
                             context: context,
                             builder: (dialogContext) {
+                              final dialogBorderColor = isInterior
+                                  ? const Color(0xFFCFCFCF)
+                                  : const Color(0xFF5D6570);
+                              final dialogBackground = isInterior
+                                  ? null
+                                  : const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Color(0xFF0F1A20),
+                                        Color(0xFF0A141A),
+                                      ],
+                                    );
+                              final dialogSolidBackground = isInterior
+                                  ? const Color(0xFFF2F0EC)
+                                  : null;
+                              final promptColor = Colors.white;
+                              final accentColor = isInterior
+                                  ? const Color(0xFF8E6500)
+                                  : const Color(0xFFAF8C6A);
+
                               return Dialog(
                                 backgroundColor: Colors.transparent,
                                 insetPadding: const EdgeInsets.symmetric(
@@ -153,17 +146,11 @@ class UpdateScreenView extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: const Color(0xFF5D6570),
+                                      color: dialogBorderColor,
                                       width: 2,
                                     ),
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Color(0xFF0F1A20),
-                                        Color(0xFF0A141A),
-                                      ],
-                                    ),
+                                    color: dialogSolidBackground,
+                                    gradient: dialogBackground,
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -177,7 +164,7 @@ class UpdateScreenView extends StatelessWidget {
                                       Text(
                                         "Are you sure ?",
                                         style: GoogleFonts.manrope(
-                                          color: Colors.white,
+                                          color: promptColor,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           height: 1.4,
@@ -194,9 +181,7 @@ class UpdateScreenView extends StatelessWidget {
                                                 dialogContext,
                                               ).pop(false),
                                               style: OutlinedButton.styleFrom(
-                                                foregroundColor: const Color(
-                                                  0xFFAF8C6A,
-                                                ),
+                                                foregroundColor: accentColor,
                                                 padding:
                                                     const EdgeInsets.fromLTRB(
                                                       10,
@@ -204,8 +189,8 @@ class UpdateScreenView extends StatelessWidget {
                                                       10,
                                                       12,
                                                     ),
-                                                side: const BorderSide(
-                                                  color: Color(0xFFAF8C6A),
+                                                side: BorderSide(
+                                                  color: accentColor,
                                                   width: 1,
                                                 ),
                                                 shape: RoundedRectangleBorder(
@@ -216,9 +201,7 @@ class UpdateScreenView extends StatelessWidget {
                                               child: Text(
                                                 "Cancel",
                                                 style: GoogleFonts.manrope(
-                                                  color: const Color(
-                                                    0xFFAF8C6A,
-                                                  ),
+                                                  color: accentColor,
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
                                                   height: 1.4,
@@ -235,9 +218,7 @@ class UpdateScreenView extends StatelessWidget {
                                                 dialogContext,
                                               ).pop(true),
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: const Color(
-                                                  0xFFAF8C6A,
-                                                ),
+                                                backgroundColor: accentColor,
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
                                                 padding:
@@ -292,7 +273,7 @@ class UpdateScreenView extends StatelessWidget {
                   Expanded(
                     child: controller.isLoading.value
                         ? const Center(child: CircularProgressIndicator())
-                        : controller.updateList.isEmpty
+                        : projectItems.isEmpty
                         ? Center(
                             child: Text(
                               "No Project",
@@ -305,28 +286,44 @@ class UpdateScreenView extends StatelessWidget {
                           )
                         : Column(
                             children: [
-                              if (controller.shouldShowCategoryDropdown)
+                              CategoryDropdownWidget<UpdateProjectModel>(
+                                items: projectItems,
+                                selectedIndex: safeProjectSelectedIndex,
+                                isMenuOpen: isProjectMenuOpen,
+                                isInteriorTheme: isInterior,
+                                onToggle: controller.toggleProjectMenu,
+                                onSelect: (index) {
+                                  controller.selectProject(index);
+                                },
+                                titleBuilder: (item) => item.name,
+                                subtitleBuilder: (item) => item.address,
+                                thumbnailBuilder: (item) => item.thumbnailUrl,
+                                fallbackAsset: AssetsImages.constructionIgm,
+                              ),
+                              if (controller.shouldShowCategoryDropdown) ...[
+                                const SizedBox(height: 10),
                                 CategoryDropdownWidget<String>(
-                                  items: items,
-                                  selectedIndex: safeSelectedIndex,
+                                  items: categoryItems,
+                                  selectedIndex: safeCategorySelectedIndex,
                                   isMenuOpen: isCategoryMenuOpen,
                                   isInteriorTheme: isInterior,
                                   onToggle: controller.toggleCategoryMenu,
-                                  onSelect: (index) =>
-                                      controller.selectCategory(items[index]),
+                                  onSelect: (index) => controller
+                                      .selectCategory(categoryItems[index]),
                                   titleBuilder: (item) => item,
                                   subtitleBuilder: (item) =>
-                                      _resolveUpdatePreview(
-                                        item,
-                                        controller.updateList,
-                                      ).title,
-                                  thumbnailBuilder: (item) =>
-                                      _resolvePreviewImageUrl(
-                                        item,
-                                        controller.updateList,
-                                      ),
+                                      'Filter updates by $item',
+                                  thumbnailBuilder: (_) => null,
                                   fallbackAsset: AssetsImages.constructionIgm,
+                                  thumbnailWidth: 0,
+                                  thumbnailHeight: 0,
+                                  rowPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  minHeight: 46,
                                 ),
+                              ],
                               const SizedBox(height: 10),
                               if (isManager)
                                 Padding(
@@ -336,7 +333,24 @@ class UpdateScreenView extends StatelessWidget {
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(10),
                                     onTap: () {
-                                      Get.to(() => const AddUpdateScreenView());
+                                      if (controller
+                                          .selectedProjectId
+                                          .isEmpty) {
+                                        Get.snackbar(
+                                          'Error',
+                                          'Select a project first',
+                                        );
+                                        return;
+                                      }
+                                      Get.to(
+                                        () => AddUpdateScreenView(
+                                          projectId:
+                                              controller.selectedProjectId,
+                                          onPostSuccess: () {
+                                            controller.refreshAll();
+                                          },
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       height: 72,
@@ -426,7 +440,7 @@ class UpdateScreenView extends StatelessWidget {
                                 child: filteredList.isEmpty
                                     ? Center(
                                         child: Text(
-                                          "No updates for this category",
+                                          "No updates found",
                                           style: TextStyle(
                                             color: isInterior
                                                 ? const Color(0xFF464646)
@@ -438,9 +452,20 @@ class UpdateScreenView extends StatelessWidget {
                                     : ListView.builder(
                                         itemCount: filteredList.length,
                                         itemBuilder: (_, index) {
+                                          final item = filteredList[index];
                                           return UpdatePostCard(
-                                            item: filteredList[index],
+                                            item: item,
                                             isInteriorTheme: isInterior,
+                                            onLike: () =>
+                                                controller.toggleLike(item),
+                                            onShare: () =>
+                                                controller.shareUpdate(item),
+                                            onComment: () => _showCommentsSheet(
+                                              context: context,
+                                              controller: controller,
+                                              updateId: item.id,
+                                              isInterior: isInterior,
+                                            ),
                                           );
                                         },
                                       ),
@@ -455,5 +480,195 @@ class UpdateScreenView extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Future<void> _showCommentsSheet({
+    required BuildContext context,
+    required UpdateController controller,
+    required String updateId,
+    required bool isInterior,
+  }) async {
+    final textController = TextEditingController();
+    final comments = await controller.fetchComments(updateId);
+
+    if (!context.mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isInterior
+          ? const Color(0xFFF2EFE8)
+          : const Color(0xFF111B21),
+      builder: (sheetContext) {
+        final localComments = List<UpdateCommentModel>.from(comments);
+        bool isSending = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 14,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 14,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Comments',
+                      style: TextStyle(
+                        color: isInterior ? Colors.black : Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 280),
+                      child: localComments.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                'No comments yet',
+                                style: TextStyle(
+                                  color: isInterior
+                                      ? const Color(0xFF555555)
+                                      : Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: localComments.length,
+                              itemBuilder: (_, index) {
+                                final comment = localComments[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 14,
+                                        backgroundImage: NetworkImage(
+                                          comment.userAvatar
+                                                      ?.trim()
+                                                      .isNotEmpty ==
+                                                  true
+                                              ? comment.userAvatar!.trim()
+                                              : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              comment.userName,
+                                              style: TextStyle(
+                                                color: isInterior
+                                                    ? Colors.black
+                                                    : Colors.white,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Text(
+                                              comment.text,
+                                              style: TextStyle(
+                                                color: isInterior
+                                                    ? const Color(0xFF333333)
+                                                    : Colors.white70,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        _timeLabel(comment.createdAt),
+                                        style: TextStyle(
+                                          color: isInterior
+                                              ? const Color(0xFF7A7A7A)
+                                              : Colors.white54,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: textController,
+                            style: TextStyle(
+                              color: isInterior ? Colors.black : Colors.white,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Write a comment...',
+                              hintStyle: TextStyle(
+                                color: isInterior
+                                    ? const Color(0xFF777777)
+                                    : Colors.white54,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: isSending
+                              ? null
+                              : () async {
+                                  final text = textController.text.trim();
+                                  if (text.isEmpty) return;
+                                  setState(() => isSending = true);
+                                  final added = await controller.addComment(
+                                    updateId: updateId,
+                                    comment: text,
+                                  );
+                                  if (added != null) {
+                                    textController.clear();
+                                    localComments.add(added);
+                                  }
+                                  setState(() => isSending = false);
+                                },
+                          icon: Icon(
+                            Icons.send_rounded,
+                            color: isInterior
+                                ? const Color(0xFF8E6500)
+                                : const Color(0xFFD09A2F),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _timeLabel(DateTime dateTime) {
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inMinutes < 1) return 'Now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m';
+    if (diff.inDays < 1) return '${diff.inHours}h';
+    return '${diff.inDays}d';
   }
 }
