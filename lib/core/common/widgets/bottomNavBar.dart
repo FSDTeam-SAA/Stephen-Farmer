@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 
 class BottomNavBar extends StatelessWidget {
@@ -23,16 +24,11 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color selectedColor = Color(0xFFD09A2F);
+    const Color selectedColor = Color(0xFFA77935);
     const Color unselectedColor = Colors.white;
     final List<_NavItemData> visibleItems = includeFinancials
         ? _items
-        : [
-            _items[0],
-            _items[1],
-            _items[3],
-            _items[4],
-          ];
+        : [_items[0], _items[1], _items[3], _items[4]];
 
     return SafeArea(
       top: false,
@@ -68,10 +64,12 @@ class BottomNavBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
-                        style: TextStyle(
+                        style: GoogleFonts.manrope(
                           color: isSelected ? selectedColor : unselectedColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1.2,
+                          letterSpacing: 0,
                         ),
                       ),
                     ],
