@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 import 'package:stephen_farmer/app_ground_view.dart';
 import 'package:stephen_farmer/feature/auth/presentation/view/role_screen_view.dart';
 
@@ -145,10 +146,52 @@ class LoginController extends GetxController {
         Get.snackbar("Login Failed", response.message);
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Get.snackbar("Error", _friendlyLoginError(e));
     } finally {
       isLoading.value = false;
     }
+  }
+
+  String _friendlyLoginError(Object error) {
+    if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+      final apiMessage = _extractApiMessage(error.response?.data);
+
+      if (statusCode == 400 || statusCode == 401) {
+        return apiMessage ?? "Invalid email or password.";
+      }
+      if (statusCode == 404) {
+        return "Login service is unavailable right now. Please try again.";
+      }
+      if (statusCode != null && statusCode >= 500) {
+        return "Server error. Please try again shortly.";
+      }
+
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          return "Request timed out. Please check your connection and try again.";
+        case DioExceptionType.connectionError:
+          return "No internet connection. Please check your network.";
+        case DioExceptionType.cancel:
+          return "Request was cancelled.";
+        default:
+          return apiMessage ?? "Unable to sign in. Please try again.";
+      }
+    }
+
+    return "Unable to sign in. Please try again.";
+  }
+
+  String? _extractApiMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final message = data["message"] ?? data["error"];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+    }
+    return null;
   }
 
   Future<void> logoutUser() async {

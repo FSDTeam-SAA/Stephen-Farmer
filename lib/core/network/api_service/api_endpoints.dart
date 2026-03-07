@@ -30,8 +30,7 @@ class AdminEndpoints {
   static const String createProject = "/admin/projects";
   static const String getProjects = "/admin/projects";
 
-  static String assignManager(String projectId) =>
-      "/admin/projects/$projectId/assign-manager";
+  static String assignManager(String projectId) => "/admin/projects/$projectId/assign-manager";
 
   // Financial
   static const String financialOverview = "/admin/financial-overview";
@@ -41,31 +40,24 @@ class AdminEndpoints {
 class ManagerEndpoints {
   static const String getProjects = "/manager/projects";
 
-  static String getProjectDetails(String projectId) =>
-      "/manager/projects/$projectId";
+  static String getProjectDetails(String projectId) => "/manager/projects/$projectId";
 
-  static String updateProjectStatus(String projectId) =>
-      "/manager/projects/$projectId/status";
+  static String updateProjectStatus(String projectId) => "/manager/projects/$projectId/status";
 
-  static String addExpense(String projectId) =>
-      "/manager/projects/$projectId/expenses";
+  static String addExpense(String projectId) => "/manager/projects/$projectId/expenses";
 
-  static String getExpenses(String projectId) =>
-      "/manager/projects/$projectId/expenses";
+  static String getExpenses(String projectId) => "/manager/projects/$projectId/expenses";
 }
 
 // ================= CLIENT =================
 class ClientEndpoints {
   static const String getMyProjects = "/client/projects";
 
-  static String getProjectDetails(String projectId) =>
-      "/client/projects/$projectId";
+  static String getProjectDetails(String projectId) => "/client/projects/$projectId";
 
-  static String makePayment(String projectId) =>
-      "/client/projects/$projectId/payment";
+  static String makePayment(String projectId) => "/client/projects/$projectId/payment";
 
-  static String getPayments(String projectId) =>
-      "/client/projects/$projectId/payments";
+  static String getPayments(String projectId) => "/client/projects/$projectId/payments";
 }
 
 // ================= PROJECT =================
