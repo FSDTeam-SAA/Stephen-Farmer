@@ -16,6 +16,7 @@ import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.d
 
 class UpdateScreenView extends StatelessWidget {
   final String loginCategory;
+  static const MethodChannel _nativeShareChannel = MethodChannel('app.share/native');
 
   const UpdateScreenView({super.key, required this.loginCategory});
 
@@ -521,20 +522,93 @@ class UpdateScreenView extends StatelessWidget {
   Future<void> _shareUpdate({required BuildContext context, required UpdateController controller, required UpdateModel item}) async {
     await controller.shareUpdate(item);
 
+    if (!context.mounted) return;
+
     final lines = <String>[
       item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
       if (item.description.trim().isNotEmpty) item.description.trim(),
       if (item.thumbnailUrl?.trim().isNotEmpty ?? false) item.thumbnailUrl!.trim(),
     ];
+    final shareText = lines.join('\n');
+    final shareSubject = item.title.trim().isEmpty ? 'Project Update' : item.title.trim();
 
     try {
-      await Share.share(lines.join('\n'));
-    } catch (_) {
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.share(
+        shareText,
+        subject: shareSubject,
+        sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+      );
+    } on MissingPluginException {
       if (!context.mounted) return;
-      final messenger = ScaffoldMessenger.of(context);
-      await Clipboard.setData(ClipboardData(text: lines.join('\n')));
-      messenger.showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
+      final handled = await _shareViaNativeChannel(shareText: shareText, subject: shareSubject);
+      if (!handled && context.mounted) {
+        await _showShareFallbackSheet(context: context, shareText: shareText);
+      }
+    } catch (e) {
+      await Clipboard.setData(ClipboardData(text: shareText));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share unavailable (${e.runtimeType}). Copied to clipboard.')));
     }
+  }
+
+  Future<bool> _shareViaNativeChannel({required String shareText, required String subject}) async {
+    try {
+      final result = await _nativeShareChannel.invokeMethod<bool>('shareText', {'text': shareText, 'subject': subject});
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _showShareFallbackSheet({required BuildContext context, required String shareText}) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF23222D),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Share',
+                  style: GoogleFonts.manrope(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Native share is unavailable on this build. You can copy the text now.',
+                  style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(text: shareText));
+                      if (!sheetContext.mounted) return;
+                      Navigator.of(sheetContext).pop();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFAF8C6A),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text('Copy Share Text', style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   String _timeLabel(DateTime dateTime) {
