@@ -223,16 +223,12 @@ class _AuthorAvatar extends StatelessWidget {
       height: radius * 2,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isInteriorTheme
-            ? const Color(0xFFD7CCBA)
-            : const Color(0xFFD9CFF0),
+        color: const Color(0xFFE3E3E3),
       ),
       child: Icon(
         Icons.person_rounded,
         size: radius,
-        color: isInteriorTheme
-            ? const Color(0xFF655B4E)
-            : const Color(0xFF7D7390),
+        color: const Color(0xFF8A8A8A),
       ),
     );
   }

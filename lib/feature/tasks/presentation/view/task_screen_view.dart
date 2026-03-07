@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -36,26 +37,52 @@ class TaskScreenView extends GetView<TaskController> {
                 children: [
                   Text(
                     'Active Project',
-                    style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                    style: GoogleFonts.outfit(
+                      color: isInterior
+                          ? const Color(0xFF1D1D1D)
+                          : Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      height: 22 / 16,
+                      letterSpacing: 0,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (controller.isLoading.value && project == null)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   else if (project == null)
                     Expanded(
                       child: Center(
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 24,
+                          ),
                           decoration: BoxDecoration(
-                            color: isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E),
+                            color: isInterior
+                                ? const Color(0xFFD5D2CA)
+                                : const Color(0xFF111A1E),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isInterior ? const Color(0xFF77716A) : const Color(0xFFB9A77D)),
+                            border: Border.all(
+                              color: isInterior
+                                  ? const Color(0xFF77716A)
+                                  : const Color(0xFFB9A77D),
+                            ),
                           ),
                           child: Text(
-                            controller.errorMessage.value.isEmpty ? 'No task data available' : controller.errorMessage.value,
+                            controller.errorMessage.value.isEmpty
+                                ? 'No task data available'
+                                : controller.errorMessage.value,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70, fontSize: 14),
+                            style: TextStyle(
+                              color: isInterior
+                                  ? const Color(0xFF2E2E2E)
+                                  : Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ),
@@ -80,7 +107,9 @@ class TaskScreenView extends GetView<TaskController> {
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.zero,
-                          children: isManager ? _buildManagerContent(project, isInterior) : _buildUserContent(project),
+                          children: isManager
+                              ? _buildManagerContent(project, isInterior)
+                              : _buildUserContent(project),
                         ),
                       ),
                     ),
@@ -96,7 +125,10 @@ class TaskScreenView extends GetView<TaskController> {
 
   List<Widget> _buildUserContent(TaskProjectEntity project) {
     return [
-      TaskActionAttentionCard(count: project.actionsNeededCount, message: project.actionsNeededMessage),
+      TaskActionAttentionCard(
+        count: project.actionsNeededCount,
+        message: project.actionsNeededMessage,
+      ),
       const SizedBox(height: 12),
       for (final section in project.sections) ...[
         TaskSectionHeaderRow(
@@ -111,18 +143,30 @@ class TaskScreenView extends GetView<TaskController> {
       if (controller.errorMessage.value.isNotEmpty)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12)),
+          child: Text(
+            controller.errorMessage.value,
+            style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12),
+          ),
         ),
     ];
   }
 
-  List<Widget> _buildManagerContent(TaskProjectEntity project, bool isInterior) {
+  List<Widget> _buildManagerContent(
+    TaskProjectEntity project,
+    bool isInterior,
+  ) {
     final phaseItems = _resolvePhaseItems(project);
     final bool showFinished = controller.managerPhaseTab.value == 1;
-    final List<TaskItemEntity> visibleItems = showFinished ? phaseItems.finished : phaseItems.active;
+    final List<TaskItemEntity> visibleItems = showFinished
+        ? phaseItems.finished
+        : phaseItems.active;
 
-    final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
-    final Color mutedTextColor = isInterior ? const Color(0xFF585858) : const Color(0xFF90A0A6);
+    final Color titleColor = isInterior
+        ? const Color(0xFF1D1D1D)
+        : Colors.white;
+    final Color mutedTextColor = isInterior
+        ? const Color(0xFF585858)
+        : const Color(0xFF90A0A6);
 
     return [
       _TaskPhaseToggleRow(
@@ -133,9 +177,24 @@ class TaskScreenView extends GetView<TaskController> {
         isInterior: isInterior,
       ),
       const SizedBox(height: 14),
-      Text(
-        showFinished ? 'Finished Phases' : 'Active Phases',
-        style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w600),
+      SizedBox(
+        width: 343,
+        height: 22,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            showFinished ? 'Finished Phases' : 'Active Phases',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.outfit(
+              color: titleColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              height: 22 / 16,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
       ),
       const SizedBox(height: 10),
       if (visibleItems.isEmpty)
@@ -143,21 +202,38 @@ class TaskScreenView extends GetView<TaskController> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
-            color: isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E),
+            color: isInterior
+                ? const Color(0xFFD5D2CA)
+                : const Color(0xFF111A1E),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: isInterior ? const Color(0xFF77716A) : const Color(0xFF39474D)),
+            border: Border.all(
+              color: isInterior
+                  ? const Color(0xFF77716A)
+                  : const Color(0xFF39474D),
+            ),
           ),
           child: Text(
-            showFinished ? 'No finished phases yet' : 'No active phases right now',
+            showFinished
+                ? 'No finished phases yet'
+                : 'No active phases right now',
             style: TextStyle(color: mutedTextColor, fontSize: 13),
           ),
         )
       else
-        ...visibleItems.map((item) => _TaskPhaseItemCard(item: item, isInterior: isInterior, showFinishedBadge: showFinished)),
+        ...visibleItems.map(
+          (item) => _TaskPhaseItemCard(
+            item: item,
+            isInterior: isInterior,
+            showFinishedBadge: showFinished,
+          ),
+        ),
       if (controller.errorMessage.value.isNotEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 10, bottom: 8),
-          child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12)),
+          child: Text(
+            controller.errorMessage.value,
+            style: const TextStyle(color: Color(0xFF8C2323), fontSize: 12),
+          ),
         ),
     ];
   }
@@ -189,8 +265,19 @@ class TaskScreenView extends GetView<TaskController> {
 
     for (final section in project.sections) {
       final normalized = section.title.trim().toLowerCase();
-      final isFinishedSection = _hasAnyKeyword(normalized, const ['finish', 'finished', 'complete', 'completed', 'done']);
-      final isActiveSection = _hasAnyKeyword(normalized, const ['active', 'pending', 'in progress', 'ongoing']);
+      final isFinishedSection = _hasAnyKeyword(normalized, const [
+        'finish',
+        'finished',
+        'complete',
+        'completed',
+        'done',
+      ]);
+      final isActiveSection = _hasAnyKeyword(normalized, const [
+        'active',
+        'pending',
+        'in progress',
+        'ongoing',
+      ]);
 
       if (isFinishedSection) {
         finished.addAll(section.items);
@@ -203,7 +290,9 @@ class TaskScreenView extends GetView<TaskController> {
 
     if (!usedExplicitSplit) {
       for (final section in project.sections) {
-        final int splitIndex = section.pendingCount.clamp(0, section.items.length).toInt();
+        final int splitIndex = section.pendingCount
+            .clamp(0, section.items.length)
+            .toInt();
         active.addAll(section.items.take(splitIndex));
         finished.addAll(section.items.skip(splitIndex));
       }
@@ -245,9 +334,15 @@ class _TaskPhaseToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color selectedColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
-    final Color unselectedColor = isInterior ? const Color(0xFF4B4B4B) : const Color(0xFF8B989E);
-    final Color underlineColor = isInterior ? const Color(0xFF6E6458) : const Color(0xFFD09A2F);
+    final Color selectedColor = isInterior
+        ? const Color(0xFF1D1D1D)
+        : Colors.white;
+    final Color unselectedColor = isInterior
+        ? const Color(0xFF4B4B4B)
+        : const Color(0xFF8B989E);
+    final Color underlineColor = isInterior
+        ? const Color(0xFF6E6458)
+        : const Color(0xFFD09A2F);
 
     return Row(
       children: [
@@ -302,10 +397,20 @@ class _TaskPhaseToggleItem extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: isSelected ? selectedColor : unselectedColor, fontSize: 14, fontWeight: FontWeight.w500),
+              style: GoogleFonts.outfit(
+                color: isSelected ? selectedColor : unselectedColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                height: 22 / 14,
+                letterSpacing: 0,
+              ),
             ),
             const SizedBox(height: 6),
-            Container(width: 70, height: 2, color: isSelected ? underlineColor : Colors.transparent),
+            Container(
+              width: 70,
+              height: 2,
+              color: isSelected ? underlineColor : Colors.transparent,
+            ),
           ],
         ),
       ),
@@ -314,7 +419,11 @@ class _TaskPhaseToggleItem extends StatelessWidget {
 }
 
 class _TaskPhaseItemCard extends StatelessWidget {
-  const _TaskPhaseItemCard({required this.item, required this.isInterior, required this.showFinishedBadge});
+  const _TaskPhaseItemCard({
+    required this.item,
+    required this.isInterior,
+    required this.showFinishedBadge,
+  });
 
   final TaskItemEntity item;
   final bool isInterior;
@@ -322,11 +431,21 @@ class _TaskPhaseItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color cardColor = isInterior ? const Color(0xFFD5D2CA) : const Color(0xFF111A1E);
-    final Color borderColor = isInterior ? const Color(0xFF77716A) : const Color(0xFF3A474D);
-    final Color titleColor = isInterior ? const Color(0xFF1E1E1E) : Colors.white;
-    final Color subtitleColor = isInterior ? const Color(0xFF373737) : const Color(0xFF90A0A6);
-    final Color arrowColor = isInterior ? const Color(0xFF8A6B37) : const Color(0xFFD2A463);
+    final Color cardColor = isInterior
+        ? const Color(0xFFD5D2CA)
+        : const Color(0xFF111A1E);
+    final Color borderColor = isInterior
+        ? const Color(0xFF77716A)
+        : const Color(0xFF3A474D);
+    final Color titleColor = isInterior
+        ? const Color(0xFF1E1E1E)
+        : Colors.white;
+    final Color subtitleColor = isInterior
+        ? const Color(0xFF373737)
+        : const Color(0xFF8E8E93);
+    final Color arrowColor = isInterior
+        ? const Color(0xFF8A6B37)
+        : const Color(0xFFD2A463);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -342,31 +461,66 @@ class _TaskPhaseItemCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500),
+                child: SizedBox(
+                  width: 265,
+                  height: 20,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        color: titleColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        height: 1,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               Icon(Icons.chevron_right_rounded, color: arrowColor, size: 24),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            item.subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: subtitleColor, fontSize: 12),
+          SizedBox(
+            width: 265,
+            height: 19,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                item.subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.manrope(
+                  color: subtitleColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  height: 1,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
           ),
           if (showFinishedBadge) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(color: const Color(0xFF0C9B2F), borderRadius: BorderRadius.circular(999)),
-              child: const Text(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0C9B2F),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
                 'Finished',
-                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  height: 1,
+                  letterSpacing: 0,
+                ),
               ),
             ),
           ],
