@@ -23,6 +23,7 @@ class PaymentScheduleSectionEntity {
 }
 
 class FinancialsProjectEntity {
+  final String id;
   final String projectName;
   final String projectAddress;
   final String? thumbnailUrl;
@@ -33,6 +34,7 @@ class FinancialsProjectEntity {
   final List<PaymentScheduleSectionEntity> scheduleSections;
 
   const FinancialsProjectEntity({
+    required this.id,
     required this.projectName,
     required this.projectAddress,
     this.thumbnailUrl,

@@ -103,7 +103,8 @@ class UpdateEndpoints {
 // ================= PROGRESS =================
 class ProgressEndpoints {
   static const String getProjects = "/progress/projects";
-  static const String submitProgress = "/progress";
+  static String submitProgress(String projectId) =>
+      "/projects/$projectId/progress";
 }
 
 // ================= TASK =================
@@ -113,7 +114,13 @@ class TaskEndpoints {
 
 // ================= FINANCIALS =================
 class FinancialsEndpoints {
-  static const String getProjects = "/tasks/financial-projects";
+  static const String getProjects = "/projects";
+
+  static String phasePayment(String projectId) =>
+      "/projects/$projectId/phase-payment";
+
+  static String financialSummary(String projectId) =>
+      "/projects/$projectId/financial-summary";
 }
 
 // ================= DOCUMENTS =================

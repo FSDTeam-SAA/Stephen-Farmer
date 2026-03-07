@@ -54,6 +54,7 @@ class ProgressController extends GetxController {
   }
 
   Future<bool> submitProgress({
+    String? projectId,
     required String progressName,
     required int percent,
     required String note,
@@ -62,7 +63,15 @@ class ProgressController extends GetxController {
       isSubmitting.value = true;
       submitErrorMessage.value = '';
 
+      final resolvedProjectId =
+          (projectId ?? '').trim().isNotEmpty ? projectId!.trim() : selectedProject?.id ?? '';
+      if (resolvedProjectId.trim().isEmpty) {
+        submitErrorMessage.value = 'Select a project first.';
+        return false;
+      }
+
       await _submitProgressUseCase.call(
+        projectId: resolvedProjectId,
         progressName: progressName,
         percent: percent,
         note: note,

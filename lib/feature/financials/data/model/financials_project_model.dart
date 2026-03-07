@@ -39,6 +39,7 @@ class PaymentScheduleSectionModel extends PaymentScheduleSectionEntity {
 
 class FinancialsProjectModel extends FinancialsProjectEntity {
   const FinancialsProjectModel({
+    required super.id,
     required super.projectName,
     required super.projectAddress,
     super.thumbnailUrl,
@@ -55,22 +56,42 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
         ? sectionRows.whereType<Map<String, dynamic>>().map(PaymentScheduleSectionModel.fromJson).toList()
         : <PaymentScheduleSectionModel>[];
 
+    final phasesRaw = json["phases"];
+    final phases = phasesRaw is List
+        ? phasesRaw.whereType<Map<String, dynamic>>().toList()
+        : <Map<String, dynamic>>[];
+
+    final scheduleFromPhases = phases.isEmpty ? <PaymentScheduleSectionModel>[] : _buildScheduleFromPhases(phases);
+    final resolvedSections = sections.isNotEmpty ? sections : scheduleFromPhases;
+
+    final totalBudget = _readInt(json, ["totalBudget", "projectBudget", "budget"], fallback: 0);
+    final paidToDate = _readInt(json, ["paidToDate", "totalPaid", "paidAmount", "totalPaid"], fallback: 0);
+    final remainingBalance = _readInt(json, ["remainingBalance", "remainingBudget", "remainingAmount"], fallback: 0);
+    final paidPercent = _readPercent(
+      json,
+      ["paidPercent", "paidPercentage", "paid_percentage"],
+      totalBudget: totalBudget,
+      paidToDate: paidToDate,
+    );
+
     return FinancialsProjectModel(
+      id: _readString(json, ["_id", "id", "projectId"]),
       projectName: _readString(json, ["projectName", "name", "title"], fallback: "Untitled Project"),
       projectAddress: _readString(json, ["projectAddress", "address", "location"], fallback: "N/A"),
       thumbnailUrl: _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
           ? null
           : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
-      totalBudget: _readInt(json, ["totalBudget", "budget"], fallback: 0),
-      paidToDate: _readInt(json, ["paidToDate", "paidAmount"], fallback: 0),
-      remainingBalance: _readInt(json, ["remainingBalance", "remainingAmount"], fallback: 0),
-      paidPercent: _readInt(json, ["paidPercent", "progressPercent"], fallback: 0),
-      scheduleSections: sections,
+      totalBudget: totalBudget,
+      paidToDate: paidToDate,
+      remainingBalance: remainingBalance,
+      paidPercent: paidPercent,
+      scheduleSections: resolvedSections,
     );
   }
 
   static const List<FinancialsProjectModel> dummyData = [
     FinancialsProjectModel(
+      id: "demo-1",
       projectName: "Riverside Apartment Renovation",
       projectAddress: "42 Harbor View Drive, Apt 8",
       thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop",
@@ -128,6 +149,7 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
       ],
     ),
     FinancialsProjectModel(
+      id: "demo-2",
       projectName: "Cityline Duplex Build",
       projectAddress: "15 Lakefront Ave, Unit 12",
       thumbnailUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
@@ -204,6 +226,99 @@ int _readInt(
     }
   }
   return fallback;
+}
+
+int _readPercent(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  required int totalBudget,
+  required int paidToDate,
+}) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is int) return value;
+    if (value is double) return value.round();
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed.round();
+    }
+  }
+  if (totalBudget <= 0) return 0;
+  return ((paidToDate / totalBudget) * 100).round();
+}
+
+List<PaymentScheduleSectionModel> _buildScheduleFromPhases(
+  List<Map<String, dynamic>> phases,
+) {
+  final paid = <PaymentScheduleItemModel>[];
+  final due = <PaymentScheduleItemModel>[];
+
+  for (final phase in phases) {
+    final name = _readString(phase, ["phaseName", "title", "name"], fallback: "Phase");
+    final amount = _readInt(phase, ["amount", "value"], fallback: 0);
+    final paymentStatus = _readString(phase, ["paymentStatus", "status"], fallback: "unpaid").toLowerCase();
+    final isPaid = paymentStatus == "paid";
+
+    final dueDateLabel = _readDateLabel(phase["dueDate"] ?? phase["due_date"]);
+    final paidAtLabel = _readDateLabel(phase["paidAt"] ?? phase["paid_at"]);
+    final dateLabel = (isPaid ? paidAtLabel : dueDateLabel).trim().isEmpty
+        ? (dueDateLabel.trim().isEmpty ? "" : dueDateLabel)
+        : (isPaid ? paidAtLabel : dueDateLabel);
+
+    final item = PaymentScheduleItemModel(
+      title: name,
+      dateLabel: dateLabel,
+      amount: amount,
+      isPaid: isPaid,
+    );
+
+    if (isPaid) {
+      paid.add(item);
+    } else {
+      due.add(item);
+    }
+  }
+
+  return [
+    if (paid.isNotEmpty) PaymentScheduleSectionModel(title: "Paid Amount", items: paid),
+    if (due.isNotEmpty) PaymentScheduleSectionModel(title: "Due Amount", items: due),
+  ];
+}
+
+String _readDateLabel(dynamic value) {
+  if (value == null) return "";
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return "";
+    final parsed = DateTime.tryParse(trimmed);
+    if (parsed != null) return _formatYmd(parsed);
+    return trimmed;
+  }
+  if (value is int) {
+    final dt = _tryParseEpoch(value);
+    return dt == null ? "" : _formatYmd(dt);
+  }
+  if (value is double) {
+    final dt = _tryParseEpoch(value.round());
+    return dt == null ? "" : _formatYmd(dt);
+  }
+  return value.toString();
+}
+
+DateTime? _tryParseEpoch(int value) {
+  if (value <= 0) return null;
+  if (value >= 1000000000000) {
+    return DateTime.fromMillisecondsSinceEpoch(value);
+  }
+  if (value >= 1000000000) {
+    return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+  }
+  return null;
+}
+
+String _formatYmd(DateTime dt) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${dt.year}-${two(dt.month)}-${two(dt.day)}';
 }
 
 bool _readBool(

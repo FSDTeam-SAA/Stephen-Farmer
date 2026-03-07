@@ -15,6 +15,7 @@ class UpdateController extends GetxController {
   final UpdateUseCase _useCase;
 
   final RxBool isLoading = false.obs;
+  final RxString errorMessage = ''.obs;
   final RxBool isProjectMenuOpen = false.obs;
   final RxBool isCategoryMenuOpen = false.obs;
   final RxBool isCreatingUpdate = false.obs;
@@ -37,6 +38,8 @@ class UpdateController extends GetxController {
 
   bool get shouldShowProjectDropdown => projects.length > 1;
 
+  bool get hasProjects => projects.isNotEmpty;
+
   UpdateProjectModel? get selectedProject {
     if (projects.isEmpty) return null;
     final idx = _safeProjectIndex;
@@ -55,6 +58,7 @@ class UpdateController extends GetxController {
   Future<void> refreshAll() async {
     try {
       isLoading.value = true;
+      errorMessage.value = '';
       final fetchedProjects = await _useCase.fetchProjects(_apiClient);
       projects.assignAll(
         fetchedProjects.where((p) => p.id.trim().isNotEmpty).toList(),
@@ -68,8 +72,9 @@ class UpdateController extends GetxController {
         _refreshCategoryFilters();
       }
     } catch (_) {
+      errorMessage.value = 'Failed to load updates. Please try again.';
       projects.clear();
-      updateList.assignAll(UpdateModel.dummyData);
+      updateList.clear();
       _refreshCategoryFilters();
     } finally {
       isLoading.value = false;
@@ -234,6 +239,7 @@ class UpdateController extends GetxController {
 
     try {
       isLoading.value = true;
+      errorMessage.value = '';
       final updates = await _useCase.fetchProjectUpdates(
         apiClient: _apiClient,
         projectId: projectId,
@@ -243,6 +249,7 @@ class UpdateController extends GetxController {
     } catch (_) {
       updateList.clear();
       _refreshCategoryFilters();
+      errorMessage.value = 'Failed to load updates. Please try again.';
       Get.snackbar('Error', 'Failed to load updates');
     } finally {
       isLoading.value = false;

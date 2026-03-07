@@ -38,9 +38,7 @@ class _AppGroundViewState extends State<AppGroundView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B1218),
-      body: SafeArea(
-        child: IndexedStack(index: safeIndex, children: tabs),
-      ),
+      body: IndexedStack(index: safeIndex, children: tabs),
       bottomNavigationBar: BottomNavBar(
         currentIndex: safeIndex,
         includeFinancials: !_isManager,

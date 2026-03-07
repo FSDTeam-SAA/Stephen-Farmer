@@ -8,11 +8,13 @@ class SubmitProgressUseCase {
   final ProgressRepository _repository;
 
   Future<void> call({
+    required String projectId,
     required String progressName,
     required int percent,
     required String note,
   }) {
     return _repository.submitProgress(
+      projectId: projectId,
       progressName: progressName,
       percent: percent,
       note: note,

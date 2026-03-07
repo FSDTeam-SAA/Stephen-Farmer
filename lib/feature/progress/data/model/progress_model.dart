@@ -5,19 +5,76 @@ class ProgressTaskModel extends ProgressTaskEntity {
     required super.title,
     required super.status,
     required super.progressPercent,
+    super.dateLabel,
   });
 
   factory ProgressTaskModel.fromJson(Map<String, dynamic> json) {
+    final date = _readFirstDateLabel(
+      json,
+      [
+        "date",
+        "createdAt",
+        "created_at",
+        "updatedAt",
+        "updated_at",
+        "completedAt",
+        "completed_at",
+        "startedAt",
+        "started_at",
+      ],
+      fallback: "",
+    );
+
     return ProgressTaskModel(
       title: _readFirstString(json, ["title", "name", "task"], fallback: "Untitled Task"),
       status: _readFirstString(json, ["status", "state"], fallback: "In Progress"),
       progressPercent: _readFirstInt(json, ["progressPercent", "progress", "completion"], fallback: 0),
+      dateLabel: date.trim().isEmpty ? null : date,
+    );
+  }
+}
+
+class ProgressUpdateModel extends ProgressUpdateEntity {
+  const ProgressUpdateModel({
+    required super.id,
+    required super.progressName,
+    required super.percent,
+    required super.note,
+    required super.updatedBy,
+    super.updatedAtLabel,
+  });
+
+  factory ProgressUpdateModel.fromJson(Map<String, dynamic> json) {
+    final updatedAt = _readFirstDateLabel(
+      json,
+      [
+        "updatedAt",
+        "updated_at",
+        "createdAt",
+        "created_at",
+        "date",
+      ],
+      fallback: "",
+    );
+
+    return ProgressUpdateModel(
+      id: _readFirstString(json, ["_id", "id", "progressId"]),
+      progressName: _readFirstString(
+        json,
+        ["progressName", "name", "title"],
+        fallback: "Progress Update",
+      ),
+      percent: _readFirstInt(json, ["percent", "progressPercent", "progress"]),
+      note: _readFirstString(json, ["note", "status", "message"], fallback: ""),
+      updatedBy: _readFirstString(json, ["updatedBy", "userId", "user"]),
+      updatedAtLabel: updatedAt.trim().isEmpty ? null : updatedAt,
     );
   }
 }
 
 class ProjectProgressModel extends ProjectProgressEntity {
   const ProjectProgressModel({
+    required super.id,
     required super.name,
     required super.address,
     required super.heroImageUrl,
@@ -31,13 +88,23 @@ class ProjectProgressModel extends ProjectProgressEntity {
     required super.startedDate,
     required super.handoverDate,
     required super.tasks,
+    required super.updates,
   });
 
   factory ProjectProgressModel.fromJson(Map<String, dynamic> json) {
     final taskPayload = json["tasks"] ?? json["milestones"] ?? json["items"];
     final taskList = _extractTaskList(taskPayload);
+    final updatePayload =
+        json["progressUpdates"] ??
+        json["progress_updates"] ??
+        json["updates"] ??
+        json["progress"] ??
+        json["progressUpdate"] ??
+        json["progress_update"];
+    final updates = _extractUpdateList(updatePayload);
 
     return ProjectProgressModel(
+      id: _readFirstString(json, ["_id", "id", "projectId"]),
       name: _readFirstString(json, ["name", "title", "projectName"], fallback: "Untitled Project"),
       address: _readFirstString(json, ["address", "location"], fallback: "N/A"),
       heroImageUrl: _readFirstString(json, ["heroImageUrl", "coverImage", "imageUrl", "image"], fallback: ""),
@@ -50,14 +117,42 @@ class ProjectProgressModel extends ProjectProgressEntity {
       tasksCompleted: _readFirstInt(json, ["tasksCompleted", "completedTasks"], fallback: 0),
       tasksTotal: _readFirstInt(json, ["tasksTotal", "totalTasks"], fallback: 0),
       photosTotal: _readFirstInt(json, ["photosTotal", "totalPhotos"], fallback: 0),
-      startedDate: _readFirstString(json, ["startedDate", "startDate"], fallback: "N/A"),
-      handoverDate: _readFirstString(json, ["handoverDate", "estHandoverDate"], fallback: "N/A"),
+      startedDate: _readFirstDateLabel(
+        json,
+        [
+          "startedDate",
+          "startDate",
+          "start_date",
+          "startedAt",
+          "startAt",
+          "createdAt",
+          "created_at",
+        ],
+        fallback: "N/A",
+      ),
+      handoverDate: _readFirstDateLabel(
+        json,
+        [
+          "handoverDate",
+          "estHandoverDate",
+          "handover_date",
+          "est_handover_date",
+          "handoverAt",
+          "endDate",
+          "end_date",
+          "deadline",
+          "deadlineDate",
+        ],
+        fallback: "N/A",
+      ),
       tasks: taskList,
+      updates: updates,
     );
   }
 
   static const List<ProjectProgressModel> dummyData = [
     ProjectProgressModel(
+      id: 'demo-1',
       name: 'Villa Horizon Renovation',
       address: '42 Harbor View Drive, Apt 12B',
       heroImageUrl:
@@ -94,8 +189,19 @@ class ProjectProgressModel extends ProjectProgressEntity {
           progressPercent: 47,
         ),
       ],
+      updates: [
+        ProgressUpdateModel(
+          id: 'demo-u1',
+          progressName: 'Foundation Completed',
+          percent: 20,
+          note: 'Foundation and base slab completed',
+          updatedBy: 'system',
+          updatedAtLabel: '2026-03-07',
+        ),
+      ],
     ),
     ProjectProgressModel(
+      id: 'demo-2',
       name: 'Riverside Apartment Upgrade',
       address: '15 Lakefront Avenue, Unit 8A',
       heroImageUrl:
@@ -127,6 +233,7 @@ class ProjectProgressModel extends ProjectProgressEntity {
           progressPercent: 39,
         ),
       ],
+      updates: <ProgressUpdateEntity>[],
     ),
   ];
 }
@@ -136,6 +243,16 @@ List<ProgressTaskModel> _extractTaskList(dynamic payload) {
     return payload.whereType<Map<String, dynamic>>().map(ProgressTaskModel.fromJson).toList();
   }
   return <ProgressTaskModel>[];
+}
+
+List<ProgressUpdateModel> _extractUpdateList(dynamic payload) {
+  if (payload is List) {
+    return payload
+        .whereType<Map<String, dynamic>>()
+        .map(ProgressUpdateModel.fromJson)
+        .toList();
+  }
+  return <ProgressUpdateModel>[];
 }
 
 String _readFirstString(
@@ -167,4 +284,52 @@ int _readFirstInt(
     }
   }
   return fallback;
+}
+
+String _readFirstDateLabel(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = "",
+}) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value == null) continue;
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) continue;
+      final parsed = DateTime.tryParse(trimmed);
+      if (parsed != null) return _formatYmd(parsed);
+      return trimmed;
+    }
+
+    if (value is int) {
+      final parsed = _tryParseEpoch(value);
+      if (parsed != null) return _formatYmd(parsed);
+    }
+
+    if (value is double) {
+      final parsed = _tryParseEpoch(value.round());
+      if (parsed != null) return _formatYmd(parsed);
+    }
+  }
+
+  return fallback;
+}
+
+DateTime? _tryParseEpoch(int value) {
+  // Heuristic: epoch ms is typically 13 digits; epoch seconds ~10 digits.
+  if (value <= 0) return null;
+  if (value >= 1000000000000) {
+    return DateTime.fromMillisecondsSinceEpoch(value);
+  }
+  if (value >= 1000000000) {
+    return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+  }
+  return null;
+}
+
+String _formatYmd(DateTime dt) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${dt.year}-${two(dt.month)}-${two(dt.day)}';
 }

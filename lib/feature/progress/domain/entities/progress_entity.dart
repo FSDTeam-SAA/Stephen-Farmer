@@ -2,15 +2,38 @@ class ProgressTaskEntity {
   final String title;
   final String status;
   final int progressPercent;
+  final String? dateLabel;
 
   const ProgressTaskEntity({
     required this.title,
     required this.status,
     required this.progressPercent,
+    this.dateLabel,
   });
 }
 
+class ProgressUpdateEntity extends ProgressTaskEntity {
+  final String id;
+  final String note;
+  final String updatedBy;
+
+  const ProgressUpdateEntity({
+    required this.id,
+    required String progressName,
+    required int percent,
+    required this.note,
+    required this.updatedBy,
+    String? updatedAtLabel,
+  }) : super(
+          title: progressName,
+          status: percent >= 100 ? 'Completed' : 'In Progress',
+          progressPercent: percent,
+          dateLabel: updatedAtLabel,
+        );
+}
+
 class ProjectProgressEntity {
+  final String id;
   final String name;
   final String address;
   final String heroImageUrl;
@@ -24,8 +47,10 @@ class ProjectProgressEntity {
   final String startedDate;
   final String handoverDate;
   final List<ProgressTaskEntity> tasks;
+  final List<ProgressUpdateEntity> updates;
 
   const ProjectProgressEntity({
+    required this.id,
     required this.name,
     required this.address,
     required this.heroImageUrl,
@@ -39,5 +64,6 @@ class ProjectProgressEntity {
     required this.startedDate,
     required this.handoverDate,
     required this.tasks,
+    required this.updates,
   });
 }

@@ -48,7 +48,7 @@ class AppDependencies {
     Get.lazyPut<ProgressRepository>(
       () => ProgressRepositoryImpl(
         apiClient: Get.find<ApiClient>(),
-        useMockData: true,
+        useMockData: false,
       ),
       fenix: true,
     );
@@ -76,7 +76,7 @@ class AppDependencies {
     Get.lazyPut<FinancialsRepository>(
       () => FinancialsRepositoryImpl(
         apiClient: Get.find<ApiClient>(),
-        useMockData: true,
+        useMockData: false,
       ),
       fenix: true,
     );

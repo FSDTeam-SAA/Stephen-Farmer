@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
@@ -23,16 +24,18 @@ class FinancialsScreenView extends GetView<FinancialsController> {
       final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
       final Color sectionColor = isInterior ? const Color(0xFF45413C) : const Color(0xFFD5D5D5);
 
-      return Scaffold(
-        backgroundColor: RoleBgColor.scaffoldColor(role),
-        body: SafeArea(
-          child: Container(
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: RoleBgColor.overlayStyle(role),
+        child: Scaffold(
+          backgroundColor: RoleBgColor.scaffoldColor(role),
+          body: Container(
             decoration: RoleBgColor.decoration(role),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Center(
                     child: Text(
                       'Financials',
@@ -97,7 +100,8 @@ class FinancialsScreenView extends GetView<FinancialsController> {
                       ),
                     ),
                   ],
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class RoleBgColor {
   static const LinearGradient interiorGradient = LinearGradient(
@@ -24,6 +25,15 @@ class RoleBgColor {
   }
 
   static Color scaffoldColor(String role) {
-    return isInterior(role) ? Colors.transparent : Colors.black;
+    return isInterior(role) ? interiorGradient.colors.first : Colors.black;
+  }
+
+  static SystemUiOverlayStyle overlayStyle(String role) {
+    final interior = isInterior(role);
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: interior ? Brightness.dark : Brightness.light,
+      statusBarBrightness: interior ? Brightness.light : Brightness.dark,
+    );
   }
 }

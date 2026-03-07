@@ -23,7 +23,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
     }
 
     try {
-      final response = await _apiClient.get(ProgressEndpoints.getProjects);
+      final response = await _apiClient.get(ProjectEndpoints.getAll);
       final rows = _extractProjectRows(response.data);
       return rows.map(ProjectProgressModel.fromJson).toList();
     } catch (e) {
@@ -33,6 +33,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
 
   @override
   Future<void> submitProgress({
+    required String projectId,
     required String progressName,
     required int percent,
     required String note,
@@ -45,7 +46,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
 
     try {
       await _apiClient.post(
-        ProgressEndpoints.submitProgress,
+        ProgressEndpoints.submitProgress(projectId),
         data: request.toJson(),
       );
     } catch (e) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
@@ -23,17 +24,19 @@ class TaskScreenView extends GetView<TaskController> {
       final bool isManager = authController.normalizedRoleKey == 'manager';
       final isInterior = RoleBgColor.isInterior(role);
 
-      return Scaffold(
-        backgroundColor: RoleBgColor.scaffoldColor(role),
-        body: SafeArea(
-          child: Container(
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: RoleBgColor.overlayStyle(role),
+        child: Scaffold(
+          backgroundColor: RoleBgColor.scaffoldColor(role),
+          body: Container(
             decoration: RoleBgColor.decoration(role),
             // color: isInterior ? null : const Color(0xFF0B1419),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Text(
                     'Active Project',
                     style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
@@ -85,7 +88,8 @@ class TaskScreenView extends GetView<TaskController> {
                       ),
                     ),
                   ],
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
@@ -38,15 +39,17 @@ class NotificationScreenView extends GetView<NotificationController> {
           ? const Color(0xFF4C4C4C)
           : Colors.white;
 
-      return Scaffold(
-        backgroundColor: RoleBgColor.scaffoldColor(role),
-        body: SafeArea(
-          child: Container(
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: RoleBgColor.overlayStyle(role),
+        child: Scaffold(
+          backgroundColor: RoleBgColor.scaffoldColor(role),
+          body: Container(
             decoration: RoleBgColor.decoration(role),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-              child: Column(
-                children: [
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                child: Column(
+                  children: [
                   Row(
                     children: [
                       Text(
@@ -211,7 +214,8 @@ class NotificationScreenView extends GetView<NotificationController> {
                             ),
                           ),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
