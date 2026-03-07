@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../data/repo/post_repostory_impl.dart';
@@ -9,11 +10,13 @@ import '../controller/add_update_post_controller.dart';
 class AddUpdateScreenView extends StatefulWidget {
   final String projectId;
   final VoidCallback? onPostSuccess;
+  final bool isInteriorTheme;
 
   const AddUpdateScreenView({
     super.key,
     required this.projectId,
     this.onPostSuccess,
+    this.isInteriorTheme = false,
   });
 
   @override
@@ -46,9 +49,15 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
   }
 
   Future<void> _showPickSheet() async {
+    final sheetBg = widget.isInteriorTheme
+        ? const Color(0xFFF2EEE7)
+        : const Color(0xFF132028);
+    final sheetText = widget.isInteriorTheme ? Colors.black : Colors.white;
+    final muted = widget.isInteriorTheme ? Colors.black54 : Colors.white70;
+
     await showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF132028),
+      backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -57,11 +66,8 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_camera, color: Colors.white),
-              title: const Text(
-                'Camera',
-                style: TextStyle(color: Colors.white),
-              ),
+              leading: Icon(Icons.photo_camera, color: sheetText),
+              title: Text('Camera', style: TextStyle(color: sheetText)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _controller.pickPhoto(
@@ -70,11 +76,8 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text(
-                'Gallery',
-                style: TextStyle(color: Colors.white),
-              ),
+              leading: Icon(Icons.photo_library, color: sheetText),
+              title: Text('Gallery', style: TextStyle(color: sheetText)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _controller.pickPhoto(
@@ -84,14 +87,8 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
             ),
             if (_controller.draft.imageFile != null)
               ListTile(
-                leading: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.white70,
-                ),
-                title: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.white70),
-                ),
+                leading: Icon(Icons.delete_outline, color: muted),
+                title: Text('Remove', style: TextStyle(color: muted)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _controller.removePhoto(); // ✅ controller call
@@ -128,9 +125,27 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
 
   @override
   Widget build(BuildContext context) {
-    const bg = Color(0xFF08151C);
-    const card = Color(0xFF132028);
+    final isInterior = widget.isInteriorTheme;
+    final bg = isInterior ? const Color(0xFFB8B2A7) : const Color(0xFF08151C);
+    final card = isInterior ? const Color(0xFFD5D0C6) : const Color(0xFF132028);
     const accent = Color(0xFFD7C5A4);
+    const postButtonBg = Color(0xFFAF8C6A);
+    final titleColor = isInterior ? const Color(0xFF111111) : Colors.white;
+    final descriptionBoxColor = isInterior
+        ? const Color(0xFFF1F1F1)
+        : const Color(0xFF1B2630).withValues(alpha: 0.72);
+    final descriptionBorder = isInterior
+        ? const Color(0xFFE3E3E3)
+        : const Color(0xFF808080).withValues(alpha: 0.35);
+    final hintColor = isInterior
+        ? const Color.fromRGBO(128, 128, 128, 0.55)
+        : const Color.fromRGBO(128, 128, 128, 0.55);
+    final cameraBadgeColor = isInterior
+        ? const Color(0xFFE2DED5)
+        : Colors.white.withValues(alpha: 0.08);
+    final cameraIconColor = isInterior
+        ? const Color(0xFFD7C5A4)
+        : Colors.white70;
 
     final isPosting = _controller.isLoading;
     final canPost = _controller.draft.canPost;
@@ -161,40 +176,44 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                             minimumSize: const Size(56, 36),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
+                              color: accent,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
+                              height: 1,
+                              letterSpacing: 0,
                             ),
                           ),
                         ),
                         const Spacer(),
-                        const Text(
+                        Text(
                           'New Post',
-                          style: TextStyle(
-                            color: Colors.white,
+                          style: GoogleFonts.manrope(
+                            color: titleColor,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
+                            height: 1,
+                            letterSpacing: 0,
                           ),
                         ),
                         const Spacer(),
                         SizedBox(
-                          height: 42,
+                          width: 68,
+                          height: 36,
                           child: ElevatedButton(
                             onPressed: (isPosting || !canPost) ? null : _onPost,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: accent,
+                              backgroundColor: postButtonBg,
                               foregroundColor: Colors.white,
-                              disabledBackgroundColor: accent.withValues(
+                              disabledBackgroundColor: postButtonBg.withValues(
                                 alpha: 0.6,
                               ),
                               disabledForegroundColor: Colors.white70,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(22),
+                                borderRadius: BorderRadius.circular(1000),
                               ),
                               elevation: 0,
                             ),
@@ -209,11 +228,14 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                                       ),
                                     ),
                                   )
-                                : const Text(
+                                : Text(
                                     'Post',
-                                    style: TextStyle(
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
+                                      height: 1,
+                                      letterSpacing: 0,
                                     ),
                                   ),
                           ),
@@ -245,30 +267,30 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                                   children: [
                                     InkWell(
                                       onTap: isPosting ? null : _showPickSheet,
-                                      borderRadius: BorderRadius.circular(26),
+                                      borderRadius: BorderRadius.circular(20),
                                       child: Container(
-                                        width: 52,
-                                        height: 52,
+                                        width: 40,
+                                        height: 40,
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.08,
-                                          ),
+                                          color: cameraBadgeColor,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.add_rounded,
-                                          color: Colors.white70,
-                                          size: 34,
+                                          color: cameraIconColor,
+                                          size: 24,
                                         ),
                                       ),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text(
+                                    Text(
                                       'Add site photo',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w400,
+                                      style: GoogleFonts.manrope(
+                                        color: titleColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1,
+                                        letterSpacing: 0,
                                       ),
                                     ),
                                   ],
@@ -294,8 +316,9 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF222A31).withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(18),
+                        color: descriptionBoxColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: descriptionBorder),
                       ),
                       child: TextField(
                         controller: _descriptionController,
@@ -303,15 +326,22 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                             _controller.setDescription, // ✅ controller call
                         maxLines: 5,
                         minLines: 5,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+                        style: GoogleFonts.manrope(
+                          color: isInterior
+                              ? const Color(0xFF1A1A1A)
+                              : Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Enter description...',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF7C7F84),
-                            fontSize: 20,
+                          hintStyle: GoogleFonts.manrope(
+                            color: hintColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            height: 1,
+                            letterSpacing: 0,
                           ),
                           border: InputBorder.none,
                           isCollapsed: true,

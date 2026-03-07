@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 
 import '../../data/model/update_model.dart';
 
@@ -56,13 +58,10 @@ class UpdatePostCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: NetworkImage(
-                  item.authorAvatar?.trim().isNotEmpty == true
-                      ? item.authorAvatar!.trim()
-                      : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
-                ),
+              _AuthorAvatar(
+                imageUrl: item.authorAvatar,
+                radius: 24,
+                isInteriorTheme: isInteriorTheme,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -71,10 +70,12 @@ class UpdatePostCard extends StatelessWidget {
                   children: [
                     Text(
                       item.authorName,
-                      style: TextStyle(
+                      style: GoogleFonts.manrope(
                         color: primaryTextColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        height: 1,
+                        letterSpacing: 0,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -95,10 +96,12 @@ class UpdatePostCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             item.description.trim().isEmpty ? item.title : item.description,
-            style: TextStyle(
+            style: GoogleFonts.manrope(
               color: contentTextColor,
               fontSize: 14,
               fontWeight: FontWeight.w400,
+              height: 1,
+              letterSpacing: 0,
             ),
           ),
           const SizedBox(height: 12),
@@ -136,7 +139,7 @@ class UpdatePostCard extends StatelessWidget {
               Text(
                 '${item.commentCount} Comments',
                 style: TextStyle(
-                  color: metaStatColor,
+                  color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -145,7 +148,7 @@ class UpdatePostCard extends StatelessWidget {
               Text(
                 '${item.shareCount} Shares',
                 style: TextStyle(
-                  color: metaStatColor,
+                  color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -164,7 +167,7 @@ class UpdatePostCard extends StatelessWidget {
                 isInteriorTheme: isInteriorTheme,
               ),
               _ActionBtn(
-                icon: Icons.mode_comment_outlined,
+                assetPath: AssetsImages.comments,
                 label: 'Comment',
                 onTap: onComment,
                 isInteriorTheme: isInteriorTheme,
@@ -183,21 +186,77 @@ class UpdatePostCard extends StatelessWidget {
   }
 }
 
+class _AuthorAvatar extends StatelessWidget {
+  const _AuthorAvatar({
+    required this.imageUrl,
+    required this.radius,
+    required this.isInteriorTheme,
+  });
+
+  final String? imageUrl;
+  final double radius;
+  final bool isInteriorTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl?.trim() ?? '';
+    final diameter = radius * 2;
+
+    if (url.isNotEmpty) {
+      return ClipOval(
+        child: Image.network(
+          url,
+          width: diameter,
+          height: diameter,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildPlaceholder(),
+        ),
+      );
+    }
+
+    return _buildPlaceholder();
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isInteriorTheme
+            ? const Color(0xFFD7CCBA)
+            : const Color(0xFFD9CFF0),
+      ),
+      child: Icon(
+        Icons.person_rounded,
+        size: radius,
+        color: isInteriorTheme
+            ? const Color(0xFF655B4E)
+            : const Color(0xFF7D7390),
+      ),
+    );
+  }
+}
+
 class _ActionBtn extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final String label;
   final VoidCallback onTap;
   final bool isInteriorTheme;
 
   const _ActionBtn({
-    required this.icon,
+    this.icon,
+    this.assetPath,
     required this.label,
     required this.onTap,
     this.isInteriorTheme = false,
-  });
+  }) : assert(icon != null || assetPath != null);
 
   @override
   Widget build(BuildContext context) {
+    const actionColor = Color(0xFFD7C5A4);
+
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
@@ -205,16 +264,15 @@ class _ActionBtn extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: isInteriorTheme ? const Color(0xFFD7C5A4) : Colors.white,
-              size: 18,
-            ),
+            if (assetPath != null)
+              Image.asset(assetPath!, width: 18, height: 18, color: actionColor)
+            else
+              Icon(icon, color: actionColor, size: 18),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isInteriorTheme ? const Color(0xFFD7C5A4) : Colors.white,
+                color: actionColor,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
