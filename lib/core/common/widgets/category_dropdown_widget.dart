@@ -28,6 +28,8 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
   final FontWeight subtitleFontWeight;
   final TextStyle? titleTextStyle;
   final TextStyle? subtitleTextStyle;
+  final double? subtitleWidth;
+  final double? subtitleHeight;
   final double chevronSize;
   final double maxMenuHeight;
   final double? minHeight;
@@ -60,6 +62,8 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
     this.subtitleFontWeight = FontWeight.w400,
     this.titleTextStyle,
     this.subtitleTextStyle,
+    this.subtitleWidth,
+    this.subtitleHeight,
     this.chevronSize = 20,
     this.maxMenuHeight = 220,
     this.minHeight = 57,
@@ -118,6 +122,8 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
                     subtitleFontWeight: subtitleFontWeight,
                     titleTextStyle: titleTextStyle,
                     subtitleTextStyle: subtitleTextStyle,
+                    subtitleWidth: subtitleWidth,
+                    subtitleHeight: subtitleHeight,
                     chevronSize: chevronSize,
                   ),
                 ),
@@ -159,6 +165,8 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
                                   subtitleFontWeight: subtitleFontWeight,
                                   titleTextStyle: titleTextStyle,
                                   subtitleTextStyle: subtitleTextStyle,
+                                  subtitleWidth: subtitleWidth,
+                                  subtitleHeight: subtitleHeight,
                                   chevronSize: chevronSize,
                                 ),
                               ),
@@ -197,6 +205,8 @@ class _DropdownRow<T> extends StatelessWidget {
     required this.subtitleFontWeight,
     required this.titleTextStyle,
     required this.subtitleTextStyle,
+    required this.subtitleWidth,
+    required this.subtitleHeight,
     required this.chevronSize,
   });
 
@@ -219,6 +229,8 @@ class _DropdownRow<T> extends StatelessWidget {
   final FontWeight subtitleFontWeight;
   final TextStyle? titleTextStyle;
   final TextStyle? subtitleTextStyle;
+  final double? subtitleWidth;
+  final double? subtitleHeight;
   final double chevronSize;
 
   @override
@@ -254,12 +266,20 @@ class _DropdownRow<T> extends StatelessWidget {
                   color: titleColor,
                 ),
               ),
-              Text(
-                subtitleBuilder(item),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: (subtitleTextStyle ?? TextStyle(color: subtitleColor, fontSize: subtitleFontSize, fontWeight: subtitleFontWeight))
-                    .copyWith(color: subtitleColor),
+              SizedBox(
+                width: subtitleWidth,
+                height: subtitleHeight,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    subtitleBuilder(item),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        (subtitleTextStyle ?? TextStyle(color: subtitleColor, fontSize: subtitleFontSize, fontWeight: subtitleFontWeight))
+                            .copyWith(color: subtitleColor),
+                  ),
+                ),
               ),
             ],
           ),
