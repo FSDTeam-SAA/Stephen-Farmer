@@ -36,19 +36,13 @@ class UpdateScreenView extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isInterior ? const Color(0xFF1D1D1D) : Colors.white,
-            fontSize: 16,
-          ),
+          style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16),
         ),
       ),
     );
   }
 
-  Widget _createUpdateCard({
-    required bool isInterior,
-    required UpdateController controller,
-  }) {
+  Widget _createUpdateCard({required bool isInterior, required UpdateController controller}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
@@ -58,12 +52,7 @@ class UpdateScreenView extends StatelessWidget {
             Get.snackbar('Error', 'Select a project first');
             return;
           }
-          Get.to(
-            () => AddUpdateScreenView(
-              projectId: controller.selectedProjectId,
-              onPostSuccess: controller.refreshAll,
-            ),
-          );
+          Get.to(() => AddUpdateScreenView(projectId: controller.selectedProjectId, onPostSuccess: controller.refreshAll));
         },
         child: Container(
           height: 72,
@@ -71,36 +60,14 @@ class UpdateScreenView extends StatelessWidget {
           decoration: BoxDecoration(
             color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isInterior
-                  ? const Color(0xFF8A7F6C)
-                  : const Color(0xFF2B4756),
-            ),
+            border: Border.all(color: isInterior ? const Color(0xFF8A7F6C) : const Color(0xFF2B4756)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isInterior
-                        ? const Color(0xFFD6CCB9)
-                        : const Color(0xFF2D3232),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.photo_camera_rounded,
-                      size: 20,
-                      color: isInterior
-                          ? const Color(0xFF5A5246)
-                          : const Color(0xFFD7C5A4),
-                    ),
-                  ),
-                ),
+                CircleAvatar(child: Icon(Icons.photo_camera_rounded, size: 18, color: isInterior ? const Color(0xFF2E2E2E) : Colors.grey.shade300)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Row(
@@ -111,31 +78,15 @@ class UpdateScreenView extends StatelessWidget {
                         children: [
                           Text(
                             "Create Update ",
-                            style: TextStyle(
-                              color: isInterior
-                                  ? const Color(0xFF2F2A24)
-                                  : Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: TextStyle(color: isInterior ? const Color(0xFF2F2A24) : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                           Text(
                             "Share progress from the site",
-                            style: TextStyle(
-                              color: isInterior
-                                  ? const Color(0xFF2E2E2E)
-                                  : Colors.white70,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
+                            style: TextStyle(color: isInterior ? const Color(0xFF2E2E2E) : Colors.white70, fontSize: 12, fontWeight: FontWeight.w400),
                           ),
                         ],
                       ),
-                      Icon(
-                        Icons.add_circle_outline,
-                        size: 30,
-                        color: AppColor.appColor,
-                      ),
+                      Icon(Icons.add_circle_outline, size: 30, color: AppColor.appColor),
                     ],
                   ),
                 ),
@@ -160,8 +111,6 @@ class UpdateScreenView extends StatelessWidget {
       final selectedCategoryIndex = categoryItems.indexOf(controller.selectedCategory.value);
       final safeCategorySelectedIndex = selectedCategoryIndex < 0 ? 0 : selectedCategoryIndex;
       final filteredList = controller.filteredUpdates;
-      final isProjectMenuOpen = controller.isProjectMenuOpen.value;
-      final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
       final notificationIconColor = isInterior ? const Color(0xFF1D1D1D) : const Color(0xFFC9B089);
       final logoutIconColor = const Color(0xFFF24E4E);
 
@@ -567,6 +516,48 @@ class UpdateScreenView extends StatelessWidget {
                                             ),
                                           );
                                         },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 10),
+                            Expanded(
+                              child: RefreshIndicator(
+                                onRefresh: controller.refreshAll,
+                                child: ListView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  padding: EdgeInsets.zero,
+                                  children: [
+                                    if (isManager) _createUpdateCard(isInterior: isInterior, controller: controller),
+                                    if (controller.isLoading.value && controller.updateList.isEmpty)
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 24),
+                                        child: Center(child: CircularProgressIndicator()),
+                                      )
+                                    else if (controller.errorMessage.value.isNotEmpty && controller.updateList.isEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 24),
+                                        child: Center(
+                                          child: Text(controller.errorMessage.value, style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                        ),
+                                      )
+                                    else if (filteredList.isEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 24),
+                                        child: Center(
+                                          child: Text("No updates found", style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14)),
+                                        ),
+                                      )
+                                    else
+                                      ...filteredList.map(
+                                        (item) => UpdatePostCard(
+                                          item: item,
+                                          isInteriorTheme: isInterior,
+                                          onLike: () => controller.toggleLike(item),
+                                          onShare: () => controller.shareUpdate(item),
+                                          onComment: () => _showCommentsSheet(context: context, controller: controller, updateId: item.id, isInterior: isInterior),
+                                        ),
                                       ),
                                   ],
                                 ),
