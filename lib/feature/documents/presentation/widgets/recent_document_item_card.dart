@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
+import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
 import '../../domain/entities/document_project_entity.dart';
 
@@ -11,13 +14,30 @@ class RecentDocumentItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final role = Get.find<LoginController>().role.value;
+    final isInterior = RoleBgColor.isInterior(role);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0DFDD),
+        color: isInterior ? null : const Color(0xFFE0DFDD),
+        gradient: isInterior
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromRGBO(226, 221, 215, 1),
+                  Color.fromRGBO(144, 137, 120, 1),
+                ],
+              )
+            : null,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFBFC3C5)),
+        border: Border.all(
+          color: isInterior
+              ? const Color.fromRGBO(109, 111, 115, 1)
+              : const Color(0xFFBFC3C5),
+        ),
       ),
       child: Row(
         children: [
