@@ -67,12 +67,11 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 12),
-
                       Align(
                         alignment: Alignment.centerLeft,
                         child: IconButton(
-                          onPressed: () => Get.back(),
-                          tooltip: "Back",
+                          onPressed: Get.back,
+                          tooltip: 'Back',
                           icon: Icon(
                             Icons.arrow_back_ios_new_rounded,
                             size: 18,
@@ -80,9 +79,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 28),
-
                       Center(
                         child: isInterior
                             ? Image.asset(
@@ -99,7 +96,6 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                                 ),
                               ),
                       ),
-
                       Center(
                         child: Text(
                           'Welcome back',
@@ -108,9 +104,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 8),
-
                       Center(
                         child: Text(
                           'Please Login to your Account',
@@ -119,81 +113,60 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 48),
-
+                      const SizedBox(height: 10),
                       Text(
-                        "Email Address",
+                        'Email Address',
                         style: AppTextStyles.samiMedium(
                           color: isInterior ? Colors.black : Colors.white,
                         ),
                       ),
-
-                      const SizedBox(height: 10),
-
+                      const SizedBox(height: 15),
                       CustomTextField(
                         controller: emailController,
-                        hintText: "Email Address",
+                        hintText: 'Email Address',
                         isOnDarkBg: !isInterior,
                       ),
-
                       const SizedBox(height: 15),
-
                       Text(
-                        "Password",
+                        'Password',
                         style: AppTextStyles.samiMedium(
                           color: isInterior ? Colors.black : Colors.white,
                         ),
                       ),
-
                       const SizedBox(height: 10),
-
                       CustomTextField(
                         controller: passwordController,
-                        hintText: "Password",
+                        hintText: 'Password',
                         isPassword: true,
                         isOnDarkBg: !isInterior,
                       ),
-
                       const SizedBox(height: 20),
-
                       Obx(
                         () => Row(
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: Checkbox(
-                                    value: controller.rememberMe.value,
-                                    onChanged: (value) {
-                                      controller.setRememberMe(
-                                        value ?? false,
-                                        category: widget.category,
-                                      );
-                                    },
-                                    side: BorderSide(
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    checkColor: Colors.black,
-                                    activeColor: Colors.white,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Remember me',
-                                  style: TextStyle(
-                                    color: isInterior
-                                        ? Colors.black
-                                        : Colors.grey.shade300,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+                            Checkbox(
+                              value: controller.rememberMe.value,
+                              onChanged: (value) {
+                                controller.setRememberMe(
+                                  value ?? false,
+                                  category: widget.category,
+                                );
+                              },
+                              side: BorderSide(color: Colors.grey.shade600),
+                              checkColor: Colors.black,
+                              activeColor: Colors.white,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Remember me',
+                              style: TextStyle(
+                                color: isInterior
+                                    ? Colors.black
+                                    : Colors.grey.shade300,
+                                fontSize: 14,
+                              ),
                             ),
                             const Spacer(),
                             TextButton(
@@ -222,9 +195,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 30),
-
                       Obx(
                         () => SizedBox(
                           width: double.infinity,
@@ -249,13 +220,15 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                               ),
                             ),
                             child: controller.isLoading.value
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 24,
                                     width: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                                        isInterior
+                                            ? Colors.white
+                                            : Colors.black,
                                       ),
                                     ),
                                   )
@@ -276,7 +249,6 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 40),
                     ],
                   ),
