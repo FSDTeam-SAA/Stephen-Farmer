@@ -9,6 +9,7 @@ import 'package:stephen_farmer/feature/auth/presentation/controller/login_contro
 import 'package:stephen_farmer/feature/documents/domain/entities/document_project_entity.dart';
 
 import '../controller/document_controller.dart';
+import 'document_type_list_view.dart';
 import '../widgets/document_category_card.dart';
 import '../widgets/recent_document_item_card.dart';
 
@@ -91,7 +92,10 @@ class DocumentScreenView extends GetView<DocumentController> {
                                 subtitleColor: subtitleColor,
                               ),
                               const SizedBox(height: 10),
-                              _buildCategoryGrid(project.categories),
+                              _buildCategoryGrid(
+                                categories: project.categories,
+                                allDocuments: project.recentDocuments,
+                              ),
                               const SizedBox(height: 12),
                               _buildSectionHeader(
                                 title: 'Recent Documents',
@@ -178,7 +182,10 @@ class DocumentScreenView extends GetView<DocumentController> {
     );
   }
 
-  Widget _buildCategoryGrid(List<DocumentCategoryEntity> categories) {
+  Widget _buildCategoryGrid({
+    required List<DocumentCategoryEntity> categories,
+    required List<RecentDocumentEntity> allDocuments,
+  }) {
     final visibleCategories = categories.take(4).toList();
 
     return GridView.builder(
@@ -193,8 +200,48 @@ class DocumentScreenView extends GetView<DocumentController> {
         mainAxisExtent: 130,
       ),
       itemBuilder: (_, index) {
-        return DocumentCategoryCard(item: visibleCategories[index]);
+        final category = visibleCategories[index];
+        return DocumentCategoryCard(
+          item: category,
+          onTap: () {
+            final items = _filterByCategory(
+              category: category,
+              allDocuments: allDocuments,
+            );
+            Get.to(
+              () => DocumentTypeListView(title: category.title, items: items),
+            );
+          },
+        );
       },
     );
+  }
+
+  List<RecentDocumentEntity> _filterByCategory({
+    required DocumentCategoryEntity category,
+    required List<RecentDocumentEntity> allDocuments,
+  }) {
+    final byType = _normalizeCategoryKey(category.type);
+    final byTitle = _normalizeCategoryKey(category.title);
+
+    return allDocuments.where((doc) {
+      final docCategory = _normalizeCategoryKey(doc.category);
+      return docCategory == byType || docCategory == byTitle;
+    }).toList();
+  }
+
+  String _normalizeCategoryKey(String raw) {
+    final cleaned = raw.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '').trim();
+
+    if (cleaned.startsWith('draw')) return 'drawings';
+    if (cleaned.startsWith('invoice') || cleaned.startsWith('bill')) {
+      return 'invoices';
+    }
+    if (cleaned.startsWith('report')) return 'reports';
+    if (cleaned.startsWith('contract') || cleaned.startsWith('agreement')) {
+      return 'contracts';
+    }
+
+    return cleaned;
   }
 }
