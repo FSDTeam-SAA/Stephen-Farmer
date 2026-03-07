@@ -16,9 +16,7 @@ import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.d
 
 class UpdateScreenView extends StatelessWidget {
   final String loginCategory;
-  static const MethodChannel _nativeShareChannel = MethodChannel(
-    'app.share/native',
-  );
+  static const MethodChannel _nativeShareChannel = MethodChannel('app.share/native');
 
   const UpdateScreenView({super.key, required this.loginCategory});
 
@@ -159,16 +157,12 @@ class UpdateScreenView extends StatelessWidget {
       final isManager = authController.normalizedRoleKey == 'manager';
       final project = controller.selectedProject;
       final categoryItems = controller.categoryFilters.toList();
-      final selectedCategoryIndex = categoryItems.indexOf(
-        controller.selectedCategory.value,
-      );
-      final safeCategorySelectedIndex = selectedCategoryIndex < 0
-          ? 0
-          : selectedCategoryIndex;
+      final selectedCategoryIndex = categoryItems.indexOf(controller.selectedCategory.value);
+      final safeCategorySelectedIndex = selectedCategoryIndex < 0 ? 0 : selectedCategoryIndex;
       final filteredList = controller.filteredUpdates;
-      final notificationIconColor = isInterior
-          ? const Color(0xFF1D1D1D)
-          : const Color(0xFFC9B089);
+      final isProjectMenuOpen = controller.isProjectMenuOpen.value;
+      final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
+      final notificationIconColor = isInterior ? const Color(0xFF1D1D1D) : const Color(0xFFC9B089);
       final logoutIconColor = const Color(0xFFF24E4E);
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -177,182 +171,305 @@ class UpdateScreenView extends StatelessWidget {
           backgroundColor: RoleBgColor.scaffoldColor(loginCategory),
           body: Container(
             decoration: RoleBgColor.decoration(loginCategory),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        isInterior
-                            ? Image.asset(
-                                AssetsImages.interiorImg,
-                                height: 50,
-                                width: 54,
-                              )
-                            : Image.asset(
-                                AssetsImages.constructionIgm,
-                                height: 32,
-                                width: 87,
-                              ),
-                        const SizedBox(width: 10),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () {
-                            Get.to(() => const NotificationScreenView());
-                          },
-                          child: Icon(
-                            Icons.notifications_rounded,
-                            color: notificationIconColor,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          tooltip: "Logout",
-                          icon: Icon(
-                            Icons.logout_rounded,
-                            color: logoutIconColor,
-                          ),
-                          onPressed: () async {
-                            final shouldLogout = await showDialog<bool>(
-                              context: context,
-                              builder: (dialogContext) {
-                                final dialogBorderColor = isInterior
-                                    ? const Color(0xFFCFCFCF)
-                                    : const Color(0xFF5D6570);
-                                final dialogBackground = isInterior
-                                    ? null
-                                    : const LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Color(0xFF0F1A20),
-                                          Color(0xFF0A141A),
-                                        ],
-                                      );
-                                final dialogSolidBackground = isInterior
-                                    ? const Color(0xFFF2F0EC)
-                                    : null;
-                                final promptColor = Colors.white;
-                                final accentColor = isInterior
-                                    ? const Color(0xFF8E6500)
-                                    : const Color(0xFFAF8C6A);
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      isInterior
+                          ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
+                          : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
+                      const SizedBox(width: 10),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(() => const NotificationScreenView());
+                        },
+                        child: Icon(Icons.notifications_rounded, color: notificationIconColor, size: 24),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: "Logout",
+                        icon: Icon(Icons.logout_rounded, color: logoutIconColor),
+                        onPressed: () async {
+                          final shouldLogout = await showDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) {
+                              final dialogBorderColor = isInterior ? const Color.fromRGBO(109, 111, 115, 1) : const Color(0xFF5D6570);
+                              final dialogBackground = isInterior
+                                  ? const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [Color.fromRGBO(226, 221, 215, 1), Color.fromRGBO(144, 137, 120, 1)],
+                                    )
+                                  : const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
+                                    );
+                              final dialogSolidBackground = null;
+                              final promptColor = isInterior ? const Color(0xFF040404) : Colors.white;
+                              final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
 
-                                return Dialog(
-                                  backgroundColor: Colors.transparent,
-                                  insetPadding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
+                              return Dialog(
+                                backgroundColor: Colors.transparent,
+                                insetPadding: const EdgeInsets.symmetric(horizontal: 18),
+                                child: Container(
+                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(color: dialogBorderColor, width: 2),
+                                    color: dialogSolidBackground,
+                                    gradient: dialogBackground,
                                   ),
-                                  child: Container(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16,
-                                      16,
-                                      16,
-                                      18,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(
-                                        color: dialogBorderColor,
-                                        width: 2,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Image.asset(AssetsImages.logout, height: 48, width: 48),
+                                      const SizedBox(height: 14),
+                                      Text(
+                                        "Are you sure ?",
+                                        style: GoogleFonts.manrope(
+                                          color: promptColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.4,
+                                        ),
                                       ),
-                                      color: dialogSolidBackground,
-                                      gradient: dialogBackground,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Image.asset(
-                                          AssetsImages.logout,
-                                          height: 48,
-                                          width: 48,
-                                        ),
-                                        const SizedBox(height: 14),
-                                        Text(
-                                          "Are you sure ?",
-                                          style: GoogleFonts.manrope(
-                                            color: promptColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 159.5,
-                                              height: 44,
-                                              child: OutlinedButton(
-                                                onPressed: () => Navigator.of(
-                                                  dialogContext,
-                                                ).pop(false),
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor: accentColor,
-                                                  padding:
-                                                      const EdgeInsets.fromLTRB(
-                                                        10,
-                                                        12,
-                                                        10,
-                                                        12,
-                                                      ),
-                                                  side: BorderSide(
-                                                    color: accentColor,
-                                                    width: 1,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Cancel",
-                                                  style: GoogleFonts.manrope(
-                                                    color: accentColor,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    height: 1.4,
-                                                  ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 159.5,
+                                            height: 44,
+                                            child: OutlinedButton(
+                                              onPressed: () => Navigator.of(dialogContext).pop(false),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: accentColor,
+                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                                                side: BorderSide(color: accentColor, width: 1),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              ),
+                                              child: Text(
+                                                "Cancel",
+                                                style: GoogleFonts.manrope(
+                                                  color: accentColor,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  height: 1.4,
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 10),
-                                            SizedBox(
-                                              width: 159.5,
-                                              height: 44,
-                                              child: ElevatedButton(
-                                                onPressed: () => Navigator.of(
-                                                  dialogContext,
-                                                ).pop(true),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: accentColor,
-                                                  foregroundColor: Colors.white,
-                                                  elevation: 0,
-                                                  padding:
-                                                      const EdgeInsets.fromLTRB(
-                                                        10,
-                                                        12,
-                                                        10,
-                                                        12,
-                                                      ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          SizedBox(
+                                            width: 159.5,
+                                            height: 44,
+                                            child: ElevatedButton(
+                                              onPressed: () => Navigator.of(dialogContext).pop(true),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: accentColor,
+                                                foregroundColor: Colors.white,
+                                                elevation: 0,
+                                                padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              ),
+                                              child: Text(
+                                                "Yes",
+                                                style: GoogleFonts.manrope(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  height: 1.4,
                                                 ),
-                                                child: Text(
-                                                  "Yes",
-                                                  style: GoogleFonts.manrope(
-                                                    color: Colors.white,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    height: 1.4,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+
+                          if (shouldLogout == true) {
+                            await authController.logoutUser();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: 343,
+                    height: 22,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Active Project",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          height: 22 / 16,
+                          letterSpacing: 0,
+                          color: isInterior ? Colors.black : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: controller.isLoading.value
+                        ? const Center(child: CircularProgressIndicator())
+                        : projectItems.isEmpty
+                        ? Center(
+                            child: Text(
+                              "No Project",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: isInterior ? Colors.black : Colors.white),
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              CategoryDropdownWidget<UpdateProjectModel>(
+                                items: projectItems,
+                                selectedIndex: safeProjectSelectedIndex,
+                                isMenuOpen: isProjectMenuOpen,
+                                isInteriorTheme: isInterior,
+                                onToggle: controller.toggleProjectMenu,
+                                onSelect: (index) {
+                                  controller.selectProject(index);
+                                },
+                                titleBuilder: (item) => item.name,
+                                subtitleBuilder: (item) => item.address,
+                                thumbnailBuilder: (item) => item.thumbnailUrl,
+                                fallbackAsset: AssetsImages.constructionIgm,
+                                thumbnailWidth: 70,
+                                thumbnailHeight: 39,
+                                thumbnailBorderRadius: 4,
+                                subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                                titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1, letterSpacing: 0),
+                                subtitleTextStyle: GoogleFonts.manrope(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1,
+                                  letterSpacing: 0,
+                                ),
+                                subtitleWidth: 248,
+                                subtitleHeight: 16,
+                              ),
+                              if (controller.shouldShowCategoryDropdown) ...[
+                                const SizedBox(height: 10),
+                                CategoryDropdownWidget<String>(
+                                  items: categoryItems,
+                                  selectedIndex: safeCategorySelectedIndex,
+                                  isMenuOpen: isCategoryMenuOpen,
+                                  isInteriorTheme: isInterior,
+                                  onToggle: controller.toggleCategoryMenu,
+                                  onSelect: (index) => controller.selectCategory(categoryItems[index]),
+                                  titleBuilder: (item) => item,
+                                  subtitleBuilder: (item) => 'Filter updates by $item',
+                                  thumbnailBuilder: (_) => null,
+                                  fallbackAsset: AssetsImages.constructionIgm,
+                                  thumbnailWidth: 0,
+                                  thumbnailHeight: 0,
+                                  rowPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  minHeight: 46,
+                                ),
+                              ],
+                              const SizedBox(height: 10),
+                              if (isManager)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: () {
+                                      if (controller.selectedProjectId.isEmpty) {
+                                        Get.snackbar('Error', 'Select a project first');
+                                        return;
+                                      }
+                                      Get.to(
+                                        () => AddUpdateScreenView(
+                                          projectId: controller.selectedProjectId,
+                                          onPostSuccess: () {
+                                            controller.refreshAll();
+                                          },
+                                          isInteriorTheme: isInterior,
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      height: 72,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: isInterior ? const Color(0xFF8A7F6C) : const Color(0xFF2B4756)),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              width: 40,
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                color: isInterior ? const Color(0xFFD6CCB9) : const Color(0xFF2D3232),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.photo_camera_rounded,
+                                                  size: 18,
+                                                  color: isInterior ? const Color(0xFF5A5246) : const Color(0xFFD7C5A4),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        "Create Update",
+                                                        style: GoogleFonts.manrope(
+                                                          color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.w600,
+                                                          height: 1,
+                                                          letterSpacing: 0,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "Share progress from the site",
+                                                        style: GoogleFonts.manrope(
+                                                          color: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w400,
+                                                          height: 1,
+                                                          letterSpacing: 0,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Icon(Icons.add_circle_outline, size: 24, color: AppColor.appColor),
                                                   ),
                                                 ),
                                               ),
@@ -424,92 +541,32 @@ class UpdateScreenView extends StatelessWidget {
                                 onSelect: (index) => controller.selectCategory(
                                   categoryItems[index],
                                 ),
-                                titleBuilder: (item) => item,
-                                subtitleBuilder: (item) =>
-                                    'Filter updates by $item',
-                                thumbnailBuilder: (_) => null,
-                                fallbackAsset: AssetsImages.constructionIgm,
-                                thumbnailWidth: 0,
-                                thumbnailHeight: 0,
-                                rowPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                                minHeight: 46,
-                              ),
-                            ],
-                            const SizedBox(height: 10),
-                            Expanded(
-                              child: RefreshIndicator(
-                                onRefresh: controller.refreshAll,
-                                child: ListView(
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  padding: EdgeInsets.zero,
-                                  children: [
-                                    if (isManager)
-                                      _createUpdateCard(
-                                        isInterior: isInterior,
-                                        controller: controller,
-                                      ),
-                                    if (controller.isLoading.value &&
-                                        controller.updateList.isEmpty)
-                                      const Padding(
-                                        padding: EdgeInsets.only(top: 24),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
+                              if (isManager) const SizedBox(height: 10),
+                              Expanded(
+                                child: filteredList.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          "No updates found",
+                                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
                                         ),
                                       )
-                                    else if (controller
-                                            .errorMessage
-                                            .value
-                                            .isNotEmpty &&
-                                        controller.updateList.isEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24),
-                                        child: Center(
-                                          child: Text(
-                                            controller.errorMessage.value,
-                                            style: TextStyle(
-                                              color: isInterior
-                                                  ? const Color(0xFF464646)
-                                                  : Colors.white70,
-                                              fontSize: 14,
+                                    : ListView.builder(
+                                        itemCount: filteredList.length,
+                                        itemBuilder: (_, index) {
+                                          final item = filteredList[index];
+                                          return UpdatePostCard(
+                                            item: item,
+                                            isInteriorTheme: isInterior,
+                                            onLike: () => controller.toggleLike(item),
+                                            onShare: () => _shareUpdate(context: context, controller: controller, item: item),
+                                            onComment: () => _showCommentsSheet(
+                                              context: context,
+                                              controller: controller,
+                                              updateId: item.id,
+                                              isInterior: isInterior,
                                             ),
-                                          ),
-                                        ),
-                                      )
-                                    else if (filteredList.isEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24),
-                                        child: Center(
-                                          child: Text(
-                                            "No updates found",
-                                            style: TextStyle(
-                                              color: isInterior
-                                                  ? const Color(0xFF464646)
-                                                  : Colors.white70,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    else
-                                      ...filteredList.map(
-                                        (item) => UpdatePostCard(
-                                          item: item,
-                                          isInteriorTheme: isInterior,
-                                          onLike: () =>
-                                              controller.toggleLike(item),
-                                          onShare: () =>
-                                              controller.shareUpdate(item),
-                                          onComment: () => _showCommentsSheet(
-                                            context: context,
-                                            controller: controller,
-                                            updateId: item.id,
-                                            isInterior: isInterior,
-                                          ),
-                                        ),
+                                          );
+                                        },
                                       ),
                                   ],
                                 ),
@@ -542,9 +599,7 @@ class UpdateScreenView extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isInterior
-          ? const Color(0xFFF2EFE8)
-          : const Color(0xFF111B21),
+      backgroundColor: isInterior ? const Color(0xFFF2EFE8) : const Color(0xFF111B21),
       builder: (sheetContext) {
         final localComments = List<UpdateCommentModel>.from(comments);
         bool isSending = false;
@@ -553,22 +608,13 @@ class UpdateScreenView extends StatelessWidget {
           builder: (context, setState) {
             return SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 14,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 14,
-                ),
+                padding: EdgeInsets.only(left: 16, right: 16, top: 14, bottom: MediaQuery.of(context).viewInsets.bottom + 14),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Comments',
-                      style: TextStyle(
-                        color: isInterior ? Colors.black : Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: isInterior ? Colors.black : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
                     ConstrainedBox(
@@ -578,12 +624,7 @@ class UpdateScreenView extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               child: Text(
                                 'No comments yet',
-                                style: TextStyle(
-                                  color: isInterior
-                                      ? const Color(0xFF555555)
-                                      : Colors.white70,
-                                  fontSize: 13,
-                                ),
+                                style: TextStyle(color: isInterior ? const Color(0xFF555555) : Colors.white70, fontSize: 13),
                               ),
                             )
                           : ListView.builder(
@@ -594,16 +635,12 @@ class UpdateScreenView extends StatelessWidget {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
                                   child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       CircleAvatar(
                                         radius: 14,
                                         backgroundImage: NetworkImage(
-                                          comment.userAvatar
-                                                      ?.trim()
-                                                      .isNotEmpty ==
-                                                  true
+                                          comment.userAvatar?.trim().isNotEmpty == true
                                               ? comment.userAvatar!.trim()
                                               : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
                                         ),
@@ -611,39 +648,26 @@ class UpdateScreenView extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               comment.userName,
                                               style: TextStyle(
-                                                color: isInterior
-                                                    ? Colors.black
-                                                    : Colors.white,
+                                                color: isInterior ? Colors.black : Colors.white,
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                             Text(
                                               comment.text,
-                                              style: TextStyle(
-                                                color: isInterior
-                                                    ? const Color(0xFF333333)
-                                                    : Colors.white70,
-                                                fontSize: 13,
-                                              ),
+                                              style: TextStyle(color: isInterior ? const Color(0xFF333333) : Colors.white70, fontSize: 13),
                                             ),
                                           ],
                                         ),
                                       ),
                                       Text(
                                         _timeLabel(comment.createdAt),
-                                        style: TextStyle(
-                                          color: isInterior
-                                              ? const Color(0xFF7A7A7A)
-                                              : Colors.white54,
-                                          fontSize: 11,
-                                        ),
+                                        style: TextStyle(color: isInterior ? const Color(0xFF7A7A7A) : Colors.white54, fontSize: 11),
                                       ),
                                     ],
                                   ),
@@ -657,19 +681,11 @@ class UpdateScreenView extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             controller: textController,
-                            style: TextStyle(
-                              color: isInterior ? Colors.black : Colors.white,
-                            ),
+                            style: TextStyle(color: isInterior ? Colors.black : Colors.white),
                             decoration: InputDecoration(
                               hintText: 'Write a comment...',
-                              hintStyle: TextStyle(
-                                color: isInterior
-                                    ? const Color(0xFF777777)
-                                    : Colors.white54,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                              hintStyle: TextStyle(color: isInterior ? const Color(0xFF777777) : Colors.white54),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                         ),
@@ -681,22 +697,14 @@ class UpdateScreenView extends StatelessWidget {
                                   final text = textController.text.trim();
                                   if (text.isEmpty) return;
                                   setState(() => isSending = true);
-                                  final added = await controller.addComment(
-                                    updateId: updateId,
-                                    comment: text,
-                                  );
+                                  final added = await controller.addComment(updateId: updateId, comment: text);
                                   if (added != null) {
                                     textController.clear();
                                     localComments.add(added);
                                   }
                                   setState(() => isSending = false);
                                 },
-                          icon: Icon(
-                            Icons.send_rounded,
-                            color: isInterior
-                                ? const Color(0xFF8E6500)
-                                : const Color(0xFFD09A2F),
-                          ),
+                          icon: Icon(Icons.send_rounded, color: isInterior ? const Color(0xFF8E6500) : const Color(0xFFD09A2F)),
                         ),
                       ],
                     ),
@@ -710,11 +718,7 @@ class UpdateScreenView extends StatelessWidget {
     );
   }
 
-  Future<void> _shareUpdate({
-    required BuildContext context,
-    required UpdateController controller,
-    required UpdateModel item,
-  }) async {
+  Future<void> _shareUpdate({required BuildContext context, required UpdateController controller, required UpdateModel item}) async {
     await controller.shareUpdate(item);
 
     if (!context.mounted) return;
@@ -722,70 +726,45 @@ class UpdateScreenView extends StatelessWidget {
     final lines = <String>[
       item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
       if (item.description.trim().isNotEmpty) item.description.trim(),
-      if (item.thumbnailUrl?.trim().isNotEmpty ?? false)
-        item.thumbnailUrl!.trim(),
+      if (item.thumbnailUrl?.trim().isNotEmpty ?? false) item.thumbnailUrl!.trim(),
     ];
     final shareText = lines.join('\n');
-    final shareSubject = item.title.trim().isEmpty
-        ? 'Project Update'
-        : item.title.trim();
+    final shareSubject = item.title.trim().isEmpty ? 'Project Update' : item.title.trim();
 
     try {
       final box = context.findRenderObject() as RenderBox?;
       await Share.share(
         shareText,
         subject: shareSubject,
-        sharePositionOrigin: box == null
-            ? null
-            : box.localToGlobal(Offset.zero) & box.size,
+        sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
       );
     } on MissingPluginException {
       if (!context.mounted) return;
-      final handled = await _shareViaNativeChannel(
-        shareText: shareText,
-        subject: shareSubject,
-      );
+      final handled = await _shareViaNativeChannel(shareText: shareText, subject: shareSubject);
       if (!handled && context.mounted) {
         await _showShareFallbackSheet(context: context, shareText: shareText);
       }
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: shareText));
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Share unavailable (${e.runtimeType}). Copied to clipboard.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share unavailable (${e.runtimeType}). Copied to clipboard.')));
     }
   }
 
-  Future<bool> _shareViaNativeChannel({
-    required String shareText,
-    required String subject,
-  }) async {
+  Future<bool> _shareViaNativeChannel({required String shareText, required String subject}) async {
     try {
-      final result = await _nativeShareChannel.invokeMethod<bool>('shareText', {
-        'text': shareText,
-        'subject': subject,
-      });
+      final result = await _nativeShareChannel.invokeMethod<bool>('shareText', {'text': shareText, 'subject': subject});
       return result ?? false;
     } catch (_) {
       return false;
     }
   }
 
-  Future<void> _showShareFallbackSheet({
-    required BuildContext context,
-    required String shareText,
-  }) async {
+  Future<void> _showShareFallbackSheet({required BuildContext context, required String shareText}) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF23222D),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
@@ -796,20 +775,12 @@ class UpdateScreenView extends StatelessWidget {
               children: [
                 Text(
                   'Share',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: GoogleFonts.manrope(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Native share is unavailable on this build. You can copy the text now.',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 14),
                 SizedBox(
@@ -820,27 +791,15 @@ class UpdateScreenView extends StatelessWidget {
                       if (!sheetContext.mounted) return;
                       Navigator.of(sheetContext).pop();
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Share text copied to clipboard'),
-                        ),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFAF8C6A),
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(44),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: Text(
-                      'Copy Share Text',
-                      style: GoogleFonts.manrope(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text('Copy Share Text', style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
