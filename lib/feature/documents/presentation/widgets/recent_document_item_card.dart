@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 
 import '../../domain/entities/document_project_entity.dart';
 
 class RecentDocumentItemCard extends StatelessWidget {
-  const RecentDocumentItemCard({
-    super.key,
-    required this.item,
-  });
+  const RecentDocumentItemCard({super.key, required this.item});
 
   final RecentDocumentEntity item;
 
@@ -23,48 +22,96 @@ class RecentDocumentItemCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 34,
-            width: 34,
+            height: 25,
+            width: 25,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8E8E8),
+              color: const Color(0xFFE6E5DD),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.file_copy_outlined,
-              color: Color(0xFFAF8559),
-              size: 20,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(AssetsImages.invoices2, fit: BoxFit.fill),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF202020),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                SizedBox(
+                  width: 168,
+                  child: Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.manrope(
+                      color: const Color(0xFF161D1E),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 1),
-                Text(
-                  '${item.category}   •  ${item.dateLabel}',
-                  style: const TextStyle(
-                    color: Color(0xFF2E2E2E),
-                    fontSize: 12,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 69,
+                      child: Text(
+                        item.category,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.manrope(
+                          color: const Color(0xFF161D1E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 1,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '•',
+                      style: GoogleFonts.manrope(
+                        color: const Color(0xFF161D1E),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        height: 1,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 69,
+                      child: Text(
+                        item.dateLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.manrope(
+                          color: const Color(0xFF161D1E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 1,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const Icon(
-            Icons.download_outlined,
-            color: Color(0xFF7E6A54),
-            size: 24,
+          SizedBox(
+            height: 20,
+            width: 20,
+            child: Image.asset(
+              AssetsImages.download,
+              height: 24,
+              width: 24,
+              fit: BoxFit.contain,
+            ),
           ),
         ],
       ),

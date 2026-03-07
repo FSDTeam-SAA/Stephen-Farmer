@@ -118,7 +118,9 @@ class FinancialsEndpoints {
 
 // ================= DOCUMENTS =================
 class DocumentEndpoints {
-  static const String getProjects = "/documents/projects";
+  static const String create = "/documents";
+  static String getByProject(String projectId) =>
+      "/documents/project/$projectId";
 }
 
 // ================= NOTIFICATION =================

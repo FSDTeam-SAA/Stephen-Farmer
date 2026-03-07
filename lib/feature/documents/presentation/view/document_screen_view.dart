@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -20,7 +21,7 @@ class DocumentScreenView extends GetView<DocumentController> {
       final role = Get.find<LoginController>().role.value;
       final bool isInterior = RoleBgColor.isInterior(role);
       final Color titleColor = isInterior
-          ? const Color(0xFF1D1D1D)
+          ? const Color(0xFF040404)
           : Colors.white;
       final Color subtitleColor = isInterior
           ? const Color(0xFF46413A)
@@ -39,10 +40,12 @@ class DocumentScreenView extends GetView<DocumentController> {
                   Center(
                     child: Text(
                       'Documents',
-                      style: TextStyle(
+                      style: GoogleFonts.manrope(
                         color: titleColor,
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        height: 1,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),
@@ -148,19 +151,23 @@ class DocumentScreenView extends GetView<DocumentController> {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: titleColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
+            height: 1,
+            letterSpacing: 0,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           subtitle,
-          style: TextStyle(
+          style: GoogleFonts.manrope(
             color: subtitleColor,
             fontSize: 16,
             fontWeight: FontWeight.w400,
+            height: 1,
+            letterSpacing: 0,
           ),
         ),
       ],
