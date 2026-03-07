@@ -9,31 +9,51 @@ class DocumentCategoryModel extends DocumentCategoryEntity {
 
   factory DocumentCategoryModel.fromJson(Map<String, dynamic> json) {
     return DocumentCategoryModel(
-      title: _readString(json, ["title", "name"], fallback: "Category"),
-      fileCount: _readInt(json, ["fileCount", "count"], fallback: 0),
-      type: _readString(json, ["type", "key"], fallback: "default"),
+      title: _readString(json, ['title', 'name'], fallback: 'Category'),
+      fileCount: _readInt(json, ['fileCount', 'count'], fallback: 0),
+      type: _readString(json, ['type', 'key'], fallback: 'default'),
     );
   }
 }
 
 class RecentDocumentModel extends RecentDocumentEntity {
   const RecentDocumentModel({
+    required super.id,
     required super.title,
     required super.category,
     required super.dateLabel,
+    super.fileUrl,
   });
 
   factory RecentDocumentModel.fromJson(Map<String, dynamic> json) {
+    final dateSource = _readString(json, [
+      'dateLabel',
+      'date',
+      'createdAt',
+      'updatedAt',
+      'uploadedAt',
+    ]);
+
     return RecentDocumentModel(
-      title: _readString(json, ["title", "name"], fallback: "Untitled Document"),
-      category: _readString(json, ["category", "type"], fallback: "General"),
-      dateLabel: _readString(json, ["dateLabel", "date"], fallback: ""),
+      id: _readString(json, ['_id', 'id', 'documentId']),
+      title: _readString(json, [
+        'title',
+        'name',
+        'originalName',
+      ], fallback: 'Untitled Document'),
+      category: _readString(json, ['category', 'type'], fallback: 'General'),
+      dateLabel: _formatDateLabel(dateSource),
+      fileUrl:
+          _readString(json, ['url', 'fileUrl', 'documentUrl']).trim().isEmpty
+          ? null
+          : _readString(json, ['url', 'fileUrl', 'documentUrl']).trim(),
     );
   }
 }
 
 class DocumentProjectModel extends DocumentProjectEntity {
   const DocumentProjectModel({
+    required super.projectId,
     required super.projectName,
     required super.projectAddress,
     super.thumbnailUrl,
@@ -41,82 +61,194 @@ class DocumentProjectModel extends DocumentProjectEntity {
     required super.recentDocuments,
   });
 
-  factory DocumentProjectModel.fromJson(Map<String, dynamic> json) {
-    final categoryRows = json["categories"] ?? json["types"] ?? json["documentTypes"];
-    final recentRows = json["recentDocuments"] ?? json["latestDocuments"] ?? json["documents"];
-
-    final categories = categoryRows is List
-        ? categoryRows.whereType<Map<String, dynamic>>().map(DocumentCategoryModel.fromJson).toList()
-        : <DocumentCategoryModel>[];
-    final recents = recentRows is List
-        ? recentRows.whereType<Map<String, dynamic>>().map(RecentDocumentModel.fromJson).toList()
-        : <RecentDocumentModel>[];
-
+  factory DocumentProjectModel.fromProjectJson(Map<String, dynamic> json) {
     return DocumentProjectModel(
-      projectName: _readString(json, ["projectName", "name", "title"], fallback: "Untitled Project"),
-      projectAddress: _readString(json, ["projectAddress", "address", "location"], fallback: "N/A"),
-      thumbnailUrl: _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
+      projectId: _readString(json, ['_id', 'id', 'projectId']),
+      projectName: _readString(json, [
+        'projectName',
+        'name',
+        'title',
+      ], fallback: 'Untitled Project'),
+      projectAddress: _readString(json, [
+        'projectAddress',
+        'address',
+        'location',
+      ], fallback: 'N/A'),
+      thumbnailUrl:
+          _readString(json, [
+            'thumbnailUrl',
+            'thumbnail',
+            'coverImage',
+            'image',
+            'imageUrl',
+          ]).trim().isEmpty
           ? null
-          : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
-      categories: categories,
-      recentDocuments: recents,
+          : _readString(json, [
+              'thumbnailUrl',
+              'thumbnail',
+              'coverImage',
+              'image',
+              'imageUrl',
+            ]).trim(),
+      categories: const <DocumentCategoryEntity>[],
+      recentDocuments: const <RecentDocumentEntity>[],
     );
   }
 
-  static const List<DocumentProjectModel> dummyData = [
+  factory DocumentProjectModel.fromApi({
+    required Map<String, dynamic> projectJson,
+    required List<Map<String, dynamic>> categoryRows,
+    required List<Map<String, dynamic>> documentRows,
+  }) {
+    final categories = categoryRows
+        .map(DocumentCategoryModel.fromJson)
+        .toList(growable: false);
+
+    final recentDocuments = documentRows
+        .map(RecentDocumentModel.fromJson)
+        .toList(growable: false);
+
+    return DocumentProjectModel(
+      projectId: _readString(projectJson, ['_id', 'id', 'projectId']),
+      projectName: _readString(projectJson, [
+        'projectName',
+        'name',
+        'title',
+      ], fallback: 'Untitled Project'),
+      projectAddress: _readString(projectJson, [
+        'projectAddress',
+        'address',
+        'location',
+      ], fallback: 'N/A'),
+      thumbnailUrl:
+          _readString(projectJson, [
+            'thumbnailUrl',
+            'thumbnail',
+            'coverImage',
+            'image',
+            'imageUrl',
+          ]).trim().isEmpty
+          ? null
+          : _readString(projectJson, [
+              'thumbnailUrl',
+              'thumbnail',
+              'coverImage',
+              'image',
+              'imageUrl',
+            ]).trim(),
+      categories: categories,
+      recentDocuments: recentDocuments,
+    );
+  }
+
+  DocumentProjectModel copyWithDocuments({
+    required List<DocumentCategoryEntity> categories,
+    required List<RecentDocumentEntity> recentDocuments,
+  }) {
+    return DocumentProjectModel(
+      projectId: projectId,
+      projectName: projectName,
+      projectAddress: projectAddress,
+      thumbnailUrl: thumbnailUrl,
+      categories: categories,
+      recentDocuments: recentDocuments,
+    );
+  }
+
+  static List<DocumentCategoryModel> summarizeCategories(
+    List<Map<String, dynamic>> documents,
+  ) {
+    final counters = <String, int>{};
+
+    for (final row in documents) {
+      final category = _readString(row, [
+        'category',
+        'type',
+      ], fallback: 'General');
+      final normalized = category.trim();
+      if (normalized.isEmpty) continue;
+      counters[normalized] = (counters[normalized] ?? 0) + 1;
+    }
+
+    final normalizedByType = {
+      'drawings': 0,
+      'invoices': 0,
+      'reports': 0,
+      'contracts': 0,
+    };
+
+    for (final entry in counters.entries) {
+      final key = _normalizeType(entry.key);
+      normalizedByType[key] = (normalizedByType[key] ?? 0) + entry.value;
+    }
+
+    return [
+      DocumentCategoryModel(
+        title: 'Drawings',
+        fileCount: normalizedByType['drawings'] ?? 0,
+        type: 'drawings',
+      ),
+      DocumentCategoryModel(
+        title: 'Invoices',
+        fileCount: normalizedByType['invoices'] ?? 0,
+        type: 'invoices',
+      ),
+      DocumentCategoryModel(
+        title: 'Reports',
+        fileCount: normalizedByType['reports'] ?? 0,
+        type: 'reports',
+      ),
+      DocumentCategoryModel(
+        title: 'Contracts',
+        fileCount: normalizedByType['contracts'] ?? 0,
+        type: 'contracts',
+      ),
+    ];
+  }
+
+  static List<DocumentProjectModel> dummyData = [
     DocumentProjectModel(
-      projectName: "Riverside Apartment Renovation",
-      projectAddress: "42 Harbor View Drive, Apt 12B",
-      thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop",
-      categories: [
-        DocumentCategoryModel(title: "Drawings", fileCount: 3, type: "drawings"),
-        DocumentCategoryModel(title: "Invoices", fileCount: 2, type: "invoices"),
-        DocumentCategoryModel(title: "Reports", fileCount: 1, type: "reports"),
-        DocumentCategoryModel(title: "Contracts", fileCount: 2, type: "contracts"),
-      ],
-      recentDocuments: [
-        RecentDocumentModel(
-          title: "Floor Plan - Final Rev 3",
-          category: "Drawings",
-          dateLabel: "Jan 15",
+      projectId: 'project-1',
+      projectName: 'Riverside Apartment Renovation',
+      projectAddress: '42 Harbor View Drive, Apt 12B',
+      thumbnailUrl:
+          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop',
+      categories: const [
+        DocumentCategoryModel(
+          title: 'Drawings',
+          fileCount: 3,
+          type: 'drawings',
         ),
-        RecentDocumentModel(
-          title: "Floor Plan - Final Rev 3",
-          category: "Drawings",
-          dateLabel: "Jan 15",
+        DocumentCategoryModel(
+          title: 'Invoices',
+          fileCount: 2,
+          type: 'invoices',
         ),
-        RecentDocumentModel(
-          title: "Floor Plan - Final Rev 3",
-          category: "Drawings",
-          dateLabel: "Jan 15",
-        ),
-        RecentDocumentModel(
-          title: "Invoice# INV - 2024-001",
-          category: "Invoice",
-          dateLabel: "Dec 1",
+        DocumentCategoryModel(title: 'Reports', fileCount: 1, type: 'reports'),
+        DocumentCategoryModel(
+          title: 'Contracts',
+          fileCount: 2,
+          type: 'contracts',
         ),
       ],
-    ),
-    DocumentProjectModel(
-      projectName: "Cityline Duplex Build",
-      projectAddress: "15 Lakefront Ave, Unit 12",
-      thumbnailUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
-      categories: [
-        DocumentCategoryModel(title: "Drawings", fileCount: 5, type: "drawings"),
-        DocumentCategoryModel(title: "Invoices", fileCount: 1, type: "invoices"),
-        DocumentCategoryModel(title: "Reports", fileCount: 2, type: "reports"),
-        DocumentCategoryModel(title: "Contracts", fileCount: 1, type: "contracts"),
-      ],
-      recentDocuments: [
+      recentDocuments: const [
         RecentDocumentModel(
-          title: "Electrical Layout - Revision B",
-          category: "Drawings",
-          dateLabel: "Feb 2",
+          id: 'doc-1',
+          title: 'Floor Plan - Final Rev 3',
+          category: 'Drawings',
+          dateLabel: 'Jan 15',
         ),
         RecentDocumentModel(
-          title: "Invoice# INV - 2024-117",
-          category: "Invoice",
-          dateLabel: "Jan 20",
+          id: 'doc-2',
+          title: 'Floor Plan - Final Rev 3',
+          category: 'Drawings',
+          dateLabel: 'Jan 15',
+        ),
+        RecentDocumentModel(
+          id: 'doc-3',
+          title: 'Floor Plan - Final Rev 3',
+          category: 'Drawings',
+          dateLabel: 'Jan 15',
         ),
       ],
     ),
@@ -126,7 +258,7 @@ class DocumentProjectModel extends DocumentProjectEntity {
 String _readString(
   Map<String, dynamic> json,
   List<String> keys, {
-  String fallback = "",
+  String fallback = '',
 }) {
   for (final key in keys) {
     final value = json[key];
@@ -137,11 +269,7 @@ String _readString(
   return fallback;
 }
 
-int _readInt(
-  Map<String, dynamic> json,
-  List<String> keys, {
-  int fallback = 0,
-}) {
+int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {
   for (final key in keys) {
     final value = json[key];
     if (value is int) return value;
@@ -152,4 +280,40 @@ int _readInt(
     }
   }
   return fallback;
+}
+
+String _normalizeType(String raw) {
+  final value = raw.trim().toLowerCase();
+  if (value.contains('draw')) return 'drawings';
+  if (value.contains('invoice') || value.contains('bill')) return 'invoices';
+  if (value.contains('report')) return 'reports';
+  if (value.contains('contract') || value.contains('agreement')) {
+    return 'contracts';
+  }
+  return 'drawings';
+}
+
+String _formatDateLabel(String source) {
+  if (source.isEmpty) return '';
+
+  final parsed = DateTime.tryParse(source);
+  if (parsed == null) return source;
+
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  final local = parsed.toLocal();
+  return '${months[local.month - 1]} ${local.day}';
 }

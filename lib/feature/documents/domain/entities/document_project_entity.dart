@@ -11,18 +11,23 @@ class DocumentCategoryEntity {
 }
 
 class RecentDocumentEntity {
+  final String id;
   final String title;
   final String category;
   final String dateLabel;
+  final String? fileUrl;
 
   const RecentDocumentEntity({
+    required this.id,
     required this.title,
     required this.category,
     required this.dateLabel,
+    this.fileUrl,
   });
 }
 
 class DocumentProjectEntity {
+  final String projectId;
   final String projectName;
   final String projectAddress;
   final String? thumbnailUrl;
@@ -30,6 +35,7 @@ class DocumentProjectEntity {
   final List<RecentDocumentEntity> recentDocuments;
 
   const DocumentProjectEntity({
+    required this.projectId,
     required this.projectName,
     required this.projectAddress,
     this.thumbnailUrl,

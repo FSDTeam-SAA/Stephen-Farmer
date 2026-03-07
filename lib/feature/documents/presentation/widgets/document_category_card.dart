@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 
 import '../../domain/entities/document_project_entity.dart';
 
@@ -19,37 +21,50 @@ class DocumentCategoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 52,
-            width: 52,
+            height: 48,
+            width: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFE6E4DE),
+              color: const Color(0xFFE6E5DD),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              _resolveIcon(item.type),
-              color: _resolveIconColor(item.type),
-              size: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                _resolveIconAsset(item.type),
+                fit: BoxFit.fill,
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            item.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF1D1D1D),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              height: 1.2,
+          SizedBox(
+            width: 144,
+            child: Text(
+              item.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF161D1E),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1,
+                letterSpacing: 0,
+              ),
             ),
           ),
           const Spacer(),
-          Text(
-            '${item.fileCount} files',
-            style: const TextStyle(
-              color: Color(0xFF2E2E2E),
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
+          SizedBox(
+            width: 144,
+            child: Text(
+              '${item.fileCount} files',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.manrope(
+                color: const Color(0xFF161D1E),
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1,
+                letterSpacing: 0,
+              ),
             ),
           ),
         ],
@@ -58,32 +73,17 @@ class DocumentCategoryCard extends StatelessWidget {
   }
 }
 
-IconData _resolveIcon(String type) {
+String _resolveIconAsset(String type) {
   switch (type.trim().toLowerCase()) {
     case 'drawings':
-      return Icons.edit_note_rounded;
+      return AssetsImages.drawings;
     case 'invoices':
-      return Icons.map_outlined;
+      return AssetsImages.invoices;
     case 'reports':
-      return Icons.assignment_outlined;
+      return AssetsImages.reports;
     case 'contracts':
-      return Icons.file_copy_outlined;
+      return AssetsImages.contracts;
     default:
-      return Icons.insert_drive_file_outlined;
-  }
-}
-
-Color _resolveIconColor(String type) {
-  switch (type.trim().toLowerCase()) {
-    case 'drawings':
-      return const Color(0xFFA17E32);
-    case 'invoices':
-      return const Color(0xFF6B8B49);
-    case 'reports':
-      return const Color(0xFF9B7650);
-    case 'contracts':
-      return const Color(0xFF1F1F1F);
-    default:
-      return const Color(0xFF6A6A6A);
+      return AssetsImages.invoices2;
   }
 }
