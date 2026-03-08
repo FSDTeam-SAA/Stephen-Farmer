@@ -190,18 +190,7 @@ class UpdateScreenView extends StatelessWidget {
                                 width: 87,
                               ),
                         const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '${isInterior ? 'Interior' : 'Construction'} ${isManager ? 'Manager' : 'User'}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.manrope(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: isInterior ? Colors.black : Colors.white,
-                            ),
-                          ),
-                        ),
+                        const Spacer(),
                         IconButton(
                           tooltip: 'Notifications',
                           onPressed: () {
