@@ -34,6 +34,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
   final double maxMenuHeight;
   final double? minHeight;
   final bool alwaysShowChevron;
+  final double titleSubtitleSpacing;
 
   const CategoryDropdownWidget({
     super.key,
@@ -69,6 +70,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
     this.maxMenuHeight = 220,
     this.minHeight = 57,
     this.alwaysShowChevron = false,
+    this.titleSubtitleSpacing = 2,
   });
 
   @override
@@ -140,6 +142,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
                     subtitleWidth: subtitleWidth,
                     subtitleHeight: subtitleHeight,
                     chevronSize: chevronSize,
+                    titleSubtitleSpacing: titleSubtitleSpacing,
                   ),
                 ),
               ),
@@ -187,6 +190,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
                                   subtitleWidth: subtitleWidth,
                                   subtitleHeight: subtitleHeight,
                                   chevronSize: chevronSize,
+                                  titleSubtitleSpacing: titleSubtitleSpacing,
                                 ),
                               ),
                             ),
@@ -227,6 +231,7 @@ class _DropdownRow<T> extends StatelessWidget {
     required this.subtitleWidth,
     required this.subtitleHeight,
     required this.chevronSize,
+    required this.titleSubtitleSpacing,
   });
 
   final T item;
@@ -251,6 +256,7 @@ class _DropdownRow<T> extends StatelessWidget {
   final double? subtitleWidth;
   final double? subtitleHeight;
   final double chevronSize;
+  final double titleSubtitleSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -291,6 +297,7 @@ class _DropdownRow<T> extends StatelessWidget {
                             ))
                         .copyWith(color: titleColor),
               ),
+              SizedBox(height: titleSubtitleSpacing),
               SizedBox(
                 width: subtitleWidth,
                 height: subtitleHeight,

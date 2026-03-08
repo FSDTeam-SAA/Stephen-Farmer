@@ -167,14 +167,14 @@ class DocumentScreenView extends GetView<DocumentController> {
             height: 1,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 6),
         Text(
           subtitle,
           style: GoogleFonts.manrope(
             color: subtitleColor,
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            height: 1,
+            height: 1.2,
           ),
         ),
       ],

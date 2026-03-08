@@ -50,43 +50,58 @@ class NotificationScreenView extends GetView<NotificationController> {
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                 child: Column(
                   children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Notifications',
-                        style: GoogleFonts.manrope(
-                          color: titleColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          height: 1,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed:
-                            controller.hasUnread &&
-                                !controller.isMarkingAll.value
-                            ? controller.markAllAsRead
-                            : null,
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          controller.isMarkingAll.value
-                              ? 'Marking...'
-                              : 'Mark all as read',
-                          style: GoogleFonts.manrope(
-                            color: actionColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 128,
+                          height: 27,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Notifications',
+                              style: GoogleFonts.manrope(
+                                color: titleColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                height: 1,
+                                letterSpacing: 0,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed:
+                                  controller.hasUnread &&
+                                      !controller.isMarkingAll.value
+                                  ? controller.markAllAsRead
+                                  : null,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                controller.isMarkingAll.value
+                                    ? 'Marking...'
+                                    : 'Mark all as read',
+                                style: GoogleFonts.manrope(
+                                  color: actionColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 10),
                   Divider(
                     color: isInterior
