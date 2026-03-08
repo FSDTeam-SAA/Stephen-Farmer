@@ -7,7 +7,6 @@ import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
-import '../../../../core/colors/app_color.dart';
 import '../controller/progress_controller.dart';
 import 'update_progrees_screen_view.dart';
 import '../widgets/progress_overview_card.dart';
@@ -134,7 +133,15 @@ class ProgressScreenView extends GetView<ProgressController> {
                                       onTap: () {
                                         Get.to(() => const UpdateProgreesScreenView());
                                       },
-                                      child: Icon(Icons.add_circle_outline, size: 30, color: AppColor.appColor),
+                                      child: const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: Icon(
+                                          Icons.add_circle_outline,
+                                          size: 20,
+                                          color: Color(0xFFD7C5A4),
+                                        ),
+                                      ),
                                     ),
                                 ],
                               ),
