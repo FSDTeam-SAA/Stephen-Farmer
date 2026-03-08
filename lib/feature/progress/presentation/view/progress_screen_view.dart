@@ -78,6 +78,7 @@ class ProgressScreenView extends GetView<ProgressController> {
                         subtitleBuilder: (item) => item.address,
                         thumbnailBuilder: (item) => item.thumbnailUrl,
                         fallbackAsset: AssetsImages.constructionIgm,
+                        titleSubtitleSpacing: 4,
                       ),
                       const SizedBox(height: 12),
                       Expanded(
