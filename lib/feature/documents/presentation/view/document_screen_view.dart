@@ -23,7 +23,9 @@ class DocumentScreenView extends GetView<DocumentController> {
       final role = Get.find<LoginController>().role.value;
       final isInterior = RoleBgColor.isInterior(role);
       final titleColor = isInterior ? const Color(0xFF040404) : Colors.white;
-      final subtitleColor = isInterior ? const Color(0xFF46413A) : const Color(0xFFD5DDE1);
+      final subtitleColor = isInterior
+          ? const Color(0xFF46413A)
+          : const Color(0xFFD5DDE1);
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -40,19 +42,33 @@ class DocumentScreenView extends GetView<DocumentController> {
                     Center(
                       child: Text(
                         'Documents',
-                        style: GoogleFonts.manrope(color: titleColor, fontSize: 16, fontWeight: FontWeight.w600, height: 1),
+                        style: GoogleFonts.manrope(
+                          color: titleColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
                     if (controller.isLoading.value && project == null)
-                      const Expanded(child: Center(child: CircularProgressIndicator()))
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
                     else if (project == null)
                       Expanded(
                         child: Center(
                           child: Text(
-                            controller.errorMessage.value.isEmpty ? 'No document data available' : controller.errorMessage.value,
+                            controller.errorMessage.value.isEmpty
+                                ? 'No document data available'
+                                : controller.errorMessage.value,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                            style: TextStyle(
+                              color: isInterior
+                                  ? const Color(0xFF464646)
+                                  : Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       )
@@ -73,7 +89,11 @@ class DocumentScreenView extends GetView<DocumentController> {
                                 subtitleColor: subtitleColor,
                               ),
                               const SizedBox(height: 10),
-                              _buildCategoryGrid(categories: project.categories, allDocuments: project.recentDocuments),
+                              _buildCategoryGrid(
+                                categories: project.categories,
+                                allDocuments: project.recentDocuments,
+                                isInterior: isInterior,
+                              ),
                               const SizedBox(height: 12),
                               _buildSectionHeader(
                                 title: 'Recent Documents',
@@ -82,13 +102,21 @@ class DocumentScreenView extends GetView<DocumentController> {
                                 subtitleColor: subtitleColor,
                               ),
                               const SizedBox(height: 8),
-                              ...project.recentDocuments.map((item) => RecentDocumentItemCard(item: item)),
+                              ...project.recentDocuments.map(
+                                (item) => RecentDocumentItemCard(
+                                  item: item,
+                                  isInteriorTheme: isInterior,
+                                ),
+                              ),
                               if (controller.errorMessage.value.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 6),
                                   child: Text(
                                     controller.errorMessage.value,
-                                    style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12),
+                                    style: const TextStyle(
+                                      color: Color(0xFFFF7A7A),
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -121,24 +149,43 @@ class DocumentScreenView extends GetView<DocumentController> {
     );
   }
 
-  Widget _buildSectionHeader({required String title, required String subtitle, required Color titleColor, required Color subtitleColor}) {
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+    required Color titleColor,
+    required Color subtitleColor,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: GoogleFonts.outfit(color: titleColor, fontSize: 20, fontWeight: FontWeight.w600, height: 1),
+          style: GoogleFonts.outfit(
+            color: titleColor,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            height: 1,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           subtitle,
-          style: GoogleFonts.manrope(color: subtitleColor, fontSize: 16, fontWeight: FontWeight.w400, height: 1),
+          style: GoogleFonts.manrope(
+            color: subtitleColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            height: 1,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildCategoryGrid({required List<DocumentCategoryEntity> categories, required List<RecentDocumentEntity> allDocuments}) {
+  Widget _buildCategoryGrid({
+    required List<DocumentCategoryEntity> categories,
+    required List<RecentDocumentEntity> allDocuments,
+    required bool isInterior,
+  }) {
     final visibleCategories = categories.take(4).toList();
 
     return GridView.builder(
@@ -156,9 +203,15 @@ class DocumentScreenView extends GetView<DocumentController> {
         final category = visibleCategories[index];
         return DocumentCategoryCard(
           item: category,
+          isInteriorTheme: isInterior,
           onTap: () {
-            final items = _filterByCategory(category: category, allDocuments: allDocuments);
-            Get.to(() => DocumentTypeListView(title: category.title, items: items));
+            final items = _filterByCategory(
+              category: category,
+              allDocuments: allDocuments,
+            );
+            Get.to(
+              () => DocumentTypeListView(title: category.title, items: items),
+            );
           },
         );
       },

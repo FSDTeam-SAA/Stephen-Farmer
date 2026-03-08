@@ -8,36 +8,40 @@ import 'package:stephen_farmer/feature/auth/presentation/controller/login_contro
 import '../../domain/entities/document_project_entity.dart';
 
 class RecentDocumentItemCard extends StatelessWidget {
-  const RecentDocumentItemCard({super.key, required this.item});
+  const RecentDocumentItemCard({
+    super.key,
+    required this.item,
+    this.isInteriorTheme,
+  });
 
   final RecentDocumentEntity item;
+  final bool? isInteriorTheme;
 
   @override
   Widget build(BuildContext context) {
-    final role = Get.find<LoginController>().role.value;
-    final isInterior = RoleBgColor.isInterior(role);
+    final resolvedInterior =
+        isInteriorTheme ??
+        RoleBgColor.isInterior(Get.find<LoginController>().role.value);
+
+    final bgColor = resolvedInterior
+        ? const Color(0xFFE0DFDD)
+        : const Color(0xFFF2F1EE);
+    final borderColor = resolvedInterior
+        ? const Color(0xFFBFC3C5)
+        : const Color(0xFFCFD4D8);
+    final iconBg = resolvedInterior
+        ? const Color(0xFFE6E5DD)
+        : const Color(0xFFF6F5F1);
+    final primaryText = const Color(0xFF161D1E);
+    final secondaryText = const Color(0xFF4A5256);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: isInterior ? null : const Color(0xFFE0DFDD),
-        gradient: isInterior
-            ? const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.fromRGBO(226, 221, 215, 1),
-                  Color.fromRGBO(144, 137, 120, 1),
-                ],
-              )
-            : null,
+        color: bgColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isInterior
-              ? const Color.fromRGBO(109, 111, 115, 1)
-              : const Color(0xFFBFC3C5),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -45,7 +49,7 @@ class RecentDocumentItemCard extends StatelessWidget {
             height: 25,
             width: 25,
             decoration: BoxDecoration(
-              color: const Color(0xFFE6E5DD),
+              color: iconBg,
               borderRadius: BorderRadius.circular(8),
             ),
             child: ClipRRect(
@@ -65,8 +69,8 @@ class RecentDocumentItemCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF161D1E),
-                      fontSize: 16,
+                      color: primaryText,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1,
                       letterSpacing: 0,
@@ -83,8 +87,8 @@ class RecentDocumentItemCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF161D1E),
-                          fontSize: 16,
+                          color: secondaryText,
+                          fontSize: 13,
                           fontWeight: FontWeight.w400,
                           height: 1,
                           letterSpacing: 0,
@@ -95,8 +99,8 @@ class RecentDocumentItemCard extends StatelessWidget {
                     Text(
                       '•',
                       style: GoogleFonts.manrope(
-                        color: const Color(0xFF161D1E),
-                        fontSize: 16,
+                        color: secondaryText,
+                        fontSize: 13,
                         fontWeight: FontWeight.w400,
                         height: 1,
                         letterSpacing: 0,
@@ -110,8 +114,8 @@ class RecentDocumentItemCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF161D1E),
-                          fontSize: 16,
+                          color: secondaryText,
+                          fontSize: 13,
                           fontWeight: FontWeight.w400,
                           height: 1,
                           letterSpacing: 0,
