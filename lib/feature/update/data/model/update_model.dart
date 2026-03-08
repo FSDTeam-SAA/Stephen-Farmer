@@ -56,6 +56,24 @@ class UpdateCommentModel {
     required this.createdAt,
   });
 
+  UpdateCommentModel copyWith({
+    String? id,
+    String? updateId,
+    String? text,
+    String? userName,
+    String? userAvatar,
+    DateTime? createdAt,
+  }) {
+    return UpdateCommentModel(
+      id: id ?? this.id,
+      updateId: updateId ?? this.updateId,
+      text: text ?? this.text,
+      userName: userName ?? this.userName,
+      userAvatar: userAvatar ?? this.userAvatar,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   factory UpdateCommentModel.fromJson(Map<String, dynamic> json) {
     String readFirst(List<String> keys, {String fallback = ''}) {
       for (final key in keys) {
@@ -67,21 +85,54 @@ class UpdateCommentModel {
       return fallback;
     }
 
-    final userRaw = json['user'];
+    final userRaw = json['user'] ?? json['commentedBy'] ?? json['author'];
     final user = userRaw is Map<String, dynamic>
         ? userRaw
         : <String, dynamic>{};
-    final avatar = (user['avatar'] ?? user['photoUrl'] ?? '').toString().trim();
+    final avatar = _readAvatarUrl(user['avatar'] ?? user['photoUrl']);
+    final userName = _readName(user, fallback: '');
 
     return UpdateCommentModel(
       id: readFirst(['_id', 'id', 'commentId']),
-      updateId: readFirst(['update', 'updateId']),
-      text: readFirst(['comment', 'text', 'message']),
-      userName: (user['name'] ?? user['fullName'] ?? 'User').toString(),
+      updateId: readFirst(['update', 'updateId', 'update']),
+      text: readFirst(['comment', 'text', 'content', 'body']),
+      userName: userName.isEmpty ? 'User' : userName,
       userAvatar: avatar.isEmpty ? null : avatar,
-      createdAt: _parseDateTime(json['createdAt'] ?? json['date']),
+      createdAt: _parseDateTime(
+        json['createdAt'] ?? json['date'] ?? json['updatedAt'],
+      ),
     );
   }
+}
+
+String _readName(Map<String, dynamic> user, {String fallback = 'User'}) {
+  final candidate = (user['name'] ?? user['fullName'] ?? user['username'] ?? '')
+      .toString()
+      .trim();
+  return candidate.isEmpty ? fallback : candidate;
+}
+
+String _readAvatarUrl(dynamic avatarRaw) {
+  if (avatarRaw == null) return '';
+  if (avatarRaw is String) {
+    final value = avatarRaw.trim();
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    return '';
+  }
+  if (avatarRaw is Map<String, dynamic>) {
+    final nested =
+        (avatarRaw['url'] ?? avatarRaw['secure_url'] ?? avatarRaw['src'] ?? '')
+            .toString()
+            .trim();
+    final lower = nested.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return nested;
+    }
+  }
+  return '';
 }
 
 class UpdateModel {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 
 import '../../domain/entities/progress_entity.dart';
@@ -11,6 +12,11 @@ class ProgressOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fallbackAsset = AssetsImages.constructionIgm;
+    final startedLabel = _formatDateLabel(project.startedDate, longMonth: false);
+    final handoverLabel = _formatDateLabel(
+      project.handoverDate,
+      longMonth: true,
+    );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
@@ -62,7 +68,27 @@ class ProgressOverviewCard extends StatelessWidget {
                     color: Color(0xFF151515),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
+                    height: 1,
+                    letterSpacing: 0,
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 66,
+              left: 16,
+              right: 16,
+              child: Text(
+                project.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.left,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                  letterSpacing: 0,
                 ),
               ),
             ),
@@ -73,17 +99,6 @@ class ProgressOverviewCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    project.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   Row(
                     children: [
                       const Expanded(
@@ -94,7 +109,9 @@ class ProgressOverviewCard extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
+                            height: 19 / 14,
+                            letterSpacing: 0,
                           ),
                         ),
                       ),
@@ -103,10 +120,12 @@ class ProgressOverviewCard extends StatelessWidget {
                         '${project.overallCompletion}%',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
+                          height: 1,
+                          letterSpacing: 0,
                         ),
                       ),
                     ],
@@ -126,27 +145,31 @@ class ProgressOverviewCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Started: ${project.startedDate}',
+                          'Started: $startedLabel',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color(0xFFD7D7D7),
+                          style: GoogleFonts.manrope(
+                            color: Color(0xFFD4D4D4),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
+                            height: 1,
+                            letterSpacing: 0,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'EST. Handover: ${project.handoverDate}',
+                          'EST. Handover: $handoverLabel',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            color: Color(0xFFD7D7D7),
+                          style: GoogleFonts.manrope(
+                            color: Color(0xFFD4D4D4),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
+                            height: 1,
+                            letterSpacing: 0,
                           ),
                         ),
                       ),
@@ -160,4 +183,46 @@ class ProgressOverviewCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatDateLabel(String raw, {required bool longMonth}) {
+  final value = raw.trim();
+  if (value.isEmpty) return raw;
+
+  final parsed = DateTime.tryParse(value);
+  if (parsed == null) return raw;
+
+  const shortMonths = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const longMonths = <String>[
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  final months = longMonth ? longMonths : shortMonths;
+  final month = months[parsed.month - 1];
+  return '$month ${parsed.day}';
 }

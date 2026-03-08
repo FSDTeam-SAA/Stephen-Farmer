@@ -1,39 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/utils/images.dart';
 
 class TaskActionAttentionCard extends StatelessWidget {
   const TaskActionAttentionCard({
     super.key,
     required this.count,
     required this.message,
+    required this.isInterior,
   });
 
   final int count;
   final String message;
+  final bool isInterior;
 
   @override
   Widget build(BuildContext context) {
+    final cardColor = isInterior
+        ? const Color(0xFFD5D2CA)
+        : const Color(0xFF111A1E);
+    final borderColor = isInterior
+        ? const Color(0xFF77716A)
+        : const Color(0xFF4A5960);
+    final titleColor = isInterior ? const Color(0xFF1F1F1F) : Colors.white;
+    const bodyColor = Color(0xFF8E8E93);
+    final iconBg = isInterior
+        ? const Color(0xFFE7E1D3)
+        : const Color(0xFF2A2F33);
+    const iconAccent = Color(0xFFC08A2B);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFD5D2CA),
+        color: cardColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF77716A)),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 28,
-            width: 28,
+            height: 32,
+            width: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFC08A2B), width: 2),
+              color: iconBg,
+              border: Border.all(color: iconAccent, width: 1.4),
             ),
-            child: const Icon(
-              Icons.priority_high_rounded,
-              color: Color(0xFFC08A2B),
-              size: 16,
+            child: Center(
+              child: Image.asset(
+                AssetsImages.actionsNeeded,
+                width: 16,
+                height: 16,
+                color: iconAccent,
+                colorBlendMode: BlendMode.srcIn,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.error_outline_rounded,
+                  size: 16,
+                  color: iconAccent,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -43,17 +69,22 @@ class TaskActionAttentionCard extends StatelessWidget {
               children: [
                 Text(
                   '$count actions needed',
-                  style: const TextStyle(
-                    color: Color(0xFF1F1F1F),
+                  style: TextStyle(
+                    color: titleColor,
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
+                    height: 1,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFF2F2F2F),
-                    fontSize: 13,
+                  style: GoogleFonts.manrope(
+                    color: bodyColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    height: 1,
+                    letterSpacing: 0,
                   ),
                 ),
               ],

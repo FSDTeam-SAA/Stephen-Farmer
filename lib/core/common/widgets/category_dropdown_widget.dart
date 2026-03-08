@@ -33,6 +33,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
   final double chevronSize;
   final double maxMenuHeight;
   final double? minHeight;
+  final bool alwaysShowChevron;
 
   const CategoryDropdownWidget({
     super.key,
@@ -67,6 +68,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
     this.chevronSize = 20,
     this.maxMenuHeight = 220,
     this.minHeight = 57,
+    this.alwaysShowChevron = false,
   });
 
   @override
@@ -76,14 +78,27 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
     final int safeSelectedIndex = selectedIndex.clamp(0, items.length - 1);
     final T selectedItem = items[safeSelectedIndex];
     final bool canExpand = items.length > 1;
-    final resolvedBackgroundColor = backgroundColor ?? (isInteriorTheme ? const Color(0xFFF3EFE7) : Colors.transparent);
-    final resolvedBorderColor = borderColor ?? (isInteriorTheme ? const Color(0xFF6B6458) : const Color(0xFFD7C5A4));
-    final resolvedTitleColor = titleColor ?? (isInteriorTheme ? const Color(0xFF131313) : Colors.white);
-    final resolvedSubtitleColor = subtitleColor ?? (isInteriorTheme ? const Color(0xFF5C554C) : const Color(0xFF8A979D));
-    final resolvedChevronColor = chevronColor ?? (isInteriorTheme ? const Color(0xFF584A2D) : const Color(0xFFD2A75D));
+    final bool showChevron = canExpand || alwaysShowChevron;
+    final resolvedBackgroundColor =
+        backgroundColor ??
+        (isInteriorTheme ? const Color(0xFFF3EFE7) : Colors.transparent);
+    final resolvedBorderColor =
+        borderColor ??
+        (isInteriorTheme ? const Color(0xFF6B6458) : const Color(0xFFD7C5A4));
+    final resolvedTitleColor =
+        titleColor ??
+        (isInteriorTheme ? const Color(0xFF131313) : Colors.white);
+    final resolvedSubtitleColor =
+        subtitleColor ??
+        (isInteriorTheme ? const Color(0xFF5C554C) : const Color(0xFF8A979D));
+    final resolvedChevronColor =
+        chevronColor ??
+        (isInteriorTheme ? const Color(0xFF584A2D) : const Color(0xFFD2A75D));
 
     return Container(
-      constraints: minHeight == null ? null : BoxConstraints(minHeight: minHeight!),
+      constraints: minHeight == null
+          ? null
+          : BoxConstraints(minHeight: minHeight!),
       decoration: BoxDecoration(
         color: resolvedBackgroundColor,
         borderRadius: BorderRadius.circular(borderRadius),
@@ -104,7 +119,7 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
                   padding: rowPadding,
                   child: _DropdownRow<T>(
                     item: selectedItem,
-                    showChevron: canExpand,
+                    showChevron: showChevron,
                     isMenuOpen: isMenuOpen,
                     titleBuilder: titleBuilder,
                     subtitleBuilder: subtitleBuilder,
@@ -130,7 +145,11 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
               ),
             ),
             if (isMenuOpen && canExpand) ...[
-              Divider(height: 1, thickness: 1, color: resolvedBorderColor.withValues(alpha: 0.35)),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: resolvedBorderColor.withValues(alpha: 0.35),
+              ),
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: maxMenuHeight),
                 child: SingleChildScrollView(
@@ -248,7 +267,8 @@ class _DropdownRow<T> extends StatelessWidget {
                 ? Image.network(
                     thumb,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(fallbackAsset, fit: BoxFit.cover),
+                    errorBuilder: (_, __, ___) =>
+                        Image.asset(fallbackAsset, fit: BoxFit.cover),
                   )
                 : Image.asset(fallbackAsset, fit: BoxFit.cover),
           ),
@@ -262,9 +282,14 @@ class _DropdownRow<T> extends StatelessWidget {
                 titleBuilder(item),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: (titleTextStyle ?? TextStyle(color: titleColor, fontSize: titleFontSize, fontWeight: titleFontWeight)).copyWith(
-                  color: titleColor,
-                ),
+                style:
+                    (titleTextStyle ??
+                            TextStyle(
+                              color: titleColor,
+                              fontSize: titleFontSize,
+                              fontWeight: titleFontWeight,
+                            ))
+                        .copyWith(color: titleColor),
               ),
               SizedBox(
                 width: subtitleWidth,
@@ -276,7 +301,12 @@ class _DropdownRow<T> extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style:
-                        (subtitleTextStyle ?? TextStyle(color: subtitleColor, fontSize: subtitleFontSize, fontWeight: subtitleFontWeight))
+                        (subtitleTextStyle ??
+                                TextStyle(
+                                  color: subtitleColor,
+                                  fontSize: subtitleFontSize,
+                                  fontWeight: subtitleFontWeight,
+                                ))
                             .copyWith(color: subtitleColor),
                   ),
                 ),
@@ -285,7 +315,13 @@ class _DropdownRow<T> extends StatelessWidget {
           ),
         ),
         if (showChevron)
-          Icon(isMenuOpen ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded, color: chevronColor, size: chevronSize),
+          Icon(
+            isMenuOpen
+                ? Icons.keyboard_arrow_up_rounded
+                : Icons.keyboard_arrow_down_rounded,
+            color: chevronColor,
+            size: chevronSize,
+          ),
       ],
     );
   }

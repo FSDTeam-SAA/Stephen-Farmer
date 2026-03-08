@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:get/get.dart';
 
 import '../../../../core/network/api_service/api_client.dart';
+import '../../../auth/presentation/controller/login_controller.dart';
 import '../../data/model/update_model.dart';
 import '../../domain/usecase/update_usecase.dart';
 
@@ -181,6 +182,7 @@ class UpdateController extends GetxController {
         updateId: updateId,
         comment: text,
       );
+      final normalized = _normalizeNewComment(created, typedText: text);
 
       final index = updateList.indexWhere((e) => e.id == updateId);
       if (index >= 0) {
@@ -188,11 +190,44 @@ class UpdateController extends GetxController {
         updateList[index] = item.copyWith(commentCount: item.commentCount + 1);
       }
 
-      return created;
+      return normalized;
     } catch (_) {
       Get.snackbar('Error', 'Failed to add comment');
       return null;
     }
+  }
+
+  UpdateCommentModel _normalizeNewComment(
+    UpdateCommentModel created, {
+    required String typedText,
+  }) {
+    final currentUserName = _currentUserName();
+    final currentUserAvatar = _currentUserAvatar();
+    final rawName = created.userName.trim();
+    final resolvedName = rawName.isEmpty || rawName.toLowerCase() == 'user'
+        ? currentUserName
+        : rawName;
+    final resolvedText = created.text.trim().isEmpty ? typedText : created.text;
+    final rawAvatar = created.userAvatar?.trim() ?? '';
+
+    return created.copyWith(
+      userName: resolvedName.isEmpty ? 'User' : resolvedName,
+      text: resolvedText,
+      userAvatar: rawAvatar.isEmpty ? currentUserAvatar : rawAvatar,
+    );
+  }
+
+  String _currentUserName() {
+    if (!Get.isRegistered<LoginController>()) return '';
+    final auth = Get.find<LoginController>();
+    final name = auth.displayName.trim();
+    return name;
+  }
+
+  String _currentUserAvatar() {
+    if (!Get.isRegistered<LoginController>()) return '';
+    final auth = Get.find<LoginController>();
+    return auth.displayAvatar.trim();
   }
 
   Future<bool> createUpdate({

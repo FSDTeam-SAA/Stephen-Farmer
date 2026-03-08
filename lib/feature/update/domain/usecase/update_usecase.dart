@@ -53,8 +53,11 @@ class UpdateUseCase {
     required String updateId,
   }) async {
     final response = await apiClient.get(UpdateEndpoints.getComments(updateId));
-    final rawItems = _extractList(response.data, preferredListKey: 'comments');
-    return rawItems.map(UpdateCommentModel.fromJson).toList();
+    final rawItems = _extractCommentList(response.data);
+    return rawItems
+        .map((item) => _normalizeCommentMap(item, updateId: updateId))
+        .map(UpdateCommentModel.fromJson)
+        .toList();
   }
 
   Future<UpdateCommentModel> addComment({
@@ -64,10 +67,19 @@ class UpdateUseCase {
   }) async {
     final response = await apiClient.post(
       UpdateEndpoints.addComment(updateId),
-      data: {'comment': comment},
+      data: {
+        // Keep both keys for compatibility across backend validators.
+        'comment': comment,
+        'text': comment,
+      },
     );
-    final data = _extractMap(response.data);
-    return UpdateCommentModel.fromJson(data);
+    final data = _extractCreatedCommentMap(response.data);
+    final normalized = _normalizeCommentMap(
+      data,
+      updateId: updateId,
+      fallbackComment: comment,
+    );
+    return UpdateCommentModel.fromJson(normalized);
   }
 
   Future<UpdateModel> createUpdate({
@@ -190,5 +202,68 @@ class UpdateUseCase {
       return source;
     }
     return <String, dynamic>{};
+  }
+
+  List<Map<String, dynamic>> _extractCommentList(dynamic payload) {
+    final direct = _extractList(payload, preferredListKey: 'comments');
+    if (direct.isNotEmpty) return direct;
+
+    if (payload is Map<String, dynamic>) {
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        final fromUpdate = data['update'];
+        if (fromUpdate is Map<String, dynamic>) {
+          final comments = fromUpdate['comments'];
+          if (comments is List) {
+            return comments.whereType<Map<String, dynamic>>().toList();
+          }
+        }
+      }
+    }
+
+    return <Map<String, dynamic>>[];
+  }
+
+  Map<String, dynamic> _extractCreatedCommentMap(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        final comment = data['comment'];
+        if (comment is Map<String, dynamic>) return comment;
+      }
+
+      final comment = payload['comment'];
+      if (comment is Map<String, dynamic>) return comment;
+    }
+
+    return _extractMap(payload);
+  }
+
+  Map<String, dynamic> _normalizeCommentMap(
+    Map<String, dynamic> raw, {
+    required String updateId,
+    String fallbackComment = '',
+  }) {
+    final normalized = Map<String, dynamic>.from(raw);
+
+    final rawUpdate = normalized['update'];
+    final rawUpdateId = normalized['updateId'];
+    final hasUpdate =
+        (rawUpdate != null && rawUpdate.toString().trim().isNotEmpty) ||
+        (rawUpdateId != null && rawUpdateId.toString().trim().isNotEmpty);
+    if (!hasUpdate) {
+      normalized['update'] = updateId;
+    }
+
+    final rawComment = normalized['comment'];
+    final rawText = normalized['text'];
+    final hasCommentText =
+        (rawComment != null && rawComment.toString().trim().isNotEmpty) ||
+        (rawText != null && rawText.toString().trim().isNotEmpty);
+    if (!hasCommentText && fallbackComment.trim().isNotEmpty) {
+      normalized['comment'] = fallbackComment.trim();
+    }
+
+    return normalized;
   }
 }

@@ -1,15 +1,19 @@
 class LoginRequest {
   final String email;
   final String password;
-  final String category; 
+  final String category;
 
-  LoginRequest({required this.email, required this.password, required this.category});
+  LoginRequest({
+    required this.email,
+    required this.password,
+    required this.category,
+  });
 
   Map<String, dynamic> toJson() => {
-        "email": email.trim(),
-        "password": password,
-        "category": category,
-      };
+    "email": email.trim(),
+    "password": password,
+    "category": category,
+  };
 }
 
 class LoginResponse {
@@ -17,19 +21,13 @@ class LoginResponse {
   final String message;
   final LoginData? data;
 
-  LoginResponse({
-    required this.success,
-    required this.message,
-    this.data,
-  });
+  LoginResponse({required this.success, required this.message, this.data});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       success: json["success"] == true,
       message: (json["message"] ?? "").toString(),
-      data: json["data"] != null
-          ? LoginData.fromJson(json["data"])
-          : null,
+      data: json["data"] != null ? LoginData.fromJson(json["data"]) : null,
     );
   }
 }
@@ -42,6 +40,7 @@ class LoginData {
   final String role;
   final String id;
   final String category;
+  final String? avatar;
 
   LoginData({
     required this.accessToken,
@@ -51,6 +50,7 @@ class LoginData {
     required this.role,
     required this.id,
     required this.category,
+    this.avatar,
   });
 
   factory LoginData.fromJson(Map<String, dynamic> json) {
@@ -62,6 +62,8 @@ class LoginData {
       role: json["role"],
       id: json["_id"],
       category: json["category"],
+      avatar: (json["avatar"] ?? json["photoUrl"] ?? json["imageUrl"])
+          ?.toString(),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -24,9 +25,7 @@ class ProgressScreenView extends GetView<ProgressController> {
       final role = authController.role.value;
       final bool isManager = authController.normalizedRoleKey == 'manager';
       final bool isInterior = RoleBgColor.isInterior(role);
-      final Color titleColor = isInterior
-          ? const Color(0xFF1D1D1D)
-          : Colors.white;
+      final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -40,33 +39,31 @@ class ProgressScreenView extends GetView<ProgressController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Active Project',
-                      style: TextStyle(
-                        color: titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                    SizedBox(
+                      width: 83,
+                      height: 22,
+                      child: Text(
+                        'Active Project',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: titleColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          height: 22 / 12,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     if (controller.isLoading.value && !controller.hasProjects)
-                      const Expanded(
-                        child: Center(child: CircularProgressIndicator()),
-                      )
+                      const Expanded(child: Center(child: CircularProgressIndicator()))
                     else if (project == null)
                       Flexible(
                         child: Center(
                           child: Text(
-                            controller.errorMessage.value.isEmpty
-                                ? 'No progress data available'
-                                : controller.errorMessage.value,
+                            controller.errorMessage.value.isEmpty ? 'No progress data available' : controller.errorMessage.value,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isInterior
-                                  ? const Color(0xFF1D1D1D)
-                                  : Colors.white,
-                              fontSize: 16,
-                            ),
+                            style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16),
                           ),
                         ),
                       )
@@ -96,57 +93,48 @@ class ProgressScreenView extends GetView<ProgressController> {
                               Row(
                                 children: [
                                   ProgressStatCard(
-                                    icon: Icons.calendar_month_rounded,
+                                    iconAsset: AssetsImages.calendar,
                                     label: 'Day',
-                                    value:
-                                        '${project.dayCurrent}/${project.dayTotal}',
+                                    value: '${project.dayCurrent}/${project.dayTotal}',
                                   ),
                                   const SizedBox(width: 8),
                                   ProgressStatCard(
-                                    icon: Icons.task_alt_rounded,
+                                    iconAsset: AssetsImages.task,
                                     label: 'Tasks',
-                                    value:
-                                        '${project.tasksCompleted}/${project.tasksTotal}',
+                                    value: '${project.tasksCompleted}/${project.tasksTotal}',
                                   ),
                                   const SizedBox(width: 8),
-                                  ProgressStatCard(
-                                    icon: Icons.image_rounded,
-                                    label: 'Photos',
-                                    value: '${project.photosTotal}',
-                                  ),
+                                  ProgressStatCard(icon: Icons.image_rounded, label: 'Photos', value: '${project.photosTotal}'),
                                 ],
                               ),
                               const SizedBox(height: 14),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: Text(
-                                      'Progress',
-                                      style: TextStyle(
-                                        color: titleColor,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w500,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    child: SizedBox(
+                                      width: 110,
+                                      height: 22,
+                                      child: Text(
+                                        'Progress',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.outfit(
+                                          color: titleColor,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w500,
+                                          height: 22 / 24,
+                                          letterSpacing: 0,
+                                        ),
                                       ),
                                     ),
                                   ),
                                   if (isManager)
                                     InkWell(
                                       onTap: () {
-                                        Get.to(
-                                          () =>
-                                              const UpdateProgreesScreenView(),
-                                        );
+                                        Get.to(() => const UpdateProgreesScreenView());
                                       },
-                                      child: Icon(
-                                        Icons.add_circle_outline,
-                                        size: 30,
-                                        color: AppColor.appColor,
-                                      ),
+                                      child: Icon(Icons.add_circle_outline, size: 30, color: AppColor.appColor),
                                     ),
                                 ],
                               ),
@@ -158,10 +146,7 @@ class ProgressScreenView extends GetView<ProgressController> {
                                 itemCount: project.updates.length,
                                 itemBuilder: (context, index) {
                                   final update = project.updates[index];
-                                  return ProgressTaskItemCard(
-                                    task: update,
-                                    isInteriorTheme: isInterior,
-                                  );
+                                  return ProgressTaskItemCard(task: update, isInteriorTheme: isInterior);
                                 },
                               ),
                             ],

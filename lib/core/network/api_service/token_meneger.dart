@@ -7,6 +7,8 @@ class TokenManager {
   static const _refreshKey = "refresh_key";
   static const _role = "user_role";
   static const _category = "user_category";
+  static const _userName = "user_name";
+  static const _userAvatar = "user_avatar";
   static const _rememberMe = "remember_me";
   static const _rememberedEmail = "remembered_email";
   static const _rememberedPassword = "remembered_password";
@@ -32,6 +34,14 @@ class TokenManager {
     await _storage.write(key: _category, value: category);
   }
 
+  static Future<void> saveUserName(String userName) async {
+    await _storage.write(key: _userName, value: userName);
+  }
+
+  static Future<void> saveUserAvatar(String userAvatar) async {
+    await _storage.write(key: _userAvatar, value: userAvatar);
+  }
+
   static Future<void> refreshToken(String token) async {
     await _storage.write(key: _refreshKey, value: token);
   }
@@ -52,11 +62,21 @@ class TokenManager {
     return await _storage.read(key: _category);
   }
 
+  static Future<String?> getUserName() async {
+    return await _storage.read(key: _userName);
+  }
+
+  static Future<String?> getUserAvatar() async {
+    return await _storage.read(key: _userAvatar);
+  }
+
   static Future<void> clearToken() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshKey);
     await _storage.delete(key: _role);
     await _storage.delete(key: _category);
+    await _storage.delete(key: _userName);
+    await _storage.delete(key: _userAvatar);
   }
 
   static Future<void> saveRememberedLogin({

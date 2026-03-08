@@ -6,10 +6,8 @@ import '../../domain/repository/task_repository.dart';
 import '../model/task_project_model.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
-  TaskRepositoryImpl({
-    required ApiClient apiClient,
-    this.useMockData = true,
-  }) : _apiClient = apiClient;
+  TaskRepositoryImpl({required ApiClient apiClient, this.useMockData = true})
+    : _apiClient = apiClient;
 
   final ApiClient _apiClient;
   final bool useMockData;
@@ -21,7 +19,7 @@ class TaskRepositoryImpl implements TaskRepository {
     }
 
     try {
-      final response = await _apiClient.get(TaskEndpoints.getProjects);
+      final response = await _apiClient.get(TaskEndpoints.getTasks);
       final rows = _extractRows(response.data);
       return rows.map(TaskProjectModel.fromJson).toList();
     } catch (e) {
@@ -33,7 +31,8 @@ class TaskRepositoryImpl implements TaskRepository {
     dynamic source = payload;
 
     if (source is Map<String, dynamic>) {
-      source = source["data"] ??
+      source =
+          source["data"] ??
           source["projects"] ??
           source["taskProjects"] ??
           source["items"] ??
@@ -41,7 +40,8 @@ class TaskRepositoryImpl implements TaskRepository {
           source;
 
       if (source is Map<String, dynamic>) {
-        source = source["taskProjects"] ??
+        source =
+            source["taskProjects"] ??
             source["projects"] ??
             source["items"] ??
             source["results"] ??

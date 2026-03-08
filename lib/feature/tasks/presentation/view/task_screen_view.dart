@@ -38,85 +38,86 @@ class TaskScreenView extends GetView<TaskController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Text(
-                    'Active Project',
-                    style: GoogleFonts.outfit(
-                      color: isInterior
-                          ? const Color(0xFF1D1D1D)
-                          : Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      height: 22 / 16,
-                      letterSpacing: 0,
+                    Text(
+                      'Active Project',
+                      style: GoogleFonts.outfit(
+                        color: isInterior
+                            ? const Color(0xFF1D1D1D)
+                            : Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        height: 22 / 16,
+                        letterSpacing: 0,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (controller.isLoading.value && project == null)
-                    const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (project == null)
-                    Expanded(
-                      child: Center(
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 24,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isInterior
-                                ? const Color(0xFFD5D2CA)
-                                : const Color(0xFF111A1E),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isInterior
-                                  ? const Color(0xFF77716A)
-                                  : const Color(0xFFB9A77D),
+                    const SizedBox(height: 8),
+                    if (controller.isLoading.value && project == null)
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (project == null)
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 24,
                             ),
-                          ),
-                          child: Text(
-                            controller.errorMessage.value.isEmpty
-                                ? 'No task data available'
-                                : controller.errorMessage.value,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
+                            decoration: BoxDecoration(
                               color: isInterior
-                                  ? const Color(0xFF2E2E2E)
-                                  : Colors.white70,
-                              fontSize: 14,
+                                  ? const Color(0xFFD5D2CA)
+                                  : const Color(0xFF111A1E),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isInterior
+                                    ? const Color(0xFF77716A)
+                                    : const Color(0xFFB9A77D),
+                              ),
+                            ),
+                            child: Text(
+                              controller.errorMessage.value.isEmpty
+                                  ? 'No task data available'
+                                  : controller.errorMessage.value,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isInterior
+                                    ? const Color(0xFF2E2E2E)
+                                    : Colors.white70,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),
+                      )
+                    else ...[
+                      CategoryDropdownWidget(
+                        items: controller.projects,
+                        selectedIndex: controller.selectedProjectIndex.value,
+                        isMenuOpen: controller.isProjectMenuOpen.value,
+                        isInteriorTheme: isInterior,
+                        alwaysShowChevron: true,
+                        onToggle: controller.toggleProjectMenu,
+                        onSelect: controller.selectProject,
+                        titleBuilder: (item) => item.projectName,
+                        subtitleBuilder: (item) => item.projectAddress,
+                        thumbnailBuilder: (item) => item.thumbnailUrl,
+                        fallbackAsset: AssetsImages.constructionIgm,
                       ),
-                    )
-                  else ...[
-                    CategoryDropdownWidget(
-                      items: controller.projects,
-                      selectedIndex: controller.selectedProjectIndex.value,
-                      isMenuOpen: controller.isProjectMenuOpen.value,
-                      isInteriorTheme: isInterior,
-                      onToggle: controller.toggleProjectMenu,
-                      onSelect: controller.selectProject,
-                      titleBuilder: (item) => item.projectName,
-                      subtitleBuilder: (item) => item.projectAddress,
-                      thumbnailBuilder: (item) => item.thumbnailUrl,
-                      fallbackAsset: AssetsImages.constructionIgm,
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: controller.refreshProjects,
-                        child: ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          children: isManager
-                              ? _buildManagerContent(project, isInterior)
-                              : _buildUserContent(project),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: controller.refreshProjects,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            children: isManager
+                                ? _buildManagerContent(project, isInterior)
+                                : _buildUserContent(project, isInterior),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
                   ],
                 ),
               ),
@@ -127,21 +128,25 @@ class TaskScreenView extends GetView<TaskController> {
     });
   }
 
-  List<Widget> _buildUserContent(TaskProjectEntity project) {
+  List<Widget> _buildUserContent(TaskProjectEntity project, bool isInterior) {
     return [
       TaskActionAttentionCard(
         count: project.actionsNeededCount,
         message: project.actionsNeededMessage,
+        isInterior: isInterior,
       ),
       const SizedBox(height: 12),
       for (final section in project.sections) ...[
         TaskSectionHeaderRow(
           title: section.title,
           pendingCount: section.pendingCount,
+          isInterior: isInterior,
           showLeadingIcon: section.title.trim().toLowerCase() == 'your actions',
         ),
         const SizedBox(height: 8),
-        ...section.items.map((item) => TaskActionItemCard(item: item)),
+        ...section.items.map(
+          (item) => TaskActionItemCard(item: item, isInterior: isInterior),
+        ),
         const SizedBox(height: 12),
       ],
       if (controller.errorMessage.value.isNotEmpty)

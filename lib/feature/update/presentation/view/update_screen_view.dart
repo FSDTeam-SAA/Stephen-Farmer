@@ -16,7 +16,9 @@ import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.d
 
 class UpdateScreenView extends StatelessWidget {
   final String loginCategory;
-  static const MethodChannel _nativeShareChannel = MethodChannel('app.share/native');
+  static const MethodChannel _nativeShareChannel = MethodChannel(
+    'app.share/native',
+  );
 
   const UpdateScreenView({super.key, required this.loginCategory});
 
@@ -27,13 +29,19 @@ class UpdateScreenView extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: isInterior ? const Color(0xFF1D1D1D) : Colors.white,
+            fontSize: 16,
+          ),
         ),
       ),
     );
   }
 
-  Widget _createUpdateCard({required bool isInterior, required UpdateController controller}) {
+  Widget _createUpdateCard({
+    required bool isInterior,
+    required UpdateController controller,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
@@ -57,7 +65,11 @@ class UpdateScreenView extends StatelessWidget {
           decoration: BoxDecoration(
             color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: isInterior ? const Color(0xFF8A7F6C) : const Color(0xFF2B4756)),
+            border: Border.all(
+              color: isInterior
+                  ? const Color(0xFF8A7F6C)
+                  : const Color(0xFF2B4756),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(10.0),
@@ -66,12 +78,19 @@ class UpdateScreenView extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(color: isInterior ? const Color(0xFFD6CCB9) : const Color(0xFF2D3232), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: isInterior
+                        ? const Color(0xFFD6CCB9)
+                        : const Color(0xFF2D3232),
+                    shape: BoxShape.circle,
+                  ),
                   child: Center(
                     child: Icon(
                       Icons.photo_camera_rounded,
                       size: 18,
-                      color: isInterior ? const Color(0xFF5A5246) : const Color(0xFFD7C5A4),
+                      color: isInterior
+                          ? const Color(0xFF5A5246)
+                          : const Color(0xFFD7C5A4),
                     ),
                   ),
                 ),
@@ -87,7 +106,9 @@ class UpdateScreenView extends StatelessWidget {
                           Text(
                             'Create Update',
                             style: GoogleFonts.manrope(
-                              color: isInterior ? const Color(0xFF2F2A24) : Colors.white,
+                              color: isInterior
+                                  ? const Color(0xFF2F2A24)
+                                  : Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               height: 1,
@@ -96,7 +117,9 @@ class UpdateScreenView extends StatelessWidget {
                           Text(
                             'Share progress from the site',
                             style: GoogleFonts.manrope(
-                              color: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
+                              color: isInterior
+                                  ? const Color(0xFF6E6860)
+                                  : const Color(0xFF8E8E93),
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
                               height: 1,
@@ -104,7 +127,15 @@ class UpdateScreenView extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(width: 24, height: 24, child: Icon(Icons.add_circle_outline, size: 24, color: AppColor.appColor)),
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Icon(
+                          Icons.add_circle_outline,
+                          size: 24,
+                          color: AppColor.appColor,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -127,16 +158,24 @@ class UpdateScreenView extends StatelessWidget {
 
       final projectItems = controller.projects.toList();
       final selectedProjectIndex = controller.selectedProjectIndex.value;
-      final safeProjectSelectedIndex = projectItems.isEmpty ? 0 : selectedProjectIndex.clamp(0, projectItems.length - 1);
+      final safeProjectSelectedIndex = projectItems.isEmpty
+          ? 0
+          : selectedProjectIndex.clamp(0, projectItems.length - 1);
       final isProjectMenuOpen = controller.isProjectMenuOpen.value;
 
       final categoryItems = controller.categoryFilters.toList();
-      final selectedCategoryIndex = categoryItems.indexOf(controller.selectedCategory.value);
-      final safeCategorySelectedIndex = selectedCategoryIndex < 0 ? 0 : selectedCategoryIndex;
+      final selectedCategoryIndex = categoryItems.indexOf(
+        controller.selectedCategory.value,
+      );
+      final safeCategorySelectedIndex = selectedCategoryIndex < 0
+          ? 0
+          : selectedCategoryIndex;
       final isCategoryMenuOpen = controller.isCategoryMenuOpen.value;
 
       final filteredList = controller.filteredUpdates;
-      final notificationIconColor = isInterior ? const Color(0xFF1D1D1D) : const Color(0xFFC9B089);
+      final notificationIconColor = isInterior
+          ? const Color(0xFF1D1D1D)
+          : const Color(0xFFC9B089);
       final logoutIconColor = const Color(0xFFF24E4E);
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -154,51 +193,93 @@ class UpdateScreenView extends StatelessWidget {
                     Row(
                       children: [
                         isInterior
-                            ? Image.asset(AssetsImages.interiorImg, height: 50, width: 54)
-                            : Image.asset(AssetsImages.constructionIgm, height: 32, width: 87),
+                            ? Image.asset(
+                                AssetsImages.interiorImg,
+                                height: 50,
+                                width: 54,
+                              )
+                            : Image.asset(
+                                AssetsImages.constructionIgm,
+                                height: 32,
+                                width: 87,
+                              ),
                         const SizedBox(width: 10),
                         const Spacer(),
                         IconButton(
                           tooltip: 'Notifications',
-                          onPressed: () => Get.to(() => const NotificationScreenView()),
-                          icon: Icon(Icons.notifications_rounded, color: notificationIconColor, size: 24),
+                          onPressed: () =>
+                              Get.to(() => const NotificationScreenView()),
+                          icon: Icon(
+                            Icons.notifications_rounded,
+                            color: notificationIconColor,
+                            size: 24,
+                          ),
                         ),
                         IconButton(
                           tooltip: 'Logout',
-                          icon: Icon(Icons.logout_rounded, color: logoutIconColor),
+                          icon: Icon(
+                            Icons.logout_rounded,
+                            color: logoutIconColor,
+                          ),
                           onPressed: () async {
                             final shouldLogout = await showDialog<bool>(
                               context: context,
                               builder: (dialogContext) {
-                                final dialogBorderColor = isInterior ? const Color.fromRGBO(109, 111, 115, 1) : const Color(0xFF5D6570);
+                                final dialogBorderColor = isInterior
+                                    ? const Color.fromRGBO(109, 111, 115, 1)
+                                    : const Color(0xFF5D6570);
                                 final dialogBackground = isInterior
                                     ? const LinearGradient(
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
-                                        colors: [Color.fromRGBO(226, 221, 215, 1), Color.fromRGBO(144, 137, 120, 1)],
+                                        colors: [
+                                          Color.fromRGBO(226, 221, 215, 1),
+                                          Color.fromRGBO(144, 137, 120, 1),
+                                        ],
                                       )
                                     : const LinearGradient(
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
-                                        colors: [Color(0xFF0F1A20), Color(0xFF0A141A)],
+                                        colors: [
+                                          Color(0xFF0F1A20),
+                                          Color(0xFF0A141A),
+                                        ],
                                       );
-                                final accentColor = isInterior ? const Color(0xFF8E6500) : const Color(0xFFAF8C6A);
-                                final promptColor = isInterior ? const Color(0xFF040404) : Colors.white;
+                                final accentColor = isInterior
+                                    ? const Color(0xFF8E6500)
+                                    : const Color(0xFFAF8C6A);
+                                final promptColor = isInterior
+                                    ? const Color(0xFF040404)
+                                    : Colors.white;
 
                                 return Dialog(
                                   backgroundColor: Colors.transparent,
-                                  insetPadding: const EdgeInsets.symmetric(horizontal: 18),
+                                  insetPadding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                  ),
                                   child: Container(
-                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      16,
+                                      16,
+                                      18,
+                                    ),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: dialogBorderColor, width: 2),
+                                      border: Border.all(
+                                        color: dialogBorderColor,
+                                        width: 2,
+                                      ),
                                       gradient: dialogBackground,
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Image.asset(AssetsImages.logout, height: 48, width: 48),
+                                        Image.asset(
+                                          AssetsImages.logout,
+                                          height: 48,
+                                          width: 48,
+                                        ),
                                         const SizedBox(height: 14),
                                         Text(
                                           'Are you sure ?',
@@ -216,18 +297,30 @@ class UpdateScreenView extends StatelessWidget {
                                               child: SizedBox(
                                                 height: 44,
                                                 child: OutlinedButton(
-                                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                  onPressed: () => Navigator.of(
+                                                    dialogContext,
+                                                  ).pop(false),
                                                   style: OutlinedButton.styleFrom(
-                                                    foregroundColor: accentColor,
-                                                    side: BorderSide(color: accentColor, width: 1),
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                    foregroundColor:
+                                                        accentColor,
+                                                    side: BorderSide(
+                                                      color: accentColor,
+                                                      width: 1,
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
                                                   ),
                                                   child: Text(
                                                     'Cancel',
                                                     style: GoogleFonts.manrope(
                                                       color: accentColor,
                                                       fontSize: 14,
-                                                      fontWeight: FontWeight.w600,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
                                                   ),
                                                 ),
@@ -238,19 +331,29 @@ class UpdateScreenView extends StatelessWidget {
                                               child: SizedBox(
                                                 height: 44,
                                                 child: ElevatedButton(
-                                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                                  onPressed: () => Navigator.of(
+                                                    dialogContext,
+                                                  ).pop(true),
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: accentColor,
-                                                    foregroundColor: Colors.white,
+                                                    backgroundColor:
+                                                        accentColor,
+                                                    foregroundColor:
+                                                        Colors.white,
                                                     elevation: 0,
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
                                                   ),
                                                   child: Text(
                                                     'Yes',
                                                     style: GoogleFonts.manrope(
                                                       color: Colors.white,
                                                       fontSize: 14,
-                                                      fontWeight: FontWeight.w600,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
                                                   ),
                                                 ),
@@ -284,12 +387,16 @@ class UpdateScreenView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     if (controller.isLoading.value && projectItems.isEmpty)
-                      const Expanded(child: Center(child: CircularProgressIndicator()))
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
                     else if (projectItems.isEmpty)
                       Expanded(
                         child: _emptyState(
                           isInterior: isInterior,
-                          message: controller.errorMessage.value.isEmpty ? 'No project available' : controller.errorMessage.value,
+                          message: controller.errorMessage.value.isEmpty
+                              ? 'No project available'
+                              : controller.errorMessage.value,
                         ),
                       )
                     else
@@ -310,9 +417,19 @@ class UpdateScreenView extends StatelessWidget {
                               thumbnailWidth: 70,
                               thumbnailHeight: 39,
                               thumbnailBorderRadius: 4,
-                              subtitleColor: isInterior ? const Color(0xFF6E6860) : const Color(0xFF8E8E93),
-                              titleTextStyle: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600, height: 1),
-                              subtitleTextStyle: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w400, height: 1),
+                              subtitleColor: isInterior
+                                  ? const Color(0xFF6E6860)
+                                  : const Color(0xFF8E8E93),
+                              titleTextStyle: GoogleFonts.manrope(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1,
+                              ),
+                              subtitleTextStyle: GoogleFonts.manrope(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                height: 1,
+                              ),
                             ),
                             if (controller.shouldShowCategoryDropdown) ...[
                               const SizedBox(height: 10),
@@ -322,41 +439,63 @@ class UpdateScreenView extends StatelessWidget {
                                 isMenuOpen: isCategoryMenuOpen,
                                 isInteriorTheme: isInterior,
                                 onToggle: controller.toggleCategoryMenu,
-                                onSelect: (index) => controller.selectCategory(categoryItems[index]),
+                                onSelect: (index) => controller.selectCategory(
+                                  categoryItems[index],
+                                ),
                                 titleBuilder: (item) => item,
-                                subtitleBuilder: (item) => 'Filter updates by $item',
+                                subtitleBuilder: (item) =>
+                                    'Filter updates by $item',
                                 thumbnailBuilder: (_) => null,
                                 fallbackAsset: AssetsImages.constructionIgm,
                                 thumbnailWidth: 0,
                                 thumbnailHeight: 0,
-                                rowPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                rowPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                                 minHeight: 46,
                               ),
                             ],
                             if (isManager) ...[
                               const SizedBox(height: 10),
-                              _createUpdateCard(isInterior: isInterior, controller: controller),
+                              _createUpdateCard(
+                                isInterior: isInterior,
+                                controller: controller,
+                              ),
                             ],
                             const SizedBox(height: 10),
                             Expanded(
                               child: RefreshIndicator(
                                 onRefresh: controller.refreshAll,
                                 child: ListView(
-                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
                                   padding: EdgeInsets.zero,
                                   children: [
-                                    if (controller.isLoading.value && controller.updateList.isEmpty)
+                                    if (controller.isLoading.value &&
+                                        controller.updateList.isEmpty)
                                       const Padding(
                                         padding: EdgeInsets.only(top: 24),
-                                        child: Center(child: CircularProgressIndicator()),
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
                                       )
-                                    else if (controller.errorMessage.value.isNotEmpty && controller.updateList.isEmpty)
+                                    else if (controller
+                                            .errorMessage
+                                            .value
+                                            .isNotEmpty &&
+                                        controller.updateList.isEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24),
                                         child: Center(
                                           child: Text(
                                             controller.errorMessage.value,
-                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                            style: TextStyle(
+                                              color: isInterior
+                                                  ? const Color(0xFF464646)
+                                                  : Colors.white70,
+                                              fontSize: 14,
+                                            ),
                                           ),
                                         ),
                                       )
@@ -366,7 +505,12 @@ class UpdateScreenView extends StatelessWidget {
                                         child: Center(
                                           child: Text(
                                             'No updates found',
-                                            style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 14),
+                                            style: TextStyle(
+                                              color: isInterior
+                                                  ? const Color(0xFF464646)
+                                                  : Colors.white70,
+                                              fontSize: 14,
+                                            ),
                                           ),
                                         ),
                                       )
@@ -375,8 +519,13 @@ class UpdateScreenView extends StatelessWidget {
                                         (item) => UpdatePostCard(
                                           item: item,
                                           isInteriorTheme: isInterior,
-                                          onLike: () => controller.toggleLike(item),
-                                          onShare: () => _shareUpdate(context: context, controller: controller, item: item),
+                                          onLike: () =>
+                                              controller.toggleLike(item),
+                                          onShare: () => _shareUpdate(
+                                            context: context,
+                                            controller: controller,
+                                            item: item,
+                                          ),
                                           onComment: () => _showCommentsSheet(
                                             context: context,
                                             controller: controller,
@@ -409,6 +558,7 @@ class UpdateScreenView extends StatelessWidget {
     required bool isInterior,
   }) async {
     final textController = TextEditingController();
+    final inputFocusNode = FocusNode();
     final comments = await controller.fetchComments(updateId);
 
     if (!context.mounted) return;
@@ -416,118 +566,338 @@ class UpdateScreenView extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isInterior ? const Color(0xFFF2EFE8) : const Color(0xFF111B21),
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         final localComments = List<UpdateCommentModel>.from(comments);
         bool isSending = false;
+        String? replyToName;
+        final authController = Get.find<LoginController>();
+        final currentUserName = authController.displayName.isEmpty
+            ? 'User'
+            : authController.displayName;
+        final currentUserAvatar = authController.displayAvatar.isEmpty
+            ? null
+            : authController.displayAvatar;
+        final panelColor = isInterior
+            ? const Color(0xFFD6D1C7)
+            : const Color(0xFF111B21);
+        final titleColor = isInterior ? Colors.black : Colors.white;
+        final bodyColor = isInterior
+            ? const Color(0xFF181818)
+            : const Color(0xFFF2F2F2);
+        final mutedColor = isInterior
+            ? const Color(0xFF4B4B4B)
+            : const Color(0xFF8E8E93);
 
         return StatefulBuilder(
           builder: (context, setState) {
             return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(left: 16, right: 16, top: 14, bottom: MediaQuery.of(context).viewInsets.bottom + 14),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Comments',
-                      style: TextStyle(color: isInterior ? Colors.black : Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+              top: false,
+              child: AnimatedPadding(
+                duration: const Duration(milliseconds: 180),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: FractionallySizedBox(
+                  heightFactor: 0.88,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: panelColor,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(28),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 280),
-                      child: localComments.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Text(
-                                'No comments yet',
-                                style: TextStyle(color: isInterior ? const Color(0xFF555555) : Colors.white70, fontSize: 13),
-                              ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: localComments.length,
-                              itemBuilder: (_, index) {
-                                final comment = localComments[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 14,
-                                        backgroundImage: NetworkImage(
-                                          comment.userAvatar?.trim().isNotEmpty == true
-                                              ? comment.userAvatar!.trim()
-                                              : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              comment.userName,
-                                              style: TextStyle(
-                                                color: isInterior ? Colors.black : Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            Text(
-                                              comment.text,
-                                              style: TextStyle(color: isInterior ? const Color(0xFF333333) : Colors.white70, fontSize: 13),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        _timeLabel(comment.createdAt),
-                                        style: TextStyle(color: isInterior ? const Color(0xFF7A7A7A) : Colors.white54, fontSize: 11),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: textController,
-                            style: TextStyle(color: isInterior ? Colors.black : Colors.white),
-                            decoration: InputDecoration(
-                              hintText: 'Write a comment...',
-                              hintStyle: TextStyle(color: isInterior ? const Color(0xFF777777) : Colors.white54),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: 62,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: isInterior
+                                ? const Color(0xFF9D9D9D)
+                                : const Color(0xFF5C636B),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: isSending
-                              ? null
-                              : () async {
-                                  final text = textController.text.trim();
-                                  if (text.isEmpty) return;
-                                  setState(() => isSending = true);
-                                  final added = await controller.addComment(updateId: updateId, comment: text);
-                                  if (added != null) {
-                                    textController.clear();
+                        const SizedBox(height: 18),
+                        Text(
+                          'Comments',
+                          style: GoogleFonts.manrope(
+                            color: titleColor,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: localComments.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No comments yet',
+                                    style: GoogleFonts.manrope(
+                                      color: mutedColor,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 8,
+                                  ),
+                                  itemCount: localComments.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 14),
+                                  itemBuilder: (_, index) {
+                                    final comment = localComments[index];
+                                    final avatarUrl = comment.userAvatar;
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 16,
+                                          backgroundColor: isInterior
+                                              ? const Color(0xFFC3BEB4)
+                                              : const Color(0xFF2D3238),
+                                          backgroundImage:
+                                              avatarUrl != null &&
+                                                  avatarUrl.trim().isNotEmpty
+                                              ? NetworkImage(avatarUrl.trim())
+                                              : null,
+                                          child:
+                                              avatarUrl == null ||
+                                                  avatarUrl.trim().isEmpty
+                                              ? Icon(
+                                                  Icons.person_rounded,
+                                                  size: 18,
+                                                  color: isInterior
+                                                      ? const Color(0xFF6A6358)
+                                                      : const Color(0xFFD0D0D0),
+                                                )
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      comment.userName,
+                                                      style:
+                                                          GoogleFonts.manrope(
+                                                            color: titleColor,
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    _timeLabel(
+                                                      comment.createdAt,
+                                                    ),
+                                                    style: GoogleFonts.manrope(
+                                                      color: mutedColor,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                comment.text,
+                                                style: GoogleFonts.manrope(
+                                                  color: bodyColor,
+                                                  fontSize: 28 / 2,
+                                                  fontWeight: FontWeight.w400,
+                                                  height: 1.3,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  final name = comment.userName
+                                                      .trim();
+                                                  if (name.isEmpty) return;
+                                                  setState(() {
+                                                    replyToName = name;
+                                                    textController.text =
+                                                        '@$name ';
+                                                    textController.selection =
+                                                        TextSelection.collapsed(
+                                                          offset: textController
+                                                              .text
+                                                              .length,
+                                                        );
+                                                  });
+                                                  inputFocusNode.requestFocus();
+                                                },
+                                                child: Text(
+                                                  'Reply',
+                                                  style: GoogleFonts.manrope(
+                                                    color: mutedColor,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                        ),
+                        if (replyToName != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isInterior
+                                        ? const Color(0xFFB0A38D)
+                                        : const Color(0xFF232A33),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    'Replying to $replyToName',
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () {
                                     setState(() {
-                                      localComments.add(added);
+                                      replyToName = null;
+                                      textController.clear();
                                     });
-                                  }
-                                  setState(() => isSending = false);
-                                },
-                          icon: Icon(Icons.send_rounded, color: isInterior ? const Color(0xFF8E6500) : const Color(0xFFD09A2F)),
+                                  },
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 18,
+                                    color: mutedColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isInterior
+                                        ? const Color(0xFF7A787A)
+                                        : const Color(0xFF2B2E37),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: TextField(
+                                    controller: textController,
+                                    focusNode: inputFocusNode,
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Write a Comment...',
+                                      hintStyle: GoogleFonts.manrope(
+                                        color: const Color(0xFFDBDBDB),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      isDense: true,
+                                      border: InputBorder.none,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 12,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              IconButton(
+                                onPressed: isSending
+                                    ? null
+                                    : () async {
+                                        final text = textController.text.trim();
+                                        if (text.isEmpty) return;
+                                        final payloadText =
+                                            replyToName != null &&
+                                                !text.startsWith('@')
+                                            ? '@$replyToName $text'
+                                            : text;
+                                        final tempComment = UpdateCommentModel(
+                                          id: 'local-${DateTime.now().microsecondsSinceEpoch}',
+                                          updateId: updateId,
+                                          text: payloadText,
+                                          userName: currentUserName,
+                                          userAvatar: currentUserAvatar,
+                                          createdAt: DateTime.now(),
+                                        );
+                                        setState(() => isSending = true);
+                                        setState(() {
+                                          localComments.add(tempComment);
+                                          textController.clear();
+                                          replyToName = null;
+                                        });
+                                        final added = await controller
+                                            .addComment(
+                                              updateId: updateId,
+                                              comment: payloadText,
+                                            );
+                                        setState(() {
+                                          final tempIndex = localComments
+                                              .indexWhere(
+                                                (c) => c.id == tempComment.id,
+                                              );
+                                          if (tempIndex >= 0) {
+                                            if (added != null) {
+                                              localComments[tempIndex] = added;
+                                            } else {
+                                              localComments.removeAt(tempIndex);
+                                            }
+                                          }
+                                        });
+                                        setState(() => isSending = false);
+                                      },
+                                icon: Icon(
+                                  Icons.send_rounded,
+                                  size: 30,
+                                  color: isInterior
+                                      ? const Color(0xFF8E6500)
+                                      : const Color(0xFFD09A2F),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -535,9 +905,16 @@ class UpdateScreenView extends StatelessWidget {
         );
       },
     );
+
+    inputFocusNode.dispose();
+    textController.dispose();
   }
 
-  Future<void> _shareUpdate({required BuildContext context, required UpdateController controller, required UpdateModel item}) async {
+  Future<void> _shareUpdate({
+    required BuildContext context,
+    required UpdateController controller,
+    required UpdateModel item,
+  }) async {
     await controller.shareUpdate(item);
 
     if (!context.mounted) return;
@@ -545,45 +922,70 @@ class UpdateScreenView extends StatelessWidget {
     final lines = <String>[
       item.title.trim().isEmpty ? 'Project Update' : item.title.trim(),
       if (item.description.trim().isNotEmpty) item.description.trim(),
-      if (item.thumbnailUrl?.trim().isNotEmpty ?? false) item.thumbnailUrl!.trim(),
+      if (item.thumbnailUrl?.trim().isNotEmpty ?? false)
+        item.thumbnailUrl!.trim(),
     ];
     final shareText = lines.join('\n');
-    final shareSubject = item.title.trim().isEmpty ? 'Project Update' : item.title.trim();
+    final shareSubject = item.title.trim().isEmpty
+        ? 'Project Update'
+        : item.title.trim();
 
     try {
       final box = context.findRenderObject() as RenderBox?;
       await Share.share(
         shareText,
         subject: shareSubject,
-        sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+        sharePositionOrigin: box == null
+            ? null
+            : box.localToGlobal(Offset.zero) & box.size,
       );
     } on MissingPluginException {
       if (!context.mounted) return;
-      final handled = await _shareViaNativeChannel(shareText: shareText, subject: shareSubject);
+      final handled = await _shareViaNativeChannel(
+        shareText: shareText,
+        subject: shareSubject,
+      );
       if (!handled && context.mounted) {
         await _showShareFallbackSheet(context: context, shareText: shareText);
       }
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: shareText));
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share unavailable (${e.runtimeType}). Copied to clipboard.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Share unavailable (${e.runtimeType}). Copied to clipboard.',
+          ),
+        ),
+      );
     }
   }
 
-  Future<bool> _shareViaNativeChannel({required String shareText, required String subject}) async {
+  Future<bool> _shareViaNativeChannel({
+    required String shareText,
+    required String subject,
+  }) async {
     try {
-      final result = await _nativeShareChannel.invokeMethod<bool>('shareText', {'text': shareText, 'subject': subject});
+      final result = await _nativeShareChannel.invokeMethod<bool>('shareText', {
+        'text': shareText,
+        'subject': subject,
+      });
       return result ?? false;
     } catch (_) {
       return false;
     }
   }
 
-  Future<void> _showShareFallbackSheet({required BuildContext context, required String shareText}) async {
+  Future<void> _showShareFallbackSheet({
+    required BuildContext context,
+    required String shareText,
+  }) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF23222D),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
@@ -594,12 +996,20 @@ class UpdateScreenView extends StatelessWidget {
               children: [
                 Text(
                   'Share',
-                  style: GoogleFonts.manrope(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Native share is unavailable on this build. You can copy the text now.',
-                  style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w400),
+                  style: GoogleFonts.manrope(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 SizedBox(
@@ -610,15 +1020,27 @@ class UpdateScreenView extends StatelessWidget {
                       if (!sheetContext.mounted) return;
                       Navigator.of(sheetContext).pop();
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share text copied to clipboard')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Share text copied to clipboard'),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFAF8C6A),
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: Text('Copy Share Text', style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Copy Share Text',
+                      style: GoogleFonts.manrope(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],

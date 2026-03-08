@@ -17,6 +17,8 @@ class LoginController extends GetxController {
   final RxBool rememberMe = false.obs;
   final RxString role = ''.obs; // category: "interior" / "construction"
   final RxString userRole = ''.obs; // role: "client" / "manager"
+  final RxString userName = ''.obs;
+  final RxString userAvatar = ''.obs;
 
   // Text controllers
   final RxString email = ''.obs;
@@ -58,6 +60,8 @@ class LoginController extends GetxController {
 
   String get categoryKey => role.value.trim().toLowerCase();
   String get roleKey => userRole.value.trim().toLowerCase();
+  String get displayName => userName.value.trim();
+  String get displayAvatar => userAvatar.value.trim();
   String get normalizedRoleKey => _normalizeRole(roleKey);
   String get scopeKey => '${categoryKey}_$normalizedRoleKey';
 
@@ -110,6 +114,8 @@ class LoginController extends GetxController {
         (await TokenManager.getCategory())?.trim().toLowerCase() ?? '';
     final savedUserRole =
         (await TokenManager.getRole())?.trim().toLowerCase() ?? '';
+    final savedUserName = (await TokenManager.getUserName())?.trim() ?? '';
+    final savedUserAvatar = (await TokenManager.getUserAvatar())?.trim() ?? '';
 
     if (savedCategory.isEmpty || savedUserRole.isEmpty) {
       return false;
@@ -117,6 +123,8 @@ class LoginController extends GetxController {
 
     role.value = savedCategory;
     userRole.value = savedUserRole;
+    userName.value = savedUserName;
+    userAvatar.value = savedUserAvatar;
     return true;
   }
 
@@ -164,8 +172,12 @@ class LoginController extends GetxController {
         await TokenManager.refreshToken(response.data!.refreshToken);
         role.value = response.data!.category.trim().toLowerCase();
         userRole.value = response.data!.role.trim().toLowerCase();
+        userName.value = response.data!.name.trim();
+        userAvatar.value = (response.data!.avatar ?? '').trim();
         await TokenManager.saveCategory(role.value);
         await TokenManager.saveRole(userRole.value);
+        await TokenManager.saveUserName(userName.value);
+        await TokenManager.saveUserAvatar(userAvatar.value);
         await TokenManager.saveRememberedLogin(
           enabled: rememberMe.value,
           scopeKey: normalizedCategory,
@@ -234,6 +246,8 @@ class LoginController extends GetxController {
       await TokenManager.clearToken();
       role.value = '';
       userRole.value = '';
+      userName.value = '';
+      userAvatar.value = '';
       email.value = '';
       password.value = '';
       rememberMe.value = false;

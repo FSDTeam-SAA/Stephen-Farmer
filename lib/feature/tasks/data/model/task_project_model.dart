@@ -1,4 +1,5 @@
 import '../../domain/entities/task_project_entity.dart';
+import '../../../../core/utils/images.dart';
 
 class TaskItemModel extends TaskItemEntity {
   const TaskItemModel({
@@ -15,7 +16,11 @@ class TaskItemModel extends TaskItemEntity {
       title: _readString(json, ["title", "name"], fallback: "Untitled task"),
       subtitle: _readString(json, ["subtitle", "description"], fallback: ""),
       priority: _readString(json, ["priority", "level"], fallback: "Medium"),
-      phaseStatus: _readString(json, ["phaseStatus", "status", "taskStatus"], fallback: ""),
+      phaseStatus: _readString(json, [
+        "phaseStatus",
+        "status",
+        "taskStatus",
+      ], fallback: ""),
     );
   }
 }
@@ -30,7 +35,10 @@ class TaskSectionModel extends TaskSectionEntity {
   factory TaskSectionModel.fromJson(Map<String, dynamic> json) {
     final rows = json["items"];
     final items = rows is List
-        ? rows.whereType<Map<String, dynamic>>().map(TaskItemModel.fromJson).toList()
+        ? rows
+              .whereType<Map<String, dynamic>>()
+              .map(TaskItemModel.fromJson)
+              .toList()
         : <TaskItemModel>[];
 
     return TaskSectionModel(
@@ -54,21 +62,35 @@ class TaskProjectModel extends TaskProjectEntity {
   factory TaskProjectModel.fromJson(Map<String, dynamic> json) {
     final rows = json["sections"] ?? json["taskSections"] ?? json["groups"];
     final sections = rows is List
-        ? rows.whereType<Map<String, dynamic>>().map(TaskSectionModel.fromJson).toList()
+        ? rows
+              .whereType<Map<String, dynamic>>()
+              .map(TaskSectionModel.fromJson)
+              .toList()
         : <TaskSectionModel>[];
 
     return TaskProjectModel(
-      projectName: _readString(json, ["projectName", "name", "title"], fallback: "Untitled Project"),
-      projectAddress: _readString(json, ["projectAddress", "address", "location"], fallback: "N/A"),
-      thumbnailUrl: _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
+      projectName: _readString(json, [
+        "projectName",
+        "name",
+        "title",
+      ], fallback: "Untitled Project"),
+      projectAddress: _readString(json, [
+        "projectAddress",
+        "address",
+        "location",
+      ], fallback: "N/A"),
+      thumbnailUrl:
+          _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
           ? null
           : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
-      actionsNeededCount: _readInt(json, ["actionsNeededCount", "actionsCount"], fallback: 0),
-      actionsNeededMessage: _readString(
-        json,
-        ["actionsNeededMessage", "actionsMessage"],
-        fallback: "Your decisions are required to keep progress on track",
-      ),
+      actionsNeededCount: _readInt(json, [
+        "actionsNeededCount",
+        "actionsCount",
+      ], fallback: 0),
+      actionsNeededMessage: _readString(json, [
+        "actionsNeededMessage",
+        "actionsMessage",
+      ], fallback: "Your decisions are required to keep progress on track"),
       sections: sections,
     );
   }
@@ -77,9 +99,10 @@ class TaskProjectModel extends TaskProjectEntity {
     TaskProjectModel(
       projectName: "Riverside Apartment Renovation",
       projectAddress: "42 Harbor View Drive, Apt 12B",
-      thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop",
+      thumbnailUrl: AssetsImages.actionsNeeded,
       actionsNeededCount: 2,
-      actionsNeededMessage: "Your decisions are required to keep progress on track",
+      actionsNeededMessage:
+          "Your decisions are required to keep progress on track",
       sections: [
         TaskSectionModel(
           title: "Your Actions",
@@ -119,10 +142,12 @@ class TaskProjectModel extends TaskProjectEntity {
         ),
       ],
     ),
+
     TaskProjectModel(
       projectName: "Cityline Duplex Build",
       projectAddress: "15 Lakefront Ave, Unit 12",
-      thumbnailUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
+      thumbnailUrl:
+          "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
       actionsNeededCount: 1,
       actionsNeededMessage: "One approval is pending to continue execution.",
       sections: [
@@ -169,11 +194,7 @@ String _readString(
   return fallback;
 }
 
-int _readInt(
-  Map<String, dynamic> json,
-  List<String> keys, {
-  int fallback = 0,
-}) {
+int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {
   for (final key in keys) {
     final value = json[key];
     if (value is int) return value;

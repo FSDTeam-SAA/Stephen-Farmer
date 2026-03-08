@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/progress_entity.dart';
 
@@ -16,14 +17,11 @@ class ProgressTaskItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCompleted = task.status.toLowerCase() == 'completed';
     final Color statusColor = isCompleted
-        ? const Color(0xFF34C759)
+        ? const Color(0xFF009A0A)
         : const Color(0xFFAAB5BA);
     final Color titleColor = isInteriorTheme
         ? const Color(0xFF1D1D1D)
         : Colors.white;
-    final Color subtitleColor = isInteriorTheme
-        ? const Color(0xFF5C5C5C)
-        : const Color(0xFF8A979D);
     final Color percentColor = isInteriorTheme
         ? const Color(0xFF1D1D1D)
         : Colors.white;
@@ -33,12 +31,6 @@ class ProgressTaskItemCard extends StatelessWidget {
     final Color progressBackground = isInteriorTheme
         ? Colors.black.withValues(alpha: 0.12)
         : Colors.white;
-    final String? note = task is ProgressUpdateEntity
-        ? (task as ProgressUpdateEntity).note.trim().isEmpty
-              ? null
-              : (task as ProgressUpdateEntity).note.trim()
-        : null;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
@@ -73,35 +65,26 @@ class ProgressTaskItemCard extends StatelessWidget {
                       task.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: titleColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
+                        height: 1,
+                        letterSpacing: 0,
                       ),
                     ),
                     Text(
                       task.status,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: statusColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
+                        height: 1,
+                        letterSpacing: 0,
                       ),
                     ),
-                    if (note != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        note,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: subtitleColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -113,25 +96,14 @@ class ProgressTaskItemCard extends StatelessWidget {
                     '${task.progressPercent}%',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: GoogleFonts.outfit(
                       color: percentColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      height: 1,
+                      letterSpacing: 0,
                     ),
                   ),
-                  if (task.dateLabel != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      task.dateLabel!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: subtitleColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ],

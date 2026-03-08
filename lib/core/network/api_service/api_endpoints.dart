@@ -109,7 +109,15 @@ class ProgressEndpoints {
 
 // ================= TASK =================
 class TaskEndpoints {
-  static const String getProjects = "/tasks/projects";
+  static const String createTask = "/tasks";
+  static const String getTasks = "/tasks";
+  static String getTaskDetails(String taskId) => "/tasks/$taskId";
+  static String updateTaskByManager(String taskId) => "/tasks/$taskId";
+  static String resubmitTaskForApproval(String taskId) =>
+      "/tasks/$taskId/resubmit";
+  static String approveTask(String taskId) => "/tasks/$taskId/approve";
+  static String rejectTask(String taskId) => "/tasks/$taskId/reject";
+  static String updateTaskStatus(String taskId) => "/tasks/$taskId/status";
 }
 
 // ================= FINANCIALS =================

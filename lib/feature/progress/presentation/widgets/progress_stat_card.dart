@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/colors/app_color.dart';
 
 class ProgressStatCard extends StatelessWidget {
-  const ProgressStatCard({super.key, required this.icon, required this.label, required this.value});
+  const ProgressStatCard({
+    super.key,
+    this.icon,
+    this.iconAsset,
+    required this.label,
+    required this.value,
+  }) : assert(icon != null || iconAsset != null);
 
-  final IconData icon;
+  final IconData? icon;
+  final String? iconAsset;
   final String label;
   final String value;
 
@@ -22,20 +30,48 @@ class ProgressStatCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.amber.shade100, size: 28),
+            if (iconAsset != null)
+              Image.asset(
+                iconAsset!,
+                width: 28,
+                height: 28,
+                color: Colors.amber.shade100,
+                errorBuilder: (_, __, ___) =>
+                    Icon(
+                      icon ?? Icons.image_not_supported_outlined,
+                      color: Colors.amber.shade100,
+                      size: 28,
+                    ),
+              )
+            else
+              Icon(icon ?? Icons.image_not_supported_outlined, color: Colors.amber.shade100, size: 28),
             const SizedBox(height: 8),
             Text(
               label,
+              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: GoogleFonts.manrope(
+                color: const Color(0xFFD4D4D4),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1,
+                letterSpacing: 0,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               value,
+              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 20, height: 1, fontWeight: FontWeight.w600),
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 20,
+                height: 1,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0,
+              ),
             ),
           ],
         ),
