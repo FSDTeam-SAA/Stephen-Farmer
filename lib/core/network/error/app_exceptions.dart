@@ -1,4 +1,3 @@
-
 class AppException implements Exception {
   final String message;
   AppException(this.message);
@@ -8,14 +7,13 @@ class AppException implements Exception {
 }
 
 class NetworkException extends AppException {
-  NetworkException(String message) : super(message);
+  NetworkException(super.message);
 }
 
 class ServerException extends AppException {
-  ServerException(String message) : super(message);
+  ServerException(super.message);
 }
 
 class ValidationException extends AppException {
-  ValidationException(String message) : super(message);
+  ValidationException(super.message);
 }
-

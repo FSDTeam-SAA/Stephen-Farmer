@@ -9,6 +9,7 @@ class WorkspaceCard extends StatelessWidget {
   final Color? imageColor; // 👈 optional color
 
   const WorkspaceCard({
+    super.key,
     required this.image,
     required this.subtitle,
     required this.onTap,
