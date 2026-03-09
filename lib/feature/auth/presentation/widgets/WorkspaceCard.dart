@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WorkspaceCard extends StatelessWidget {
   final String image;
@@ -47,7 +48,21 @@ class WorkspaceCard extends StatelessWidget {
 
             // Subtitle
             Center(
-              child: Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
+              child: SizedBox(
+                width: 295,
+                height: 17,
+                child: Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1.2,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 28),
 

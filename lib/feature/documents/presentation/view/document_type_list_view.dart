@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +24,8 @@ class DocumentTypeListView extends StatelessWidget {
     final titleColor = isInterior ? const Color(0xFF040404) : Colors.white;
     final displayTitle = _sanitizeTitle(title);
     final pageColor = isInterior ? const Color(0xFFB0ACA0) : Colors.black;
+    final bool showBackButton =
+        defaultTargetPlatform == TargetPlatform.android;
 
     return Scaffold(
       backgroundColor: pageColor,
@@ -39,14 +42,16 @@ class DocumentTypeListView extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 44,
-                        child: IconButton(
-                          onPressed: Get.back,
-                          icon: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 20,
-                            color: titleColor,
-                          ),
-                        ),
+                        child: showBackButton
+                            ? IconButton(
+                                onPressed: Get.back,
+                                icon: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 20,
+                                  color: titleColor,
+                                ),
+                              )
+                            : null,
                       ),
                       Expanded(
                         child: Center(

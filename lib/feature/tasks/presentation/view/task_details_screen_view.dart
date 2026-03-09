@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,6 +33,8 @@ class TaskDetailsScreenView extends StatelessWidget {
     final Color titleColor = isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
+    final bool showBackButton =
+        defaultTargetPlatform == TargetPlatform.android;
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -43,19 +46,21 @@ class TaskDetailsScreenView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: Get.back,
-                          icon: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: titleColor,
-                            size: 20,
+                    if (showBackButton) ...[
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: Get.back,
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: titleColor,
+                              size: 20,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     _PriorityChip(priority: item.priority),
                     const SizedBox(height: 14),
                     SizedBox(
