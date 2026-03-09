@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/custom_text_field.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -50,6 +52,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
   @override
   Widget build(BuildContext context) {
     final bool isInterior = RoleBgColor.isInterior(widget.category);
+    final bool showBackButton = defaultTargetPlatform == TargetPlatform.android;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: RoleBgColor.overlayStyle(widget.category),
@@ -68,14 +71,15 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                     children: [
                       const SizedBox(height: 12),
 
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          onPressed: () => Get.back(),
-                          tooltip: "Back",
-                          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isInterior ? Colors.black : Colors.white),
+                      if (showBackButton)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            onPressed: () => Get.back(),
+                            tooltip: "Back",
+                            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isInterior ? Colors.black : Colors.white),
+                          ),
                         ),
-                      ),
 
                       const SizedBox(height: 28),
 
@@ -89,15 +93,40 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                       ),
 
                       Center(
-                        child: Text('Welcome back', style: AppTextStyles.textMedium(color: isInterior ? Colors.black : Colors.white)),
+                        child: SizedBox(
+                          width: 230,
+                          height: 29,
+                          child: Text(
+                            'Welcome back',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.outfit(
+                              color: isInterior ? Colors.black : const Color(0xFFE0DACD),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              height: 1.2,
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 8),
 
                       Center(
-                        child: Text(
-                          'Please Login to your Account',
-                          style: AppTextStyles.samiMedium(color: isInterior ? Colors.black : Colors.white),
+                        child: SizedBox(
+                          width: 230,
+                          height: 19,
+                          child: Text(
+                            'Please Login to your Account',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.manrope(
+                              color: isInterior ? Colors.black : const Color(0xFFE0DACD),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              height: 1.2,
+                              letterSpacing: 0,
+                            ),
+                          ),
                         ),
                       ),
 
@@ -149,7 +178,21 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                             const Spacer(),
                             TextButton(
                               onPressed: () {
-                                Get.to(() => ForgetPasswordView(category: widget.category));
+                                final value = emailController.text.trim();
+                                if (value.isEmpty) {
+                                  Get.snackbar(
+                                    'Validation',
+                                    'Please enter your email first.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                  return;
+                                }
+                                Get.to(
+                                  () => ForgetPasswordView(
+                                    category: widget.category,
+                                    email: value,
+                                  ),
+                                );
                               },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
@@ -197,8 +240,22 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.login_outlined, size: 20),
-                                      SizedBox(width: 12),
-                                      Text('Sign in', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                                      // SizedBox(width: 0),
+                                      SizedBox(
+                                        width: 88,
+                                        height: 17,
+                                        child: Text(
+                                          'Sign in',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Color(0xFF1E1E1E),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.2,
+                                            letterSpacing: 0,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                           ),

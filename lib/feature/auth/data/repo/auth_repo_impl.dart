@@ -41,4 +41,43 @@ class AuthRepositoryImpl implements AuthRepository {
       // Local logout will still proceed from controller.
     }
   }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    await apiClient.post(
+      AuthEndpoints.forgotPassword,
+      data: {
+        "email": email.trim(),
+      },
+    );
+  }
+
+  @override
+  Future<void> verifyOtp({required String email, required String otp}) async {
+    await apiClient.post(
+      AuthEndpoints.verifyOtp,
+      data: {
+        "email": email.trim(),
+        "otp": otp.trim(),
+      },
+    );
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await apiClient.post(
+      AuthEndpoints.resetPassword,
+      data: {
+        "email": email.trim(),
+        "otp": otp.trim(),
+        "newPassword": newPassword,
+        "confirmPassword": confirmPassword,
+      },
+    );
+  }
 }
