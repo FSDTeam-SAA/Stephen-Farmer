@@ -42,10 +42,29 @@ class UpdateScreenView extends StatelessWidget {
     required bool isInterior,
     required UpdateController controller,
   }) {
+    final cardHeight = isInterior ? 68.0 : 72.0;
+    final cardRadius = isInterior ? 8.0 : 10.0;
+    final cardPadding = isInterior
+        ? const EdgeInsets.symmetric(horizontal: 14, vertical: 10)
+        : const EdgeInsets.all(10);
+    final badgeSize = isInterior ? 32.0 : 40.0;
+    final badgeIconSize = isInterior ? 15.0 : 18.0;
+    final titleColor = isInterior ? const Color(0xFF181818) : Colors.white;
+    final subtitleColor = isInterior
+        ? const Color(0xFF5F5A52)
+        : const Color(0xFF8E8E93);
+    final cardColor = isInterior ? const Color(0xFFF4F4F2) : Colors.transparent;
+    final borderColor = isInterior
+        ? const Color(0xFF9F9583)
+        : const Color(0xFF2B4756);
+    final badgeColor = isInterior
+        ? const Color(0xFFF0ECE3)
+        : const Color(0xFF2D3232);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(cardRadius),
         onTap: () {
           if (controller.selectedProjectId.isEmpty) {
             Get.snackbar('Error', 'Select a project first');
@@ -60,36 +79,30 @@ class UpdateScreenView extends StatelessWidget {
           );
         },
         child: Container(
-          height: 72,
+          height: cardHeight,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isInterior ? const Color(0xFFE7DED0) : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isInterior
-                  ? const Color(0xFF8A7F6C)
-                  : const Color(0xFF2B4756),
-            ),
+            color: cardColor,
+            borderRadius: BorderRadius.circular(cardRadius),
+            border: Border.all(color: borderColor),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: cardPadding,
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: badgeSize,
+                  height: badgeSize,
                   decoration: BoxDecoration(
-                    color: isInterior
-                        ? const Color(0xFFD6CCB9)
-                        : const Color(0xFF2D3232),
+                    color: badgeColor,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Icon(
                       Icons.photo_camera_rounded,
-                      size: 18,
+                      size: badgeIconSize,
                       color: isInterior
-                          ? const Color(0xFF5A5246)
+                          ? const Color(0xFFD0B47A)
                           : const Color(0xFFD7C5A4),
                     ),
                   ),
@@ -106,9 +119,7 @@ class UpdateScreenView extends StatelessWidget {
                           Text(
                             'Create Update',
                             style: GoogleFonts.manrope(
-                              color: isInterior
-                                  ? const Color(0xFF2F2A24)
-                                  : Colors.white,
+                              color: titleColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               height: 1,
@@ -117,10 +128,8 @@ class UpdateScreenView extends StatelessWidget {
                           Text(
                             'Share progress from the site',
                             style: GoogleFonts.manrope(
-                              color: isInterior
-                                  ? const Color(0xFF6E6860)
-                                  : const Color(0xFF8E8E93),
-                              fontSize: 12,
+                              color: subtitleColor,
+                              fontSize: isInterior ? 11 : 12,
                               fontWeight: FontWeight.w400,
                               height: 1,
                             ),
