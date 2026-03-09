@@ -27,9 +27,6 @@ class TaskDetailsScreenView extends StatelessWidget {
     final Color bgColor = isInterior
         ? const Color(0xFFE4DED2)
         : const Color(0xFF0F161C);
-    final Color cardColor = isInterior
-        ? const Color(0xFFD5D2CA)
-        : const Color(0xFF111A1E);
     final Color titleColor = isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
@@ -86,7 +83,9 @@ class TaskDetailsScreenView extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF8E8E93),
+                          color: isInterior
+                              ? const Color(0xFF1F1F1F)
+                              : const Color(0xFF8E8E93),
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           height: 1,
@@ -144,93 +143,84 @@ class TaskDetailsScreenView extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     if (!waitingForApproval) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Color(0xFF8EA0AE),
+                            child: Icon(
+                              Icons.person,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const CircleAvatar(
-                                  radius: 12,
-                                  backgroundColor: Color(0xFF8EA0AE),
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 255,
-                                            height: 17,
-                                            child: Text.rich(
-                                              TextSpan(
-                                                text: 'Rain Altmann ',
-                                                style: GoogleFonts.manrope(
-                                                  color: titleColor,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  height: 1.4,
-                                                  letterSpacing: 0,
-                                                ),
-                                                children: [
-                                                  TextSpan(
-                                                    text: '(Site manager)',
-                                                    style: GoogleFonts.manrope(
-                                                      color: titleColor,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      height: 1.4,
-                                                      letterSpacing: 0,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      SizedBox(
-                                        width: 255,
-                                        height: 40,
-                                        child: Text(
-                                          'Sure, that\'s done. The update has been applied.',
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 255,
+                                      height: 17,
+                                      child: Text.rich(
+                                        TextSpan(
+                                          text: 'Rain Altmann ',
                                           style: GoogleFonts.manrope(
-                                            color: titleColor,
-                                            fontSize: 14,
+                                            color: isInterior
+                                                ? const Color(0xFF5C6670)
+                                                : titleColor,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             height: 1.4,
                                             letterSpacing: 0,
                                           ),
+                                          children: [
+                                            TextSpan(
+                                              text: '(Site manager)',
+                                              style: GoogleFonts.manrope(
+                                                color: isInterior
+                                                    ? const Color(0xFF5C6670)
+                                                    : titleColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.4,
+                                                letterSpacing: 0,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: 255,
+                                  height: 40,
+                                  child: Text(
+                                    'Sure, that\'s done. The update has been applied.',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.manrope(
+                                      color: isInterior
+                                          ? const Color(0xFF1F1F1F)
+                                          : titleColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.4,
+                                      letterSpacing: 0,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Align(
@@ -242,7 +232,7 @@ class TaskDetailsScreenView extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isInterior
-                                ? const Color(0xFFB7A084)
+                                ? const Color(0xFF8D7A56)
                                 : const Color(0xFF1B262D),
                             borderRadius: BorderRadius.circular(999),
                           ),
@@ -267,7 +257,9 @@ class TaskDetailsScreenView extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1B262D),
+                            color: isInterior
+                                ? const Color(0xFF8D7A56)
+                                : const Color(0xFF1B262D),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: SizedBox(
@@ -312,7 +304,9 @@ class TaskDetailsScreenView extends StatelessWidget {
                                     TextSpan(
                                       text: 'Rain Altmann ',
                                       style: GoogleFonts.manrope(
-                                        color: titleColor,
+                                        color: isInterior
+                                            ? const Color(0xFF2E2A25)
+                                            : titleColor,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         height: 1.4,
@@ -322,7 +316,9 @@ class TaskDetailsScreenView extends StatelessWidget {
                                         TextSpan(
                                           text: '(Client)',
                                           style: GoogleFonts.manrope(
-                                            color: titleColor,
+                                            color: isInterior
+                                                ? const Color(0xFF2E2A25)
+                                                : titleColor,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             height: 1.4,
@@ -339,7 +335,9 @@ class TaskDetailsScreenView extends StatelessWidget {
                                 Text(
                                   'Great, thank you.',
                                   style: GoogleFonts.manrope(
-                                    color: Colors.white,
+                                    color: isInterior
+                                        ? const Color(0xFF4A4A4A)
+                                        : Colors.white,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     height: 1.4,
@@ -363,12 +361,7 @@ class TaskDetailsScreenView extends StatelessWidget {
                 16,
                 waitingForApproval ? 8 : 16,
               ),
-              decoration: BoxDecoration(
-                color: bgColor,
-                border: const Border(
-                  top: BorderSide(color: Color(0xFF26333A), width: 1),
-                ),
-              ),
+              decoration: BoxDecoration(color: bgColor),
               child: Row(
                 children: [
                   Expanded(
@@ -434,17 +427,14 @@ class _PriorityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool highPriority = priority.trim().toLowerCase() == 'high';
-    final authController = Get.find<LoginController>();
-    final isInterior = RoleBgColor.isInterior(authController.role.value);
+    final chipPadding = highPriority
+        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+        : const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: chipPadding,
       decoration: BoxDecoration(
-        color: highPriority
-            ? isInterior
-                  ? const Color(0xFFC04141)
-                  : const Color(0x80FF383C)
-            : const Color(0xFF8A6400),
+        color: highPriority ? const Color(0x80FF383C) : const Color(0xFF8A6400),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -453,7 +443,7 @@ class _PriorityChip extends StatelessWidget {
           color: Colors.white,
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          height: 22 / 12,
+          height: 1,
           letterSpacing: 0,
         ),
       ),

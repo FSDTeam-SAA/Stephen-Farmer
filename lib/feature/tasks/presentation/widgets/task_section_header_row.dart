@@ -17,7 +17,7 @@ class TaskSectionHeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+    final titleColor = Colors.white;
     final badgeColor = isInterior
         ? const Color(0xFF7C715E)
         : const Color(0xFF1B262D);
