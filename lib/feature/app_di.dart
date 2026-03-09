@@ -97,10 +97,7 @@ class AppDependencies {
     );
 
     Get.lazyPut<TaskRepository>(
-      () => TaskRepositoryImpl(
-        apiClient: Get.find<ApiClient>(),
-        useMockData: false,
-      ),
+      () => TaskRepositoryImpl(),
       fenix: true,
     );
 

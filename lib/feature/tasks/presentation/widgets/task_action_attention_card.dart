@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:stephen_farmer/core/utils/images.dart';
 
 class TaskActionAttentionCard extends StatelessWidget {
   const TaskActionAttentionCard({
@@ -48,16 +47,22 @@ class TaskActionAttentionCard extends StatelessWidget {
               border: Border.all(color: iconAccent, width: 1.4),
             ),
             child: Center(
-              child: Image.asset(
-                AssetsImages.actionsNeeded,
-                width: 16,
-                height: 16,
-                color: iconAccent,
-                colorBlendMode: BlendMode.srcIn,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.error_outline_rounded,
-                  size: 16,
-                  color: iconAccent,
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: iconAccent, width: 1.6),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  '!',
+                  style: TextStyle(
+                    color: iconAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                  ),
                 ),
               ),
             ),

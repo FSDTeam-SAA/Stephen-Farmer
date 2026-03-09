@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class TaskSectionHeaderRow extends StatelessWidget {
   const TaskSectionHeaderRow({
@@ -24,17 +25,27 @@ class TaskSectionHeaderRow extends StatelessWidget {
     return Row(
       children: [
         if (showLeadingIcon)
-          Icon(Icons.person_outline_rounded, color: titleColor, size: 18),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: Icon(
+              Icons.person_outline_rounded,
+              color: titleColor,
+              size: 24,
+            ),
+          ),
         if (showLeadingIcon) const SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               color: titleColor,
               fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
+              height: 22 / 16,
+              letterSpacing: 0,
             ),
           ),
         ),
@@ -50,10 +61,12 @@ class TaskSectionHeaderRow extends StatelessWidget {
               '$pendingCount PENDING',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: GoogleFonts.manrope(
                 color: Colors.white,
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
+                height: 22 / 12,
+                letterSpacing: 0,
               ),
             ),
           ),
