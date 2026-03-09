@@ -17,8 +17,16 @@ import '../widgets/task_section_header_row.dart';
 class TaskScreenView extends GetView<TaskController> {
   const TaskScreenView({super.key});
 
-  void _openTaskDetails(TaskItemEntity item) {
-    Get.to(() => TaskDetailsScreenView(item: item));
+  void _openTaskDetails(
+    TaskItemEntity item, {
+    bool waitingForApproval = false,
+  }) {
+    Get.to(
+      () => TaskDetailsScreenView(
+        item: item,
+        waitingForApproval: waitingForApproval,
+      ),
+    );
   }
 
   @override
@@ -29,11 +37,66 @@ class TaskScreenView extends GetView<TaskController> {
       final role = authController.role.value;
       final bool isManager = authController.normalizedRoleKey == 'manager';
       final isInterior = RoleBgColor.isInterior(role);
+      final List<TaskItemEntity> managerVisibleItems =
+          isManager && project != null
+          ? _resolveVisibleManagerItems(project)
+          : <TaskItemEntity>[];
+      final int managerSelectedIndex =
+          controller.selectedManagerTaskIndex.value;
+      final TaskItemEntity? selectedManagerItem =
+          managerSelectedIndex >= 0 &&
+              managerSelectedIndex < managerVisibleItems.length
+          ? managerVisibleItems[managerSelectedIndex]
+          : null;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
         child: Scaffold(
           backgroundColor: RoleBgColor.scaffoldColor(role),
+          bottomNavigationBar: isManager && project != null
+              ? SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: selectedManagerItem == null
+                            ? null
+                            : () => _openTaskDetails(
+                                selectedManagerItem,
+                                waitingForApproval: true,
+                              ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB5946E),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: SizedBox(
+                          width: 140,
+                          height: 20,
+                          child: Center(
+                            child: Text(
+                              'Request for Approval',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                                letterSpacing: 0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : null,
           body: Container(
             decoration: RoleBgColor.decoration(role),
             // color: isInterior ? null : const Color(0xFF0B1419),
@@ -238,12 +301,13 @@ class TaskScreenView extends GetView<TaskController> {
           ),
         )
       else
-        ...visibleItems.map(
-          (item) => _TaskPhaseItemCard(
-            item: item,
+        ...visibleItems.asMap().entries.map(
+          (entry) => _TaskPhaseItemCard(
+            isSelected: controller.selectedManagerTaskIndex.value == entry.key,
+            item: entry.value,
             isInterior: isInterior,
             showFinishedBadge: showFinished,
-            onTap: () => _openTaskDetails(item),
+            onTap: () => controller.selectManagerTask(entry.key),
           ),
         ),
       if (controller.errorMessage.value.isNotEmpty)
@@ -333,6 +397,12 @@ class TaskScreenView extends GetView<TaskController> {
       }
     }
     return false;
+  }
+
+  List<TaskItemEntity> _resolveVisibleManagerItems(TaskProjectEntity project) {
+    final phaseItems = _resolvePhaseItems(project);
+    final bool showFinished = controller.managerPhaseTab.value == 1;
+    return showFinished ? phaseItems.finished : phaseItems.active;
   }
 }
 
@@ -439,12 +509,14 @@ class _TaskPhaseToggleItem extends StatelessWidget {
 
 class _TaskPhaseItemCard extends StatelessWidget {
   const _TaskPhaseItemCard({
+    required this.isSelected,
     required this.item,
     required this.isInterior,
     required this.showFinishedBadge,
     this.onTap,
   });
 
+  final bool isSelected;
   final TaskItemEntity item;
   final bool isInterior;
   final bool showFinishedBadge;
@@ -452,19 +524,29 @@ class _TaskPhaseItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color cardColor = isInterior
+    final Color cardColor = isSelected
+        ? const Color(0xFFAD7D39)
+        : isInterior
         ? const Color(0xFFD5D2CA)
         : const Color(0xFF111A1E);
-    final Color borderColor = isInterior
+    final Color borderColor = isSelected
+        ? const Color(0xFFAD7D39)
+        : isInterior
         ? const Color(0xFF77716A)
         : const Color(0xFF3A474D);
-    final Color titleColor = isInterior
+    final Color titleColor = isSelected
+        ? Colors.white
+        : isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
-    final Color subtitleColor = isInterior
+    final Color subtitleColor = isSelected
+        ? const Color(0xFFF4E8D6)
+        : isInterior
         ? const Color(0xFF373737)
         : const Color(0xFF8E8E93);
-    final Color arrowColor = isInterior
+    final Color arrowColor = isSelected
+        ? const Color(0xFFF0DBC0)
+        : isInterior
         ? const Color(0xFF8A6B37)
         : const Color(0xFFD2A463);
 
