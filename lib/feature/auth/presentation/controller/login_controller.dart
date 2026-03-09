@@ -18,6 +18,7 @@ class LoginController extends GetxController {
   final RxString role = ''.obs; // category: "interior" / "construction"
   final RxString userRole = ''.obs; // role: "client" / "manager"
   final RxString userName = ''.obs;
+  final RxString userEmail = ''.obs;
   final RxString userAvatar = ''.obs;
 
   // Text controllers
@@ -61,6 +62,7 @@ class LoginController extends GetxController {
   String get categoryKey => role.value.trim().toLowerCase();
   String get roleKey => userRole.value.trim().toLowerCase();
   String get displayName => userName.value.trim();
+  String get displayEmail => userEmail.value.trim();
   String get displayAvatar => userAvatar.value.trim();
   String get normalizedRoleKey => _normalizeRole(roleKey);
   String get scopeKey => '${categoryKey}_$normalizedRoleKey';
@@ -115,6 +117,7 @@ class LoginController extends GetxController {
     final savedUserRole =
         (await TokenManager.getRole())?.trim().toLowerCase() ?? '';
     final savedUserName = (await TokenManager.getUserName())?.trim() ?? '';
+    final savedUserEmail = (await TokenManager.getUserEmail())?.trim() ?? '';
     final savedUserAvatar = (await TokenManager.getUserAvatar())?.trim() ?? '';
 
     if (savedCategory.isEmpty || savedUserRole.isEmpty) {
@@ -124,6 +127,7 @@ class LoginController extends GetxController {
     role.value = savedCategory;
     userRole.value = savedUserRole;
     userName.value = savedUserName;
+    userEmail.value = savedUserEmail;
     userAvatar.value = savedUserAvatar;
     return true;
   }
@@ -173,10 +177,12 @@ class LoginController extends GetxController {
         role.value = response.data!.category.trim().toLowerCase();
         userRole.value = response.data!.role.trim().toLowerCase();
         userName.value = response.data!.name.trim();
+        userEmail.value = response.data!.email.trim();
         userAvatar.value = (response.data!.avatar ?? '').trim();
         await TokenManager.saveCategory(role.value);
         await TokenManager.saveRole(userRole.value);
         await TokenManager.saveUserName(userName.value);
+        await TokenManager.saveUserEmail(userEmail.value);
         await TokenManager.saveUserAvatar(userAvatar.value);
         await TokenManager.saveRememberedLogin(
           enabled: rememberMe.value,
@@ -247,6 +253,7 @@ class LoginController extends GetxController {
       role.value = '';
       userRole.value = '';
       userName.value = '';
+      userEmail.value = '';
       userAvatar.value = '';
       email.value = '';
       password.value = '';

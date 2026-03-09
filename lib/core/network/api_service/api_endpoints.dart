@@ -120,6 +120,17 @@ class TaskEndpoints {
   static String updateTaskStatus(String taskId) => "/tasks/$taskId/status";
 }
 
+// ================= CHAT =================
+class ChatEndpoints {
+  static const String getMyChats = "/chats";
+  static String getOrCreateProjectChat(String projectId) =>
+      "/chats/project/$projectId";
+  static String getOrCreateTaskChat(String taskId) => "/chats/task/$taskId";
+  static String getChatMessages(String chatId) => "/chats/$chatId/messages";
+  static String sendMessage(String chatId) => "/chats/$chatId/messages";
+  static String markChatAsRead(String chatId) => "/chats/$chatId/read";
+}
+
 // ================= FINANCIALS =================
 class FinancialsEndpoints {
   static const String getProjects = "/projects";
