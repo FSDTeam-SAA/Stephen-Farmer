@@ -48,46 +48,52 @@ class TaskScreenView extends GetView<TaskController> {
               managerSelectedIndex < managerVisibleItems.length
           ? managerVisibleItems[managerSelectedIndex]
           : null;
+      final approvalFooterColor = isInterior && selectedManagerItem == null
+          ? Colors.transparent
+          : Colors.black;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
         child: Scaffold(
           backgroundColor: RoleBgColor.scaffoldColor(role),
           bottomNavigationBar: isManager && project != null
-              ? SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed: selectedManagerItem == null
-                            ? null
-                            : () => _openTaskDetails(
-                                selectedManagerItem,
-                                waitingForApproval: true,
-                              ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB5946E),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+              ? Container(
+                  color: approvalFooterColor,
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: ElevatedButton(
+                          onPressed: selectedManagerItem == null
+                              ? null
+                              : () => _openTaskDetails(
+                                  selectedManagerItem,
+                                  waitingForApproval: true,
+                                ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB5946E),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                        ),
-                        child: SizedBox(
-                          width: 140,
-                          height: 20,
-                          child: Center(
-                            child: Text(
-                              'Request for Approval',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0,
+                          child: SizedBox(
+                            width: 140,
+                            height: 20,
+                            child: Center(
+                              child: Text(
+                                'Request for Approval',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.4,
+                                  letterSpacing: 0,
+                                ),
                               ),
                             ),
                           ),
@@ -525,10 +531,13 @@ class _TaskPhaseItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool useInteriorFinishedStyle = isInterior && showFinishedBadge;
+    final bool useInteriorActiveStyle = isInterior && !showFinishedBadge;
     final Color cardColor = isSelected
         ? const Color(0xFFAD7D39)
         : useInteriorFinishedStyle
         ? const Color(0xFFF4F4F4)
+        : useInteriorActiveStyle
+        ? const Color(0xFF8A806F)
         : isInterior
         ? const Color(0xFFD5D2CA)
         : const Color(0xFF111A1E);
@@ -536,6 +545,8 @@ class _TaskPhaseItemCard extends StatelessWidget {
         ? const Color(0xFFAD7D39)
         : useInteriorFinishedStyle
         ? const Color(0xFF8E8A82)
+        : useInteriorActiveStyle
+        ? const Color(0xFF8A806F)
         : isInterior
         ? const Color(0xFF77716A)
         : const Color(0xFF3A474D);
@@ -543,6 +554,8 @@ class _TaskPhaseItemCard extends StatelessWidget {
         ? Colors.white
         : useInteriorFinishedStyle
         ? const Color(0xFF1E1E1E)
+        : useInteriorActiveStyle
+        ? Colors.white
         : isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
@@ -550,6 +563,8 @@ class _TaskPhaseItemCard extends StatelessWidget {
         ? const Color(0xFFF4E8D6)
         : useInteriorFinishedStyle
         ? const Color(0xFF8E8E93)
+        : useInteriorActiveStyle
+        ? const Color(0xFFB8BEC7)
         : isInterior
         ? const Color(0xFF373737)
         : const Color(0xFF8E8E93);
@@ -557,6 +572,8 @@ class _TaskPhaseItemCard extends StatelessWidget {
         ? const Color(0xFFF0DBC0)
         : useInteriorFinishedStyle
         ? const Color(0xFFD7BE8A)
+        : useInteriorActiveStyle
+        ? const Color(0xFFE0CFAB)
         : isInterior
         ? const Color(0xFF8A6B37)
         : const Color(0xFFD2A463);

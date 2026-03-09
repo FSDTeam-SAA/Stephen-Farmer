@@ -28,9 +28,14 @@ class TaskActionItemCard extends StatelessWidget {
     const subtitleColor = Color(0xFF8E8E93);
     final priorityChipColor = highPriority
         ? isInterior
-              ? const Color(0xFFF08383)
+              ? const Color(0xFFF19A98)
               : const Color(0x80FF383C)
+        : isInterior
+        ? const Color(0xFF9A6F00)
         : const Color(0xFF8A6400);
+    final priorityChipPadding = isInterior && highPriority
+        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 2)
+        : const EdgeInsets.symmetric(horizontal: 16, vertical: 4);
 
     return InkWell(
       onTap: onTap,
@@ -83,7 +88,7 @@ class TaskActionItemCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: priorityChipPadding,
               decoration: BoxDecoration(
                 color: priorityChipColor,
                 borderRadius: BorderRadius.circular(999),
