@@ -53,6 +53,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
   Widget build(BuildContext context) {
     final bool isInterior = RoleBgColor.isInterior(widget.category);
     final bool showBackButton = defaultTargetPlatform == TargetPlatform.android;
+    final Color signInContentColor = isInterior ? Colors.white : const Color(0xFF1E1E1E);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: RoleBgColor.overlayStyle(widget.category),
@@ -77,7 +78,11 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           child: IconButton(
                             onPressed: () => Get.back(),
                             tooltip: "Back",
-                            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: isInterior ? Colors.black : Colors.white),
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 18,
+                              color: isInterior ? Colors.black : Colors.white,
+                            ),
                           ),
                         ),
 
@@ -85,10 +90,18 @@ class _LoginScreenViewState extends State<LoginScreenView> {
 
                       Center(
                         child: isInterior
-                            ? Image.asset(AssetsImages.interiorImg, height: 141, width: 150)
+                            ? Image.asset(
+                                AssetsImages.interiorImg,
+                                height: 141,
+                                width: 150,
+                              )
                             : Padding(
                                 padding: const EdgeInsets.only(bottom: 50),
-                                child: Image.asset(AssetsImages.constructionIgm, height: 64, width: 166),
+                                child: Image.asset(
+                                  AssetsImages.constructionIgm,
+                                  height: 64,
+                                  width: 166,
+                                ),
                               ),
                       ),
 
@@ -100,7 +113,9 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                             'Welcome back',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.outfit(
-                              color: isInterior ? Colors.black : const Color(0xFFE0DACD),
+                              color: isInterior
+                                  ? Colors.black
+                                  : const Color(0xFFE0DACD),
                               fontSize: 24,
                               fontWeight: FontWeight.w500,
                               height: 1.2,
@@ -120,7 +135,9 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                             'Please Login to your Account',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.manrope(
-                              color: isInterior ? Colors.black : const Color(0xFFE0DACD),
+                              color: isInterior
+                                  ? Colors.black
+                                  : const Color(0xFFE0DACD),
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                               height: 1.2,
@@ -132,19 +149,38 @@ class _LoginScreenViewState extends State<LoginScreenView> {
 
                       const SizedBox(height: 48),
 
-                      Text("Email Address", style: AppTextStyles.samiMedium(color: isInterior ? Colors.black : Colors.white)),
+                      Text(
+                        "Email Address",
+                        style: AppTextStyles.samiMedium(
+                          color: isInterior ? Colors.black : Colors.white,
+                        ),
+                      ),
 
                       const SizedBox(height: 10),
 
-                      CustomTextField(controller: emailController, hintText: "Email Address", isOnDarkBg: !isInterior),
+                      CustomTextField(
+                        controller: emailController,
+                        hintText: "Email Address",
+                        isOnDarkBg: !isInterior,
+                      ),
 
                       const SizedBox(height: 15),
 
-                      Text("Password", style: AppTextStyles.samiMedium(color: isInterior ? Colors.black : Colors.white)),
+                      Text(
+                        "Password",
+                        style: AppTextStyles.samiMedium(
+                          color: isInterior ? Colors.black : Colors.white,
+                        ),
+                      ),
 
                       const SizedBox(height: 10),
 
-                      CustomTextField(controller: passwordController, hintText: "Password", isPassword: true, isOnDarkBg: !isInterior),
+                      CustomTextField(
+                        controller: passwordController,
+                        hintText: "Password",
+                        isPassword: true,
+                        isOnDarkBg: !isInterior,
+                      ),
 
                       const SizedBox(height: 20),
 
@@ -160,18 +196,29 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                                   child: Checkbox(
                                     value: controller.rememberMe.value,
                                     onChanged: (value) {
-                                      controller.setRememberMe(value ?? false, category: widget.category);
+                                      controller.setRememberMe(
+                                        value ?? false,
+                                        category: widget.category,
+                                      );
                                     },
-                                    side: BorderSide(color: Colors.grey.shade600),
+                                    side: BorderSide(
+                                      color: Colors.grey.shade600,
+                                    ),
                                     checkColor: Colors.black,
                                     activeColor: Colors.white,
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Remember me',
-                                  style: TextStyle(color: isInterior ? Colors.black : Colors.grey.shade300, fontSize: 14),
+                                  style: TextStyle(
+                                    color: isInterior
+                                        ? Colors.black
+                                        : Colors.grey.shade300,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ],
                             ),
@@ -201,7 +248,12 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                               ),
                               child: Text(
                                 'Forgot your password?',
-                                style: TextStyle(color: isInterior ? Colors.black54 : Colors.grey.shade400, fontSize: 14),
+                                style: TextStyle(
+                                  color: isInterior
+                                      ? Colors.black54
+                                      : Colors.grey.shade400,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           ],
@@ -223,37 +275,45 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isInterior ? Colors.black : Colors.white.withValues(alpha: 0.9),
-                              foregroundColor: isInterior ? Colors.white : Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              backgroundColor: isInterior
+                                  ? Colors.black
+                                  : Colors.white.withValues(alpha: 0.9),
+                              foregroundColor: signInContentColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             child: controller.isLoading.value
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 24,
                                     width: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        isInterior
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
                                     ),
                                   )
-                                : const Row(
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.login_outlined, size: 20),
-                                      // SizedBox(width: 0),
-                                      SizedBox(
-                                        width: 88,
-                                        height: 17,
-                                        child: Text(
-                                          'Sign in',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Color(0xFF1E1E1E),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.2,
-                                            letterSpacing: 0,
-                                          ),
+                                      Icon(
+                                        Icons.login_outlined,
+                                        size: 20,
+                                        color: signInContentColor,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Sign in',
+                                        style: GoogleFonts.manrope(
+                                          color: signInContentColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.2,
+                                          letterSpacing: 0,
                                         ),
                                       ),
                                     ],
