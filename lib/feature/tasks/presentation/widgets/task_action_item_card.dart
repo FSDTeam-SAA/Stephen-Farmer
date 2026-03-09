@@ -26,6 +26,11 @@ class TaskActionItemCard extends StatelessWidget {
         : const Color(0xFF4A5960);
     final titleColor = isInterior ? const Color(0xFF1E1E1E) : Colors.white;
     const subtitleColor = Color(0xFF8E8E93);
+    final priorityChipColor = highPriority
+        ? isInterior
+              ? const Color(0xFFF08383)
+              : const Color(0x80FF383C)
+        : const Color(0xFF8A6400);
 
     return InkWell(
       onTap: onTap,
@@ -80,16 +85,14 @@ class TaskActionItemCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: highPriority
-                    ? const Color(0xFFF08383)
-                    : const Color(0xFF8A6400),
+                color: priorityChipColor,
                 borderRadius: BorderRadius.circular(999),
               ),
-            child: Text(
-              item.priority.toUpperCase(),
-              style: GoogleFonts.manrope(
-                color: Colors.white,
-                fontSize: 12,
+              child: Text(
+                item.priority.toUpperCase(),
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   height: 22 / 12,
                   letterSpacing: 0,

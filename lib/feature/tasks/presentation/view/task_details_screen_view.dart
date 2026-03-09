@@ -33,8 +33,7 @@ class TaskDetailsScreenView extends StatelessWidget {
     final Color titleColor = isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
-    final bool showBackButton =
-        defaultTargetPlatform == TargetPlatform.android;
+    final bool showBackButton = defaultTargetPlatform == TargetPlatform.android;
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -435,11 +434,17 @@ class _PriorityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool highPriority = priority.trim().toLowerCase() == 'high';
+    final authController = Get.find<LoginController>();
+    final isInterior = RoleBgColor.isInterior(authController.role.value);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: highPriority ? const Color(0xFFC04141) : const Color(0xFF8A6400),
+        color: highPriority
+            ? isInterior
+                  ? const Color(0xFFC04141)
+                  : const Color(0x80FF383C)
+            : const Color(0xFF8A6400),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(

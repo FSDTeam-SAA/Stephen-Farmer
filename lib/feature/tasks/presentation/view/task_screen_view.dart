@@ -243,7 +243,7 @@ class TaskScreenView extends GetView<TaskController> {
         : phaseItems.active;
 
     final Color titleColor = isInterior
-        ? const Color(0xFF1D1D1D)
+        ? const Color(0xFF2A241D)
         : Colors.white;
     final Color mutedTextColor = isInterior
         ? const Color(0xFF585858)
@@ -424,13 +424,13 @@ class _TaskPhaseToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color selectedColor = isInterior
-        ? const Color(0xFF1D1D1D)
+        ? const Color(0xFFF5F2EC)
         : Colors.white;
     final Color unselectedColor = isInterior
-        ? const Color(0xFF4B4B4B)
+        ? const Color(0xFFB5AEA4)
         : const Color(0xFF8B989E);
     final Color underlineColor = isInterior
-        ? const Color(0xFF6E6458)
+        ? const Color(0xFFD7B46A)
         : const Color(0xFFD09A2F);
 
     return Row(
@@ -524,28 +524,39 @@ class _TaskPhaseItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool useInteriorFinishedStyle = isInterior && showFinishedBadge;
     final Color cardColor = isSelected
         ? const Color(0xFFAD7D39)
+        : useInteriorFinishedStyle
+        ? const Color(0xFFF4F4F4)
         : isInterior
         ? const Color(0xFFD5D2CA)
         : const Color(0xFF111A1E);
     final Color borderColor = isSelected
         ? const Color(0xFFAD7D39)
+        : useInteriorFinishedStyle
+        ? const Color(0xFF8E8A82)
         : isInterior
         ? const Color(0xFF77716A)
         : const Color(0xFF3A474D);
     final Color titleColor = isSelected
         ? Colors.white
+        : useInteriorFinishedStyle
+        ? const Color(0xFF1E1E1E)
         : isInterior
         ? const Color(0xFF1E1E1E)
         : Colors.white;
     final Color subtitleColor = isSelected
         ? const Color(0xFFF4E8D6)
+        : useInteriorFinishedStyle
+        ? const Color(0xFF8E8E93)
         : isInterior
         ? const Color(0xFF373737)
         : const Color(0xFF8E8E93);
     final Color arrowColor = isSelected
         ? const Color(0xFFF0DBC0)
+        : useInteriorFinishedStyle
+        ? const Color(0xFFD7BE8A)
         : isInterior
         ? const Color(0xFF8A6B37)
         : const Color(0xFFD2A463);
@@ -621,15 +632,30 @@ class _TaskPhaseItemCard extends StatelessWidget {
                   color: const Color(0xFF0C9B2F),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Text(
-                  'Finished',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    height: 1,
-                    letterSpacing: 0,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 14,
+                      color: useInteriorFinishedStyle
+                          ? Colors.black
+                          : Colors.white,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Finished',
+                      style: GoogleFonts.manrope(
+                        color: useInteriorFinishedStyle
+                            ? Colors.black
+                            : Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        height: 1,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
