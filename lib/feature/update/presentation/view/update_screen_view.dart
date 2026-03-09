@@ -642,118 +642,132 @@ class UpdateScreenView extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : ListView.separated(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 8,
-                                  ),
-                                  itemCount: localComments.length,
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(height: 14),
-                                  itemBuilder: (_, index) {
-                                    final comment = localComments[index];
-                                    final avatarUrl = comment.userAvatar;
-                                    return Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 16,
-                                          backgroundColor: isInterior
-                                              ? const Color(0xFFC3BEB4)
-                                              : const Color(0xFF2D3238),
-                                          backgroundImage:
-                                              avatarUrl != null &&
-                                                  avatarUrl.trim().isNotEmpty
-                                              ? NetworkImage(avatarUrl.trim())
-                                              : null,
-                                          child:
-                                              avatarUrl == null ||
-                                                  avatarUrl.trim().isEmpty
-                                              ? Icon(
-                                                  Icons.person_rounded,
-                                                  size: 18,
-                                                  color: isInterior
-                                                      ? const Color(0xFF6A6358)
-                                                      : const Color(0xFFD0D0D0),
-                                                )
-                                              : null,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      comment.userName,
-                                                      style:
-                                                          GoogleFonts.manrope(
-                                                            color: titleColor,
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    _timeLabel(
-                                                      comment.createdAt,
-                                                    ),
-                                                    style: GoogleFonts.manrope(
-                                                      color: mutedColor,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                comment.text,
-                                                style: GoogleFonts.manrope(
-                                                  color: bodyColor,
-                                                  fontSize: 28 / 2,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 1.3,
+                              : Builder(
+                                  builder: (_) {
+                                    final commentThreads = _buildCommentThreads(
+                                      localComments,
+                                    );
+                                    return ListView.separated(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 8,
+                                      ),
+                                      itemCount: commentThreads.length,
+                                      separatorBuilder: (_, __) =>
+                                          const SizedBox(height: 14),
+                                      itemBuilder: (_, index) {
+                                        final thread = commentThreads[index];
+                                        final comment = thread.parent;
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildCommentTile(
+                                              comment: comment,
+                                              isInterior: isInterior,
+                                              titleColor: titleColor,
+                                              bodyColor: bodyColor,
+                                              mutedColor: mutedColor,
+                                              messageText: comment.text,
+                                              onReply: () {
+                                                final name = comment.userName
+                                                    .trim();
+                                                if (name.isEmpty) return;
+                                                setState(() {
+                                                  replyToName = name;
+                                                  textController.text =
+                                                      '@$name ';
+                                                  textController.selection =
+                                                      TextSelection.collapsed(
+                                                        offset: textController
+                                                            .text
+                                                            .length,
+                                                      );
+                                                });
+                                                inputFocusNode.requestFocus();
+                                              },
+                                            ),
+                                            if (thread.replies.isNotEmpty) ...[
+                                              const SizedBox(height: 8),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 18,
                                                 ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              GestureDetector(
-                                                onTap: () {
-                                                  final name = comment.userName
-                                                      .trim();
-                                                  if (name.isEmpty) return;
-                                                  setState(() {
-                                                    replyToName = name;
-                                                    textController.text =
-                                                        '@$name ';
-                                                    textController.selection =
-                                                        TextSelection.collapsed(
-                                                          offset: textController
-                                                              .text
-                                                              .length,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.fromLTRB(
+                                                        12,
+                                                        2,
+                                                        0,
+                                                        0,
+                                                      ),
+                                                  child: Column(
+                                                    children: List.generate(
+                                                      thread.replies.length,
+                                                      (replyIndex) {
+                                                        final reply = thread
+                                                            .replies[replyIndex];
+                                                        return Padding(
+                                                          padding: EdgeInsets.only(
+                                                            bottom:
+                                                                replyIndex ==
+                                                                    thread
+                                                                            .replies
+                                                                            .length -
+                                                                        1
+                                                                ? 0
+                                                                : 10,
+                                                          ),
+                                                          child: _buildCommentTile(
+                                                            comment:
+                                                                reply.comment,
+                                                            isInterior:
+                                                                isInterior,
+                                                            titleColor:
+                                                                titleColor,
+                                                            bodyColor:
+                                                                bodyColor,
+                                                            mutedColor:
+                                                                mutedColor,
+                                                            messageText: reply
+                                                                .displayText,
+                                                            onReply: () {
+                                                              final name = reply
+                                                                  .comment
+                                                                  .userName
+                                                                  .trim();
+                                                              if (name
+                                                                  .isEmpty) {
+                                                                return;
+                                                              }
+                                                              setState(() {
+                                                                replyToName =
+                                                                    name;
+                                                                textController
+                                                                        .text =
+                                                                    '@$name ';
+                                                                textController
+                                                                        .selection =
+                                                                    TextSelection.collapsed(
+                                                                      offset: textController
+                                                                          .text
+                                                                          .length,
+                                                                    );
+                                                              });
+                                                              inputFocusNode
+                                                                  .requestFocus();
+                                                            },
+                                                          ),
                                                         );
-                                                  });
-                                                  inputFocusNode.requestFocus();
-                                                },
-                                                child: Text(
-                                                  'Reply',
-                                                  style: GoogleFonts.manrope(
-                                                    color: mutedColor,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
+                                                      },
+                                                    ),
                                                   ),
                                                 ),
                                               ),
                                             ],
-                                          ),
-                                        ),
-                                      ],
+                                          ],
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -910,6 +924,156 @@ class UpdateScreenView extends StatelessWidget {
     textController.dispose();
   }
 
+  Widget _buildCommentTile({
+    required UpdateCommentModel comment,
+    required bool isInterior,
+    required Color titleColor,
+    required Color bodyColor,
+    required Color mutedColor,
+    required String messageText,
+    required VoidCallback onReply,
+  }) {
+    final avatarUrl = comment.userAvatar;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: isInterior
+              ? const Color(0xFFC3BEB4)
+              : const Color(0xFF2D3238),
+          backgroundImage: avatarUrl != null && avatarUrl.trim().isNotEmpty
+              ? NetworkImage(avatarUrl.trim())
+              : null,
+          child: avatarUrl == null || avatarUrl.trim().isEmpty
+              ? Icon(
+                  Icons.person_rounded,
+                  size: 18,
+                  color: isInterior
+                      ? const Color(0xFF6A6358)
+                      : const Color(0xFFD0D0D0),
+                )
+              : null,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      comment.userName,
+                      style: GoogleFonts.manrope(
+                        color: titleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _timeLabel(comment.createdAt),
+                    style: GoogleFonts.manrope(
+                      color: mutedColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                messageText,
+                style: GoogleFonts.manrope(
+                  color: bodyColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 4),
+              GestureDetector(
+                onTap: onReply,
+                child: Text(
+                  'Reply',
+                  style: GoogleFonts.manrope(
+                    color: mutedColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<_CommentThread> _buildCommentThreads(List<UpdateCommentModel> comments) {
+    final threads = <_CommentThread>[];
+
+    for (final comment in comments) {
+      final targetName = _extractReplyTargetName(
+        comment.text,
+        threads.map((thread) => thread.parent.userName).toList(),
+      );
+
+      if (targetName == null) {
+        threads.add(_CommentThread(parent: comment, replies: []));
+        continue;
+      }
+
+      final parentIndex = threads.lastIndexWhere(
+        (thread) =>
+            thread.parent.userName.trim().toLowerCase() ==
+            targetName.trim().toLowerCase(),
+      );
+
+      if (parentIndex < 0) {
+        threads.add(_CommentThread(parent: comment, replies: []));
+        continue;
+      }
+
+      final replyText = _stripReplyPrefix(comment.text, targetName);
+      threads[parentIndex].replies.add(
+        _ThreadedReply(comment: comment, displayText: replyText),
+      );
+    }
+
+    return threads;
+  }
+
+  String? _extractReplyTargetName(String message, List<String> candidateNames) {
+    final trimmedMessage = message.trimLeft();
+    if (!trimmedMessage.startsWith('@')) return null;
+
+    String? bestMatch;
+    var bestLength = -1;
+    for (final name in candidateNames) {
+      final trimmedName = name.trim();
+      if (trimmedName.isEmpty) continue;
+      final tag = '@$trimmedName ';
+      if (trimmedMessage.toLowerCase().startsWith(tag.toLowerCase()) &&
+          tag.length > bestLength) {
+        bestMatch = trimmedName;
+        bestLength = tag.length;
+      }
+    }
+    return bestMatch;
+  }
+
+  String _stripReplyPrefix(String message, String targetName) {
+    final trimmed = message.trimLeft();
+    final prefix = '@${targetName.trim()} ';
+    if (!trimmed.toLowerCase().startsWith(prefix.toLowerCase())) {
+      return message;
+    }
+    final stripped = trimmed.substring(prefix.length).trimLeft();
+    return stripped.isEmpty ? message : stripped;
+  }
+
   Future<void> _shareUpdate({
     required BuildContext context,
     required UpdateController controller,
@@ -1058,4 +1222,18 @@ class UpdateScreenView extends StatelessWidget {
     if (diff.inDays < 1) return '${diff.inHours}h';
     return '${diff.inDays}d';
   }
+}
+
+class _CommentThread {
+  final UpdateCommentModel parent;
+  final List<_ThreadedReply> replies;
+
+  const _CommentThread({required this.parent, required this.replies});
+}
+
+class _ThreadedReply {
+  final UpdateCommentModel comment;
+  final String displayText;
+
+  const _ThreadedReply({required this.comment, required this.displayText});
 }
