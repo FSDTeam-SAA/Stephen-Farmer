@@ -5,6 +5,10 @@ import '../core/network/api_service/api_endpoints.dart';
 import 'auth/data/repo/auth_repo_impl.dart';
 import 'auth/domain/repo/auth_repo.dart';
 import 'auth/presentation/controller/login_controller.dart';
+import 'chat/data/repository/chat_repository_impl.dart';
+import 'chat/data/service/chat_socket_service.dart';
+import 'chat/domain/repository/chat_repository.dart';
+import 'chat/presentation/controller/chat_controller.dart';
 import 'documents/data/repository/document_repository_impl.dart';
 import 'documents/domain/repository/document_repository.dart';
 import 'documents/domain/usecase/get_document_projects_usecase.dart';
@@ -97,7 +101,10 @@ class AppDependencies {
     );
 
     Get.lazyPut<TaskRepository>(
-      () => TaskRepositoryImpl(),
+      () => TaskRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        useMockData: false,
+      ),
       fenix: true,
     );
 
@@ -109,6 +116,22 @@ class AppDependencies {
     Get.lazyPut<TaskController>(
       () => TaskController(
         getProjectsUseCase: Get.find<GetTaskProjectsUseCase>(),
+        taskRepository: Get.find<TaskRepository>(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<ChatSocketService>(ChatSocketService.new, fenix: true);
+
+    Get.lazyPut<ChatRepository>(
+      () => ChatRepositoryImpl(apiClient: Get.find<ApiClient>()),
+      fenix: true,
+    );
+
+    Get.lazyPut<ChatController>(
+      () => ChatController(
+        repository: Get.find<ChatRepository>(),
+        socketService: Get.find<ChatSocketService>(),
       ),
       fenix: true,
     );

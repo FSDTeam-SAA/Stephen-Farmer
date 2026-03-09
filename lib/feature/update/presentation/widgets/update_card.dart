@@ -22,30 +22,15 @@ class UpdatePostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isInteriorTheme
-        ? Colors.transparent
-        : Colors.transparent;
-    final borderColor = isInteriorTheme
-        ? Colors.transparent
-        : Colors.white.withValues(alpha: .08);
-    final primaryTextColor = isInteriorTheme
-        ? const Color(0xFF1B1B1B)
-        : Colors.white;
-    final secondaryTextColor = isInteriorTheme
-        ? const Color(0xFF6F6B62)
-        : Colors.white.withValues(alpha: .55);
-    final contentTextColor = isInteriorTheme
-        ? const Color(0xFF1D1D1D)
-        : Colors.white.withValues(alpha: .85);
-    final metaStatColor = isInteriorTheme
-        ? const Color(0xFFF3EEDD)
-        : Colors.white.withValues(alpha: .65);
+    final backgroundColor = isInteriorTheme ? Colors.transparent : Colors.transparent;
+    final borderColor = isInteriorTheme ? Colors.transparent : Colors.white.withValues(alpha: .08);
+    final primaryTextColor = isInteriorTheme ? const Color(0xFF1B1B1B) : Colors.white;
+    final secondaryTextColor = isInteriorTheme ? const Color(0xFF6F6B62) : Colors.white.withValues(alpha: .55);
+    final contentTextColor = isInteriorTheme ? const Color(0xFF1D1D1D) : Colors.white.withValues(alpha: .85);
+    final metaStatColor = isInteriorTheme ? const Color(0xFFF3EEDD) : Colors.white.withValues(alpha: .65);
 
-    final fallbackImage =
-        'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop';
-    final postImage = (item.thumbnailUrl?.trim().isNotEmpty ?? false)
-        ? item.thumbnailUrl!.trim()
-        : fallbackImage;
+    final fallbackImage = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&auto=format&fit=crop';
+    final postImage = (item.thumbnailUrl?.trim().isNotEmpty ?? false) ? item.thumbnailUrl!.trim() : fallbackImage;
 
     return Container(
       decoration: BoxDecoration(
@@ -58,11 +43,7 @@ class UpdatePostCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _AuthorAvatar(
-                imageUrl: item.authorAvatar,
-                radius: 24,
-                isInteriorTheme: isInteriorTheme,
-              ),
+              _AuthorAvatar(imageUrl: item.authorAvatar, radius: 24, isInteriorTheme: isInteriorTheme),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -81,12 +62,7 @@ class UpdatePostCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${item.authorRole.toUpperCase()}  ·  ${_timeAgo(item.createdAt)}',
-                      style: TextStyle(
-                        color: secondaryTextColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: .4,
-                      ),
+                      style: TextStyle(color: secondaryTextColor, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: .4),
                     ),
                   ],
                 ),
@@ -94,10 +70,7 @@ class UpdatePostCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _ExpandableDescriptionText(
-            text: item.description.trim().isEmpty ? item.title : item.description,
-            textColor: contentTextColor,
-          ),
+          _ExpandableDescriptionText(text: item.description.trim().isEmpty ? item.title : item.description, textColor: contentTextColor),
           const SizedBox(height: 12),
           SizedBox(
             height: 220,
@@ -107,45 +80,28 @@ class UpdatePostCard extends StatelessWidget {
               child: Image.network(
                 postImage,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Image.network(fallbackImage, fit: BoxFit.cover),
+                errorBuilder: (_, __, ___) => Image.network(fallbackImage, fit: BoxFit.cover),
               ),
             ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                item.isLiked ? Icons.favorite : Icons.favorite_border,
-                color: item.isLiked ? Colors.red : metaStatColor,
-                size: 16,
-              ),
+              Icon(item.isLiked ? Icons.favorite : Icons.favorite_border, color: item.isLiked ? Colors.red : metaStatColor, size: 16),
               const SizedBox(width: 6),
               Text(
                 '${item.likeCount}',
-                style: TextStyle(
-                  color: isInteriorTheme ? Colors.white : Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: isInteriorTheme ? Colors.white : Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
               Text(
                 '${item.commentCount} Comments',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
               ),
               const SizedBox(width: 12),
               Text(
                 '${item.shareCount} Shares',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -160,18 +116,8 @@ class UpdatePostCard extends StatelessWidget {
                 onTap: onLike,
                 isInteriorTheme: isInteriorTheme,
               ),
-              _ActionBtn(
-                assetPath: AssetsImages.comments,
-                label: 'Comment',
-                onTap: onComment,
-                isInteriorTheme: isInteriorTheme,
-              ),
-              _ActionBtn(
-                icon: Icons.share_outlined,
-                label: 'Share',
-                onTap: onShare,
-                isInteriorTheme: isInteriorTheme,
-              ),
+              _ActionBtn(assetPath: AssetsImages.comments, label: 'Comment', onTap: onComment, isInteriorTheme: isInteriorTheme),
+              _ActionBtn(icon: Icons.share_outlined, label: 'Share', onTap: onShare, isInteriorTheme: isInteriorTheme),
             ],
           ),
         ],
@@ -181,11 +127,7 @@ class UpdatePostCard extends StatelessWidget {
 }
 
 class _AuthorAvatar extends StatelessWidget {
-  const _AuthorAvatar({
-    required this.imageUrl,
-    required this.radius,
-    required this.isInteriorTheme,
-  });
+  const _AuthorAvatar({required this.imageUrl, required this.radius, required this.isInteriorTheme});
 
   final String? imageUrl;
   final double radius;
@@ -198,13 +140,7 @@ class _AuthorAvatar extends StatelessWidget {
 
     if (url.isNotEmpty) {
       return ClipOval(
-        child: Image.network(
-          url,
-          width: diameter,
-          height: diameter,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildPlaceholder(),
-        ),
+        child: Image.network(url, width: diameter, height: diameter, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder()),
       );
     }
 
@@ -222,19 +158,8 @@ class _AuthorAvatar extends StatelessWidget {
         errorBuilder: (_, __, ___) => Container(
           width: diameter,
           height: diameter,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isInteriorTheme
-                ? const Color(0xFFD7CCBA)
-                : const Color(0xFFD9CFF0),
-          ),
-          child: Icon(
-            Icons.person_rounded,
-            size: radius,
-            color: isInteriorTheme
-                ? const Color(0xFF655B4E)
-                : const Color(0xFF7D7390),
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: isInteriorTheme ? const Color(0xFFD7CCBA) : const Color(0xFFD9CFF0)),
+          child: Icon(Icons.person_rounded, size: radius, color: isInteriorTheme ? const Color(0xFF655B4E) : const Color(0xFF7D7390)),
         ),
       ),
     );
@@ -248,13 +173,8 @@ class _ActionBtn extends StatelessWidget {
   final VoidCallback onTap;
   final bool isInteriorTheme;
 
-  const _ActionBtn({
-    this.icon,
-    this.assetPath,
-    required this.label,
-    required this.onTap,
-    this.isInteriorTheme = false,
-  }) : assert(icon != null || assetPath != null);
+  const _ActionBtn({this.icon, this.assetPath, required this.label, required this.onTap, this.isInteriorTheme = false})
+    : assert(icon != null || assetPath != null);
 
   @override
   Widget build(BuildContext context) {
@@ -274,11 +194,7 @@ class _ActionBtn extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
-                color: actionColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: actionColor, fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -288,17 +204,13 @@ class _ActionBtn extends StatelessWidget {
 }
 
 class _ExpandableDescriptionText extends StatefulWidget {
-  const _ExpandableDescriptionText({
-    required this.text,
-    required this.textColor,
-  });
+  const _ExpandableDescriptionText({required this.text, required this.textColor});
 
   final String text;
   final Color textColor;
 
   @override
-  State<_ExpandableDescriptionText> createState() =>
-      _ExpandableDescriptionTextState();
+  State<_ExpandableDescriptionText> createState() => _ExpandableDescriptionTextState();
 }
 
 class _ExpandableDescriptionTextState extends State<_ExpandableDescriptionText> {
@@ -306,13 +218,7 @@ class _ExpandableDescriptionTextState extends State<_ExpandableDescriptionText> 
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.manrope(
-      color: widget.textColor,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      height: 1.35,
-      letterSpacing: 0,
-    );
+    final style = GoogleFonts.manrope(color: widget.textColor, fontSize: 14, fontWeight: FontWeight.w400, height: 1.35, letterSpacing: 0);
 
     final maxWidth = MediaQuery.of(context).size.width - 32;
     final textPainter = TextPainter(
@@ -340,11 +246,7 @@ class _ExpandableDescriptionTextState extends State<_ExpandableDescriptionText> 
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 _expanded ? 'Show less' : 'Show more',
-                style: GoogleFonts.manrope(
-                  color: const Color(0xFFD7C5A4),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GoogleFonts.manrope(color: const Color(0xFFD7C5A4), fontSize: 12, fontWeight: FontWeight.w800),
               ),
             ),
           ),

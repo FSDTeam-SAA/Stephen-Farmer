@@ -9,6 +9,7 @@ import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/notifications/presentation/view/notification_screen_view.dart';
+import 'package:stephen_farmer/feature/profile/presentation/view/profile_screen_view.dart';
 import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
 import 'package:stephen_farmer/feature/update/presentation/controller/update_controller.dart';
 import 'package:stephen_farmer/feature/update/presentation/view/add_update_screen_view.dart';
@@ -185,7 +186,7 @@ class UpdateScreenView extends StatelessWidget {
       final notificationIconColor = isInterior
           ? const Color(0xFF1D1D1D)
           : const Color(0xFFC9B089);
-      final logoutIconColor = const Color(0xFFF24E4E);
+      final profileAvatar = authController.displayAvatar;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(loginCategory),
@@ -224,163 +225,18 @@ class UpdateScreenView extends StatelessWidget {
                             size: 24,
                           ),
                         ),
-                        IconButton(
-                          tooltip: 'Logout',
-                          icon: Icon(
-                            Icons.logout_rounded,
-                            color: logoutIconColor,
+                        GestureDetector(
+                          onTap: () => Get.to(() => const ProfileScreenView()),
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: isInterior
+                                ? const Color(0xFFE8DFD2)
+                                : const Color(0xFF182127),
+                            backgroundImage: profileAvatar.isNotEmpty
+                                ? NetworkImage(profileAvatar)
+                                : const AssetImage(AssetsImages.placeholder)
+                                      as ImageProvider,
                           ),
-                          onPressed: () async {
-                            final shouldLogout = await showDialog<bool>(
-                              context: context,
-                              builder: (dialogContext) {
-                                final dialogBorderColor = isInterior
-                                    ? const Color.fromRGBO(109, 111, 115, 1)
-                                    : const Color(0xFF5D6570);
-                                final dialogBackground = isInterior
-                                    ? const LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Color.fromRGBO(226, 221, 215, 1),
-                                          Color.fromRGBO(144, 137, 120, 1),
-                                        ],
-                                      )
-                                    : const LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Color(0xFF0F1A20),
-                                          Color(0xFF0A141A),
-                                        ],
-                                      );
-                                final accentColor = isInterior
-                                    ? const Color(0xFF8E6500)
-                                    : const Color(0xFFAF8C6A);
-                                final promptColor = isInterior
-                                    ? const Color(0xFF040404)
-                                    : Colors.white;
-
-                                return Dialog(
-                                  backgroundColor: Colors.transparent,
-                                  insetPadding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                  ),
-                                  child: Container(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16,
-                                      16,
-                                      16,
-                                      18,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(
-                                        color: dialogBorderColor,
-                                        width: 2,
-                                      ),
-                                      gradient: dialogBackground,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Image.asset(
-                                          AssetsImages.logout,
-                                          height: 48,
-                                          width: 48,
-                                        ),
-                                        const SizedBox(height: 14),
-                                        Text(
-                                          'Are you sure ?',
-                                          style: GoogleFonts.manrope(
-                                            color: promptColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: SizedBox(
-                                                height: 44,
-                                                child: OutlinedButton(
-                                                  onPressed: () => Navigator.of(
-                                                    dialogContext,
-                                                  ).pop(false),
-                                                  style: OutlinedButton.styleFrom(
-                                                    foregroundColor:
-                                                        accentColor,
-                                                    side: BorderSide(
-                                                      color: accentColor,
-                                                      width: 1,
-                                                    ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    'Cancel',
-                                                    style: GoogleFonts.manrope(
-                                                      color: accentColor,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: SizedBox(
-                                                height: 44,
-                                                child: ElevatedButton(
-                                                  onPressed: () => Navigator.of(
-                                                    dialogContext,
-                                                  ).pop(true),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        accentColor,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    elevation: 0,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    'Yes',
-                                                    style: GoogleFonts.manrope(
-                                                      color: Colors.white,
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-
-                            if (shouldLogout == true) {
-                              await authController.logoutUser();
-                            }
-                          },
                         ),
                       ],
                     ),

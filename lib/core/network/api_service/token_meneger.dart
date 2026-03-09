@@ -8,6 +8,7 @@ class TokenManager {
   static const _role = "user_role";
   static const _category = "user_category";
   static const _userName = "user_name";
+  static const _userEmail = "user_email";
   static const _userAvatar = "user_avatar";
   static const _rememberMe = "remember_me";
   static const _rememberedEmail = "remembered_email";
@@ -38,6 +39,10 @@ class TokenManager {
     await _storage.write(key: _userName, value: userName);
   }
 
+  static Future<void> saveUserEmail(String userEmail) async {
+    await _storage.write(key: _userEmail, value: userEmail);
+  }
+
   static Future<void> saveUserAvatar(String userAvatar) async {
     await _storage.write(key: _userAvatar, value: userAvatar);
   }
@@ -66,6 +71,10 @@ class TokenManager {
     return await _storage.read(key: _userName);
   }
 
+  static Future<String?> getUserEmail() async {
+    return await _storage.read(key: _userEmail);
+  }
+
   static Future<String?> getUserAvatar() async {
     return await _storage.read(key: _userAvatar);
   }
@@ -76,6 +85,7 @@ class TokenManager {
     await _storage.delete(key: _role);
     await _storage.delete(key: _category);
     await _storage.delete(key: _userName);
+    await _storage.delete(key: _userEmail);
     await _storage.delete(key: _userAvatar);
   }
 
