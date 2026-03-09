@@ -9,12 +9,17 @@ import 'package:stephen_farmer/feature/auth/presentation/controller/login_contro
 
 import '../../domain/entities/task_project_entity.dart';
 import '../controller/task_controller.dart';
+import 'task_details_screen_view.dart';
 import '../widgets/task_action_attention_card.dart';
 import '../widgets/task_action_item_card.dart';
 import '../widgets/task_section_header_row.dart';
 
 class TaskScreenView extends GetView<TaskController> {
   const TaskScreenView({super.key});
+
+  void _openTaskDetails(TaskItemEntity item) {
+    Get.to(() => TaskDetailsScreenView(item: item));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +150,11 @@ class TaskScreenView extends GetView<TaskController> {
         ),
         const SizedBox(height: 8),
         ...section.items.map(
-          (item) => TaskActionItemCard(item: item, isInterior: isInterior),
+          (item) => TaskActionItemCard(
+            item: item,
+            isInterior: isInterior,
+            onTap: () => _openTaskDetails(item),
+          ),
         ),
         const SizedBox(height: 12),
       ],
@@ -234,6 +243,7 @@ class TaskScreenView extends GetView<TaskController> {
             item: item,
             isInterior: isInterior,
             showFinishedBadge: showFinished,
+            onTap: () => _openTaskDetails(item),
           ),
         ),
       if (controller.errorMessage.value.isNotEmpty)
@@ -432,11 +442,13 @@ class _TaskPhaseItemCard extends StatelessWidget {
     required this.item,
     required this.isInterior,
     required this.showFinishedBadge,
+    this.onTap,
   });
 
   final TaskItemEntity item;
   final bool isInterior;
   final bool showFinishedBadge;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -456,84 +468,91 @@ class _TaskPhaseItemCard extends StatelessWidget {
         ? const Color(0xFF8A6B37)
         : const Color(0xFFD2A463);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  width: 265,
-                  height: 20,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      item.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                        color: titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        height: 1,
-                        letterSpacing: 0,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    width: 265,
+                    height: 20,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: titleColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          height: 1,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
                   ),
                 ),
+                Icon(Icons.chevron_right_rounded, color: arrowColor, size: 24),
+              ],
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: 265,
+              height: 19,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.manrope(
+                    color: subtitleColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
+                ),
               ),
-              Icon(Icons.chevron_right_rounded, color: arrowColor, size: 24),
+            ),
+            if (showFinishedBadge) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0C9B2F),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Finished',
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
             ],
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: 265,
-            height: 19,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                item.subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.manrope(
-                  color: subtitleColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  height: 1,
-                  letterSpacing: 0,
-                ),
-              ),
-            ),
-          ),
-          if (showFinishedBadge) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0C9B2F),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                'Finished',
-                style: GoogleFonts.manrope(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  height: 1,
-                  letterSpacing: 0,
-                ),
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
