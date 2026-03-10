@@ -73,10 +73,12 @@ class TaskSectionModel extends TaskSectionEntity {
               .map(TaskItemModel.fromJson)
               .toList()
         : <TaskItemModel>[];
+    final explicitPending = _readOptionalInt(json, ["pendingCount", "pending"]);
+    final derivedPending = items.where((item) => !item.isFinished).length;
 
     return TaskSectionModel(
       title: _readString(json, ["title", "name"], fallback: "Tasks"),
-      pendingCount: _readInt(json, ["pendingCount", "pending"], fallback: 0),
+      pendingCount: explicitPending ?? derivedPending,
       items: items,
     );
   }
@@ -101,6 +103,15 @@ class TaskProjectModel extends TaskProjectEntity {
               .map(TaskSectionModel.fromJson)
               .toList()
         : <TaskSectionModel>[];
+    final explicitActionsCount = _readOptionalInt(json, [
+      "actionsNeededCount",
+      "actionsCount",
+    ]);
+    final derivedActionsCount = _deriveActionsNeededCount(sections);
+    final resolvedActionsCount = explicitActionsCount ?? derivedActionsCount;
+    final fallbackMessage = resolvedActionsCount > 0
+        ? "Your decisions are required to keep progress on track"
+        : "No actions needed right now";
 
     return TaskProjectModel(
       id: _readString(json, ["_id", "id", "projectId"]),
@@ -118,14 +129,11 @@ class TaskProjectModel extends TaskProjectEntity {
           _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
           ? null
           : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
-      actionsNeededCount: _readInt(json, [
-        "actionsNeededCount",
-        "actionsCount",
-      ], fallback: 0),
+      actionsNeededCount: resolvedActionsCount,
       actionsNeededMessage: _readString(json, [
         "actionsNeededMessage",
         "actionsMessage",
-      ], fallback: "Your decisions are required to keep progress on track"),
+      ], fallback: fallbackMessage),
       sections: sections,
     );
   }
@@ -229,6 +237,26 @@ class TaskProjectModel extends TaskProjectEntity {
   ];
 }
 
+int _deriveActionsNeededCount(List<TaskSectionModel> sections) {
+  if (sections.isEmpty) return 0;
+
+  int fromActionSections = 0;
+  bool hasActionSection = false;
+  for (final section in sections) {
+    final normalized = section.title.trim().toLowerCase();
+    if (normalized.contains('your actions')) {
+      hasActionSection = true;
+      fromActionSections += section.pendingCount;
+    }
+  }
+  if (hasActionSection) return fromActionSections;
+
+  return sections
+      .expand((section) => section.items)
+      .where((item) => !item.isFinished)
+      .length;
+}
+
 String _readString(
   Map<String, dynamic> json,
   List<String> keys, {
@@ -243,8 +271,9 @@ String _readString(
   return fallback;
 }
 
-int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {
+int? _readOptionalInt(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
+    if (!json.containsKey(key)) continue;
     final value = json[key];
     if (value is int) return value;
     if (value is double) return value.round();
@@ -253,7 +282,7 @@ int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {
       if (parsed != null) return parsed;
     }
   }
-  return fallback;
+  return null;
 }
 
 bool _readBool(

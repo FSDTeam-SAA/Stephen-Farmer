@@ -27,8 +27,9 @@ class RoleSelectScreenView extends StatelessWidget {
                   child: Text(
                     'Welcome',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
+                    style: const TextStyle(
+                      fontFamily: 'ClashDisplay',
+                      color: Color(0xFFFFFFFF),
                       fontSize: 24,
                       fontWeight: FontWeight.w500,
                       height: 1.2,

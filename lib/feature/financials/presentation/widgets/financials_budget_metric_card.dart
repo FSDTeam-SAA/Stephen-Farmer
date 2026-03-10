@@ -45,11 +45,12 @@ class FinancialsBudgetMetricCard extends StatelessWidget {
               amountText,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF161D1E),
+              style: const TextStyle(
+                fontFamily: 'ClashDisplay',
+                color: Color(0xFF161D1E),
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                height: 1.1,
+                height: 1,
                 letterSpacing: 0,
               ),
             ),
