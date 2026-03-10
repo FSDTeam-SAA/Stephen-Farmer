@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 
 import '../../data/model/chat_model.dart';
 import '../../data/service/chat_socket_service.dart';
@@ -22,6 +24,7 @@ class ChatController extends GetxController {
   final RxList<ChatEntity> chats = <ChatEntity>[].obs;
   final RxList<ChatMessageEntity> messages = <ChatMessageEntity>[].obs;
   final Rxn<ChatEntity> activeChat = Rxn<ChatEntity>();
+  final RxString currentUserId = ''.obs;
 
   StreamSubscription<ChatMessageModel>? _messageSubscription;
   StreamSubscription<String>? _readSubscription;
@@ -30,6 +33,7 @@ class ChatController extends GetxController {
   void onInit() {
     super.onInit();
     _bindSocket();
+    _resolveCurrentUserId();
   }
 
   Future<void> loadChats() async {
@@ -60,7 +64,8 @@ class ChatController extends GetxController {
     try {
       isLoading.value = true;
       errorMessage.value = '';
-      messages.assignAll(await _repository.getChatMessages(chatId));
+      final loaded = await _repository.getChatMessages(chatId);
+      messages.assignAll(loaded.map(_normalizeMessage));
       await _repository.markChatAsRead(chatId);
       _socketService.markRead(chatId);
     } catch (_) {
@@ -76,8 +81,7 @@ class ChatController extends GetxController {
 
     final payload = <String, dynamic>{'message': text.trim()};
     final sent = await _repository.sendMessage(chat.id, payload: payload);
-    messages.add(sent);
-    _socketService.sendMessage(chatId: chat.id, payload: payload);
+    _appendMessageIfMissing(sent);
   }
 
   Future<void> _activateChat(ChatEntity chat) async {
@@ -90,7 +94,7 @@ class ChatController extends GetxController {
   void _bindSocket() {
     _messageSubscription = _socketService.messages.listen((message) {
       if (activeChat.value?.id != message.chatId) return;
-      messages.add(message);
+      _appendMessageIfMissing(message);
     });
     _readSubscription = _socketService.readReceipts.listen((chatId) {
       if (activeChat.value?.id != chatId) return;
@@ -111,6 +115,58 @@ class ChatController extends GetxController {
           .toList();
       chats.assignAll(updatedChats);
     });
+  }
+
+  void _appendMessageIfMissing(ChatMessageEntity incoming) {
+    final normalized = _normalizeMessage(incoming);
+    final alreadyExistsById = incoming.id.trim().isNotEmpty &&
+        messages.any((m) => m.id == normalized.id);
+    if (alreadyExistsById) return;
+
+    messages.add(normalized);
+  }
+
+  ChatMessageEntity _normalizeMessage(ChatMessageEntity message) {
+    final mine = currentUserId.value.isNotEmpty &&
+        message.senderId.trim().isNotEmpty &&
+        message.senderId == currentUserId.value;
+
+    return ChatMessageModel(
+      id: message.id,
+      chatId: message.chatId,
+      senderId: message.senderId,
+      senderName: message.senderName,
+      senderAvatar: message.senderAvatar,
+      senderRole: message.senderRole,
+      text: message.text,
+      createdAt: message.createdAt,
+      isMine: mine,
+    );
+  }
+
+  Future<void> _resolveCurrentUserId() async {
+    final token = await TokenManager.getToken();
+    final id = _extractUserIdFromJwt(token);
+    if (id.isEmpty) return;
+    currentUserId.value = id;
+  }
+
+  String _extractUserIdFromJwt(String? token) {
+    if (token == null || token.trim().isEmpty) return '';
+    final parts = token.split('.');
+    if (parts.length < 2) return '';
+
+    try {
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final data = jsonDecode(payload);
+      if (data is Map<String, dynamic>) {
+        final id = data['_id'] ?? data['id'] ?? data['userId'];
+        if (id != null && id.toString().trim().isNotEmpty) {
+          return id.toString().trim();
+        }
+      }
+    } catch (_) {}
+    return '';
   }
 
   @override

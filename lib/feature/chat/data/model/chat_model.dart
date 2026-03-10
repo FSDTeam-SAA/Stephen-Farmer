@@ -30,6 +30,7 @@ class ChatMessageModel extends ChatMessageEntity {
     required super.chatId,
     super.senderId,
     super.senderName,
+    super.senderAvatar,
     super.senderRole,
     required super.text,
     super.createdAt,
@@ -47,9 +48,10 @@ class ChatMessageModel extends ChatMessageEntity {
     final senderId = _readString(sender, ['_id', 'id', 'userId']);
     return ChatMessageModel(
       id: _readString(json, ['_id', 'id', 'messageId']),
-      chatId: _readString(json, ['chat', 'chatId']),
+      chatId: _readEntityId(json['chat'] ?? json['chatId'] ?? json['chatRoom']),
       senderId: senderId,
       senderName: _readString(sender, ['name', 'fullName'], fallback: 'User'),
+      senderAvatar: _readString(sender, ['avatar', 'image', 'profileImage']),
       senderRole: _readString(sender, ['role', 'userRole']),
       text: _readString(json, ['text', 'message', 'content', 'body']),
       createdAt: _readDateTime(json['createdAt'] ?? json['timestamp']),
@@ -77,6 +79,15 @@ String _readString(
     }
   }
   return fallback;
+}
+
+String _readEntityId(dynamic value) {
+  if (value == null) return '';
+  if (value is String) return value.trim();
+  if (value is Map<String, dynamic>) {
+    return _readString(value, ['_id', 'id', 'chatId', 'chatRoom']);
+  }
+  return value.toString().trim();
 }
 
 int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {

@@ -28,6 +28,7 @@ class TaskDetailsScreenView extends StatefulWidget {
 class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
   late final ChatController _chatController;
   late final TaskController _taskController;
+  late final LoginController _authController;
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
 
@@ -41,6 +42,7 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
     super.initState();
     _chatController = Get.find<ChatController>();
     _taskController = Get.find<TaskController>();
+    _authController = Get.find<LoginController>();
     _openTaskChat();
   }
 
@@ -98,14 +100,26 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
 
     setState(() => _isApproving = true);
     try {
-      final result = await _taskController.approveTask(taskId);
+      final roleKey = _authController.normalizedRoleKey;
+      final result = roleKey == 'client'
+          ? await _taskController.approveTask(taskId)
+          : await _taskController.updateTaskStatus(
+              taskId,
+              payload: const <String, dynamic>{'status': 'completed'},
+            );
       if (!mounted) return;
       if (result == null) {
-        Get.snackbar('Error', _taskController.errorMessage.value);
+        final message = _taskController.errorMessage.value.trim().isEmpty
+            ? 'Task request failed. Please try again.'
+            : _taskController.errorMessage.value;
+        Get.snackbar('Error', message);
         return;
       }
       Get.back();
-      Get.snackbar('Success', 'Task approved successfully.');
+      final successMessage = roleKey == 'client'
+          ? 'Task approved successfully.'
+          : 'Task marked completed and sent for approval.';
+      Get.snackbar('Success', successMessage);
     } finally {
       if (mounted) {
         setState(() => _isApproving = false);
@@ -438,44 +452,91 @@ class _ChatMessageBubble extends StatelessWidget {
     final Color textColor = isMine
         ? Colors.white
         : (isInterior ? const Color(0xFF262626) : Colors.white);
+    final bool hasSenderLabel = !isMine && message.senderName.trim().isNotEmpty;
+    final double avatarTopOffset = hasSenderLabel ? 8 : 0;
+
+    final bubble = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 280),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: bubbleColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isMine && message.senderName.trim().isNotEmpty) ...[
+              Text(
+                message.senderName,
+                style: GoogleFonts.manrope(
+                  color: textColor.withValues(alpha: 0.9),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+            Text(
+              message.text,
+              style: GoogleFonts.manrope(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 280),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: bubbleColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isMine && message.senderName.trim().isNotEmpty) ...[
-                Text(
-                  message.senderName,
-                  style: GoogleFonts.manrope(
-                    color: textColor.withValues(alpha: 0.9),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-              ],
-              Text(
-                message.text,
-                style: GoogleFonts.manrope(
-                  color: textColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ),
-        ),
+      child: Row(
+        mainAxisAlignment: isMine
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isMine) ...[
+            Padding(
+              padding: EdgeInsets.only(top: avatarTopOffset),
+              child: _MessageAvatar(imageUrl: message.senderAvatar),
+            ),
+            const SizedBox(width: 8),
+          ],
+          bubble,
+          if (isMine) ...[
+            const SizedBox(width: 8),
+            _MessageAvatar(imageUrl: message.senderAvatar),
+          ],
+        ],
       ),
+    );
+  }
+}
+
+class _MessageAvatar extends StatelessWidget {
+  const _MessageAvatar({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmed = imageUrl.trim();
+    if (trimmed.isNotEmpty) {
+      return CircleAvatar(
+        radius: 14,
+        backgroundColor: const Color(0xFF8EA0AE),
+        backgroundImage: NetworkImage(trimmed),
+      );
+    }
+
+    return const CircleAvatar(
+      radius: 14,
+      backgroundColor: Color(0xFF8EA0AE),
+      child: Icon(Icons.person, size: 16, color: Colors.white),
     );
   }
 }

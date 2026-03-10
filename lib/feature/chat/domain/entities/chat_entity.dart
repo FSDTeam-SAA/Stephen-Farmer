@@ -23,6 +23,7 @@ class ChatMessageEntity {
   final String chatId;
   final String senderId;
   final String senderName;
+  final String senderAvatar;
   final String senderRole;
   final String text;
   final DateTime? createdAt;
@@ -33,6 +34,7 @@ class ChatMessageEntity {
     required this.chatId,
     this.senderId = '',
     this.senderName = '',
+    this.senderAvatar = '',
     this.senderRole = '',
     required this.text,
     this.createdAt,

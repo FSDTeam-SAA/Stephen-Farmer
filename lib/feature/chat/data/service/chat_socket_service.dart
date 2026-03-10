@@ -47,7 +47,8 @@ class ChatSocketService {
 
   void joinChat(String chatId) {
     if (chatId.trim().isEmpty) return;
-    _socket?.emit('chat:join', <String, dynamic>{'chatId': chatId});
+    // Backend listens on `joinChatRoom` with raw chat id payload.
+    _socket?.emit('joinChatRoom', chatId);
   }
 
   void leaveChat(String chatId) {
