@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -14,6 +15,8 @@ class ProfileScreenView extends StatelessWidget {
     final authController = Get.find<LoginController>();
 
     return Obx(() {
+      final bool showBackButton =
+          defaultTargetPlatform == TargetPlatform.android;
       final role = authController.role.value;
       final isInterior = RoleBgColor.isInterior(role);
       final titleColor = isInterior ? const Color(0xFF1F1B16) : Colors.white;
@@ -55,16 +58,17 @@ class ProfileScreenView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        IconButton(
-                          onPressed: Get.back,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: titleColor,
-                            size: 18,
+                        if (showBackButton)
+                          IconButton(
+                            onPressed: Get.back,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: titleColor,
+                              size: 18,
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 18),
                         Text(
                           'Personal Info',
