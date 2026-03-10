@@ -311,7 +311,8 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                                       const SizedBox(width: 8),
                                       Text(
                                         'Sign in',
-                                        style: GoogleFonts.manrope(
+                                        style: TextStyle(
+                                          fontFamily: 'ClashDisplay',
                                           color: signInContentColor,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
