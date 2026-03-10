@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -21,8 +22,12 @@ class FinancialsScreenView extends GetView<FinancialsController> {
       final project = controller.selectedProject;
       final role = Get.find<LoginController>().role.value;
       final bool isInterior = RoleBgColor.isInterior(role);
-      final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
-      final Color sectionColor = isInterior ? const Color(0xFF45413C) : const Color(0xFFD5D5D5);
+      final Color titleColor = isInterior
+          ? const Color(0xFF1D1D1D)
+          : Colors.white;
+      final Color sectionColor = isInterior
+          ? const Color(0xFF45413C)
+          : Colors.white;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -36,70 +41,102 @@ class FinancialsScreenView extends GetView<FinancialsController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Center(
-                    child: Text(
-                      'Financials',
-                      style: TextStyle(color: titleColor, fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (controller.isLoading.value && project == null)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
-                  else if (project == null)
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          controller.errorMessage.value.isEmpty ? 'No financial data available' : controller.errorMessage.value,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: isInterior ? const Color(0xFF464646) : Colors.white70, fontSize: 13),
+                    Center(
+                      child: Text(
+                        'Financials',
+                        style: GoogleFonts.manrope(
+                          color: titleColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          height: 1,
+                          letterSpacing: 0,
                         ),
                       ),
-                    )
-                  else ...[
-                    CategoryDropdownWidget(
-                      items: controller.projects,
-                      selectedIndex: controller.selectedProjectIndex.value,
-                      isMenuOpen: controller.isProjectMenuOpen.value,
-                      isInteriorTheme: isInterior,
-                      onToggle: controller.toggleProjectMenu,
-                      onSelect: controller.selectProject,
-                      titleBuilder: (item) => item.projectName,
-                      subtitleBuilder: (item) => item.projectAddress,
-                      thumbnailBuilder: (item) => item.thumbnailUrl,
-                      fallbackAsset: AssetsImages.constructionIgm,
                     ),
-                    // _buildProjectSelector(isInterior),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: controller.refreshProjects,
-                        child: ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          children: [
-                            _buildMetricRow(project),
-                            const SizedBox(height: 16),
-                            FinancialsRemainingBalanceCard(
-                              amountText: _formatAed(project.remainingBalance),
-                              paidPercent: project.paidPercent,
+                    const SizedBox(height: 10),
+                    if (controller.isLoading.value && project == null)
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (project == null)
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            controller.errorMessage.value.isEmpty
+                                ? 'No financial data available'
+                                : controller.errorMessage.value,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isInterior
+                                  ? const Color(0xFF464646)
+                                  : Colors.white70,
+                              fontSize: 13,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Payment Schedule',
-                              style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 4),
-                            ..._buildScheduleSections(project, sectionColor),
-                            if (controller.errorMessage.value.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8, bottom: 10),
-                                child: Text(controller.errorMessage.value, style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 12)),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      CategoryDropdownWidget(
+                        items: controller.projects,
+                        selectedIndex: controller.selectedProjectIndex.value,
+                        isMenuOpen: controller.isProjectMenuOpen.value,
+                        isInteriorTheme: isInterior,
+                        onToggle: controller.toggleProjectMenu,
+                        onSelect: controller.selectProject,
+                        titleBuilder: (item) => item.projectName,
+                        subtitleBuilder: (item) => item.projectAddress,
+                        thumbnailBuilder: (item) => item.thumbnailUrl,
+                        fallbackAsset: AssetsImages.constructionIgm,
+                      ),
+                      // _buildProjectSelector(isInterior),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: controller.refreshProjects,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            children: [
+                              _buildMetricRow(project),
+                              const SizedBox(height: 16),
+                              FinancialsRemainingBalanceCard(
+                                amountText: _formatAed(
+                                  project.remainingBalance,
+                                ),
+                                paidPercent: project.paidPercent,
                               ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                'Payment Schedule',
+                                style: GoogleFonts.outfit(
+                                  color: titleColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              ..._buildScheduleSections(project, sectionColor),
+                              if (controller.errorMessage.value.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8,
+                                    bottom: 10,
+                                  ),
+                                  child: Text(
+                                    controller.errorMessage.value,
+                                    style: const TextStyle(
+                                      color: Color(0xFFFF7A7A),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
                   ],
                 ),
               ),
@@ -143,7 +180,10 @@ class FinancialsScreenView extends GetView<FinancialsController> {
     );
   }
 
-  List<Widget> _buildScheduleSections(FinancialsProjectEntity project, Color sectionColor) {
+  List<Widget> _buildScheduleSections(
+    FinancialsProjectEntity project,
+    Color sectionColor,
+  ) {
     final widgets = <Widget>[];
 
     for (final section in project.scheduleSections) {
@@ -152,11 +192,21 @@ class FinancialsScreenView extends GetView<FinancialsController> {
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(
             section.title,
-            style: TextStyle(color: sectionColor, fontSize: 16, fontWeight: FontWeight.w400),
+            style: GoogleFonts.manrope(
+              color: sectionColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              height: 1,
+              letterSpacing: 0,
+            ),
           ),
         ),
       );
-      widgets.addAll(section.items.map((item) => FinancialsPaymentScheduleItemCard(item: item)));
+      widgets.addAll(
+        section.items.map(
+          (item) => FinancialsPaymentScheduleItemCard(item: item),
+        ),
+      );
       widgets.add(const SizedBox(height: 2));
     }
 
@@ -165,6 +215,9 @@ class FinancialsScreenView extends GetView<FinancialsController> {
 }
 
 String _formatAed(int amount) {
-  final formatted = amount.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ',');
+  final formatted = amount.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (match) => ',',
+  );
   return 'AED $formatted';
 }

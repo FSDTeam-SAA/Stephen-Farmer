@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FinancialsRemainingBalanceCard extends StatelessWidget {
-  const FinancialsRemainingBalanceCard({super.key, required this.amountText, required this.paidPercent});
+  const FinancialsRemainingBalanceCard({
+    super.key,
+    required this.amountText,
+    required this.paidPercent,
+  });
 
   final String amountText;
   final int paidPercent;
@@ -26,16 +31,28 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Remaining Balance',
-                  style: TextStyle(color: Color(0xFF232323), fontSize: 13, fontWeight: FontWeight.w400),
+                  style: GoogleFonts.manrope(
+                    color: const Color(0xFF161D1E),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   amountText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF232323), fontSize: 20, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF161D1E),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
               ],
             ),
@@ -58,7 +75,10 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
           Container(
             height: 65,
             width: 65,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -70,15 +90,23 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
                     strokeWidth: 5,
                     strokeCap: StrokeCap.round,
                     //backgroundColor: const Color(0xFFBFB8AA),
-                    valueColor: AlwaysStoppedAnimation<Color>(safePercent >= 100 ? const Color(0xFF34C759) : const Color(0xFFC08A2B)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      safePercent >= 100
+                          ? const Color(0xFF34C759)
+                          : const Color(0xFFC08A2B),
+                    ),
                   ),
                 ),
                 Text(
                   "${safePercent.toInt()}%",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: safePercent >= 100 ? const Color(0xFF34C759) : const Color(0xFFC08A2B),
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    height: 1,
+                    letterSpacing: 0,
+                    color: safePercent >= 100
+                        ? const Color(0xFF34C759)
+                        : const Color(0xFFA77935),
                   ),
                 ),
               ],
