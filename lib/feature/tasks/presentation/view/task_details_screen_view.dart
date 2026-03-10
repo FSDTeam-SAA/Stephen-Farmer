@@ -167,7 +167,8 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                         widget.item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           color: titleColor,
                           fontSize: 24,
                           fontWeight: FontWeight.w500,
@@ -201,7 +202,8 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                       height: 20,
                       child: Text(
                         'See Photos (4)',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           color: titleColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -234,7 +236,8 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                       height: 20,
                       child: Text(
                         'Messages',
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           color: titleColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

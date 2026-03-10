@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
@@ -137,7 +136,8 @@ class ProgressScreenView extends GetView<ProgressController> {
                                       child: Text(
                                         'Progress',
                                         textAlign: TextAlign.center,
-                                        style: GoogleFonts.outfit(
+                                        style: TextStyle(
+                                          fontFamily: 'ClashDisplay',
                                           color: progressTitleColor,
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,

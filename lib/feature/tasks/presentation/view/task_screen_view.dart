@@ -114,7 +114,8 @@ class TaskScreenView extends GetView<TaskController> {
                   children: [
                     Text(
                       'Active Project',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         color: isInterior
                             ? const Color(0xFF1D1D1D)
                             : Colors.white,
@@ -273,7 +274,8 @@ class TaskScreenView extends GetView<TaskController> {
             showFinished ? 'Finished Phases' : 'Active Phases',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
+              fontFamily: 'ClashDisplay',
               color: titleColor,
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -492,7 +494,8 @@ class _TaskPhaseToggleItem extends StatelessWidget {
           children: [
             Text(
               label,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
+                fontFamily: 'ClashDisplay',
                 color: isSelected ? selectedColor : unselectedColor,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -604,7 +607,8 @@ class _TaskPhaseItemCard extends StatelessWidget {
                         item.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           color: titleColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

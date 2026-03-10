@@ -110,7 +110,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                     child: Text(
                       'Reset Password',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
                         height: 1.2,
@@ -252,7 +253,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                                     child: Text(
                                       'Continue',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.outfit(
+                                      style: TextStyle(
+                                        fontFamily: 'ClashDisplay',
                                         color: ctaTextColor,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
@@ -310,18 +312,26 @@ class _PasswordField extends StatelessWidget {
           suffixIcon: IconButton(
             onPressed: onToggle,
             icon: Icon(
-              obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              obscure
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               size: 20,
               color: textColor,
             ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(width: 1, color: borderColor.withValues(alpha: 0.7)),
+            borderSide: BorderSide(
+              width: 1,
+              color: borderColor.withValues(alpha: 0.7),
+            ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(width: 1, color: borderColor.withValues(alpha: 0.7)),
+            borderSide: BorderSide(
+              width: 1,
+              color: borderColor.withValues(alpha: 0.7),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),

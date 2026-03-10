@@ -46,7 +46,8 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
                   amountText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'ClashDisplay',
                     color: const Color(0xFF161D1E),
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -99,7 +100,8 @@ class FinancialsRemainingBalanceCard extends StatelessWidget {
                 ),
                 Text(
                   "${safePercent.toInt()}%",
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'ClashDisplay',
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     height: 1,

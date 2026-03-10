@@ -72,7 +72,8 @@ class ProfileScreenView extends StatelessWidget {
                         const SizedBox(height: 18),
                         Text(
                           'Personal Info',
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
+                            fontFamily: 'ClashDisplay',
                             color: titleColor,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,

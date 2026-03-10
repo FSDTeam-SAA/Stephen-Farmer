@@ -12,7 +12,10 @@ class ProgressOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fallbackAsset = AssetsImages.constructionIgm;
-    final startedLabel = _formatDateLabel(project.startedDate, longMonth: false);
+    final startedLabel = _formatDateLabel(
+      project.startedDate,
+      longMonth: false,
+    );
     final handoverLabel = _formatDateLabel(
       project.handoverDate,
       longMonth: true,
@@ -83,7 +86,8 @@ class ProgressOverviewCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.left,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
+                  fontFamily: 'ClashDisplay',
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -120,7 +124,8 @@ class ProgressOverviewCard extends StatelessWidget {
                         '${project.overallCompletion}%',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,

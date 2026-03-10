@@ -71,7 +71,8 @@ class DocumentCategoryCard extends StatelessWidget {
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
+                    fontFamily: 'ClashDisplay',
                     color: titleColor,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

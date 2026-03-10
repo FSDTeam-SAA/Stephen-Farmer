@@ -160,7 +160,8 @@ class DocumentScreenView extends GetView<DocumentController> {
       children: [
         Text(
           title,
-          style: GoogleFonts.outfit(
+          style: TextStyle(
+            fontFamily: 'ClashDisplay',
             color: titleColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,

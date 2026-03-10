@@ -40,7 +40,8 @@ class TaskSectionHeaderRow extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
+              fontFamily: 'ClashDisplay',
               color: titleColor,
               fontSize: 16,
               fontWeight: FontWeight.w600,

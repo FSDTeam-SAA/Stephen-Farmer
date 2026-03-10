@@ -243,7 +243,8 @@ class UpdateScreenView extends StatelessWidget {
                     const SizedBox(height: 10),
                     Text(
                       'Active Project',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         height: 22 / 16,

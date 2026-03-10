@@ -32,7 +32,9 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
     final parts = email.split('@');
     if (parts.length != 2) return email;
     final local = parts[0];
-    final masked = local.length <= 3 ? '${local[0]}***' : '${local.substring(0, 3)}***';
+    final masked = local.length <= 3
+        ? '${local[0]}***'
+        : '${local.substring(0, 3)}***';
     return '$masked@${parts[1]}';
   }
 
@@ -109,7 +111,8 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                       child: Text(
                         "Forgot Password",
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
+                          fontFamily: 'ClashDisplay',
                           fontSize: 24,
                           fontWeight: FontWeight.w500,
                           height: 1.2,
@@ -255,7 +258,8 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                                     child: Text(
                                       'Continue',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.outfit(
+                                      style: TextStyle(
+                                        fontFamily: 'ClashDisplay',
                                         color: ctaTextColor,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,

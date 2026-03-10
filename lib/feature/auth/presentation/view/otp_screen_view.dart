@@ -10,11 +10,7 @@ import '../../../../core/common/role_bg_color.dart';
 import 'reset_password_view.dart';
 
 class OtpScreenView extends StatefulWidget {
-  const OtpScreenView({
-    super.key,
-    required this.category,
-    required this.email,
-  });
+  const OtpScreenView({super.key, required this.category, required this.email});
 
   final String category;
   final String email;
@@ -121,7 +117,8 @@ class _OtpScreenViewState extends State<OtpScreenView> {
                     child: Text(
                       'OTP',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
                         height: 1.2,
@@ -260,7 +257,8 @@ class _OtpScreenViewState extends State<OtpScreenView> {
                               child: Text(
                                 'Continue',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
+                                  fontFamily: 'ClashDisplay',
                                   color: ctaTextColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -318,7 +316,8 @@ class _OtpInputBox extends StatelessWidget {
           keyboardType: TextInputType.number,
           maxLength: 1,
           textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
+          style: TextStyle(
+            fontFamily: 'ClashDisplay',
             color: valueColor,
             fontSize: 24,
             fontWeight: FontWeight.w700,

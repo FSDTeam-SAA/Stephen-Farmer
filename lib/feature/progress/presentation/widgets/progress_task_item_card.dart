@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/progress_entity.dart';
 
@@ -63,7 +62,8 @@ class ProgressTaskItemCard extends StatelessWidget {
                       task.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         color: titleColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -75,7 +75,8 @@ class ProgressTaskItemCard extends StatelessWidget {
                       task.status,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
+                        fontFamily: 'ClashDisplay',
                         color: statusColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -94,7 +95,8 @@ class ProgressTaskItemCard extends StatelessWidget {
                     '${task.progressPercent}%',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
+                      fontFamily: 'ClashDisplay',
                       color: percentColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,

@@ -178,7 +178,8 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                           ),
                           child: Text(
                             'Cancel',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
+                              fontFamily: 'ClashDisplay',
                               color: accent,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -230,7 +231,8 @@ class _AddUpdateScreenViewState extends State<AddUpdateScreenView> {
                                   )
                                 : Text(
                                     'Post',
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(
+                                      fontFamily: 'ClashDisplay',
                                       color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,

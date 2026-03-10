@@ -36,15 +36,18 @@ class ProgressStatCard extends StatelessWidget {
                 width: 28,
                 height: 28,
                 color: Colors.amber.shade100,
-                errorBuilder: (_, __, ___) =>
-                    Icon(
-                      icon ?? Icons.image_not_supported_outlined,
-                      color: Colors.amber.shade100,
-                      size: 28,
-                    ),
+                errorBuilder: (_, __, ___) => Icon(
+                  icon ?? Icons.image_not_supported_outlined,
+                  color: Colors.amber.shade100,
+                  size: 28,
+                ),
               )
             else
-              Icon(icon ?? Icons.image_not_supported_outlined, color: Colors.amber.shade100, size: 28),
+              Icon(
+                icon ?? Icons.image_not_supported_outlined,
+                color: Colors.amber.shade100,
+                size: 28,
+              ),
             const SizedBox(height: 8),
             Text(
               label,
@@ -65,7 +68,8 @@ class ProgressStatCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
+                fontFamily: 'ClashDisplay',
                 color: Colors.white,
                 fontSize: 20,
                 height: 1,

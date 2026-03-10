@@ -108,7 +108,8 @@ class FinancialsScreenView extends GetView<FinancialsController> {
                               const SizedBox(height: 8),
                               Text(
                                 'Payment Schedule',
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
+                                  fontFamily: 'ClashDisplay',
                                   color: titleColor,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w600,

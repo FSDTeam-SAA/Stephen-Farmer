@@ -53,7 +53,9 @@ class _LoginScreenViewState extends State<LoginScreenView> {
   Widget build(BuildContext context) {
     final bool isInterior = RoleBgColor.isInterior(widget.category);
     final bool showBackButton = defaultTargetPlatform == TargetPlatform.android;
-    final Color signInContentColor = isInterior ? Colors.white : const Color(0xFF1E1E1E);
+    final Color signInContentColor = isInterior
+        ? Colors.white
+        : const Color(0xFF1E1E1E);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: RoleBgColor.overlayStyle(widget.category),
@@ -112,7 +114,8 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                           child: Text(
                             'Welcome back',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
+                              fontFamily: 'ClashDisplay',
                               color: isInterior
                                   ? Colors.black
                                   : const Color(0xFFE0DACD),
