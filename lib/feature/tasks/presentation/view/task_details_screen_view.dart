@@ -526,17 +526,29 @@ class _MessageAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmed = imageUrl.trim();
     if (trimmed.isNotEmpty) {
-      return CircleAvatar(
-        radius: 14,
-        backgroundColor: const Color(0xFF8EA0AE),
-        backgroundImage: NetworkImage(trimmed),
+      return ClipOval(
+        child: Image.network(
+          trimmed,
+          width: 28,
+          height: 28,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Image.asset(
+            AssetsImages.placeholder,
+            width: 28,
+            height: 28,
+            fit: BoxFit.cover,
+          ),
+        ),
       );
     }
 
-    return const CircleAvatar(
-      radius: 14,
-      backgroundColor: Color(0xFF8EA0AE),
-      child: Icon(Icons.person, size: 16, color: Colors.white),
+    return ClipOval(
+      child: Image.asset(
+        AssetsImages.placeholder,
+        width: 28,
+        height: 28,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }
