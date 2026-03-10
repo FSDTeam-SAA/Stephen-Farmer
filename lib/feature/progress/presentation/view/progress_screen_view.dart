@@ -39,18 +39,12 @@ class ProgressScreenView extends GetView<ProgressController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: 83,
+                      width: 110,
                       height: 22,
                       child: Text(
                         'Active Project',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: titleColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          height: 22 / 12,
-                          letterSpacing: 0,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500, height: 22 / 16, letterSpacing: 0),
                       ),
                     ),
                     const SizedBox(height: 12),

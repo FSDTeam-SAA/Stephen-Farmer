@@ -20,7 +20,7 @@ class AssetsImages {
   static const String actionsNeeded = "$_basePath/actions_needed.png";
   static const String placeholder = "$_basePath/male-placeholder-image.jpeg";
   static const String task = "$_basePath/task.png";
-  static const String calendar = "$_basePath/calendar.png";
+  static const String calendar = "$_basePath/calender.png";
 
   // ================== Icons ==================
   static const String constructionIgm = "$_basePath/constru.png";
