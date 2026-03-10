@@ -68,6 +68,7 @@ class ProgressOverviewCard extends StatelessWidget {
                 child: const Text(
                   'Active Project',
                   style: TextStyle(
+                    fontFamily: 'ClashDisplay',
                     color: Color(0xFF151515),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

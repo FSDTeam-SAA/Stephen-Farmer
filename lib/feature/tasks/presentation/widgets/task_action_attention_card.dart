@@ -75,6 +75,7 @@ class TaskActionAttentionCard extends StatelessWidget {
                 Text(
                   '$count actions needed',
                   style: TextStyle(
+                    fontFamily: 'ClashDisplay',
                     color: titleColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

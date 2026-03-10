@@ -43,8 +43,9 @@ class ProgressScreenView extends GetView<ProgressController> {
                       child: Text(
                         'Active Project',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
+                        style: const TextStyle(
+                          fontFamily: 'ClashDisplay',
+                          color: Color(0xFFFFFFFF),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           height: 22 / 16,
