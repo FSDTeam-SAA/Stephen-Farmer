@@ -5,10 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
+import 'package:stephen_farmer/feature/chat/domain/entities/chat_entity.dart';
+import 'package:stephen_farmer/feature/chat/presentation/controller/chat_controller.dart';
+import 'package:stephen_farmer/feature/tasks/presentation/controller/task_controller.dart';
 
 import '../../domain/entities/task_project_entity.dart';
 
-class TaskDetailsScreenView extends StatelessWidget {
+class TaskDetailsScreenView extends StatefulWidget {
   const TaskDetailsScreenView({
     super.key,
     required this.item,
@@ -17,6 +20,105 @@ class TaskDetailsScreenView extends StatelessWidget {
 
   final TaskItemEntity item;
   final bool waitingForApproval;
+
+  @override
+  State<TaskDetailsScreenView> createState() => _TaskDetailsScreenViewState();
+}
+
+class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
+  late final ChatController _chatController;
+  late final TaskController _taskController;
+  final TextEditingController _messageController = TextEditingController();
+  final FocusNode _messageFocusNode = FocusNode();
+
+  bool _isOpeningChat = false;
+  bool _isSendingMessage = false;
+  bool _isApproving = false;
+  String _chatError = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _chatController = Get.find<ChatController>();
+    _taskController = Get.find<TaskController>();
+    _openTaskChat();
+  }
+
+  Future<void> _openTaskChat() async {
+    final taskId = widget.item.id.trim();
+    if (taskId.isEmpty) {
+      setState(() => _chatError = 'Task chat is unavailable for this item.');
+      return;
+    }
+
+    setState(() {
+      _isOpeningChat = true;
+      _chatError = '';
+    });
+
+    try {
+      await _chatController.openTaskChat(taskId);
+      if (!mounted) return;
+      setState(() => _chatError = '');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _chatError = 'Failed to open task messages.');
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningChat = false);
+      }
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isSendingMessage) return;
+
+    setState(() => _isSendingMessage = true);
+    try {
+      await _chatController.sendMessage(text);
+      _messageController.clear();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _chatError = 'Failed to send message.');
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingMessage = false);
+      }
+    }
+  }
+
+  Future<void> _approveAndComplete() async {
+    if (_isApproving || widget.waitingForApproval) return;
+    final taskId = widget.item.id.trim();
+    if (taskId.isEmpty) {
+      Get.snackbar('Error', 'Task id is missing.');
+      return;
+    }
+
+    setState(() => _isApproving = true);
+    try {
+      final result = await _taskController.approveTask(taskId);
+      if (!mounted) return;
+      if (result == null) {
+        Get.snackbar('Error', _taskController.errorMessage.value);
+        return;
+      }
+      Get.back();
+      Get.snackbar('Success', 'Task approved successfully.');
+    } finally {
+      if (mounted) {
+        setState(() => _isApproving = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _messageFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +159,12 @@ class TaskDetailsScreenView extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                     ],
-                    _PriorityChip(priority: item.priority),
+                    _PriorityChip(priority: widget.item.priority),
                     const SizedBox(height: 14),
                     SizedBox(
                       width: 335,
                       child: Text(
-                        item.title,
+                        widget.item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
@@ -79,7 +181,7 @@ class TaskDetailsScreenView extends StatelessWidget {
                       width: 335,
                       height: 32,
                       child: Text(
-                        item.subtitle,
+                        widget.item.subtitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
@@ -142,214 +244,54 @@ class TaskDetailsScreenView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (!waitingForApproval) ...[
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Color(0xFF8EA0AE),
-                            child: Icon(
-                              Icons.person,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 255,
-                                      height: 17,
-                                      child: Text.rich(
-                                        TextSpan(
-                                          text: 'Rain Altmann ',
-                                          style: GoogleFonts.manrope(
-                                            color: isInterior
-                                                ? const Color(0xFF5C6670)
-                                                : titleColor,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.4,
-                                            letterSpacing: 0,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: '(Site manager)',
-                                              style: GoogleFonts.manrope(
-                                                color: isInterior
-                                                    ? const Color(0xFF5C6670)
-                                                    : titleColor,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                height: 1.4,
-                                                letterSpacing: 0,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  width: 255,
-                                  height: 40,
-                                  child: Text(
-                                    'Sure, that\'s done. The update has been applied.',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.manrope(
-                                      color: isInterior
-                                          ? const Color(0xFF1F1F1F)
-                                          : titleColor,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      height: 1.4,
-                                      letterSpacing: 0,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isInterior
-                                ? const Color(0xFF8D7A56)
-                                : const Color(0xFF1B262D),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'Great, thank you.',
+                    if (_isOpeningChat)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_chatError.isNotEmpty)
+                      Text(
+                        _chatError,
+                        style: GoogleFonts.manrope(
+                          color: const Color(0xFF8C2323),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    else
+                      Obx(() {
+                        final activeChatId =
+                            _chatController.activeChat.value?.id ?? '';
+                        final List<ChatMessageEntity> chatMessages =
+                            _chatController.messages
+                                .where((m) => m.chatId == activeChatId)
+                                .toList();
+
+                        if (chatMessages.isEmpty) {
+                          return Text(
+                            'No messages yet. Start the conversation.',
                             style: GoogleFonts.manrope(
-                              color: titleColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                              letterSpacing: 0,
+                              color: isInterior
+                                  ? const Color(0xFF5B5347)
+                                  : const Color(0xFF9EA9AD),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ),
-                        ),
-                      ),
-                    ] else ...[
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isInterior
-                                ? const Color(0xFF8D7A56)
-                                : const Color(0xFF1B262D),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: SizedBox(
-                            width: 143,
-                            height: 40,
-                            child: Text(
-                              'The update has been applied.',
-                              textAlign: TextAlign.right,
-                              style: GoogleFonts.manrope(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Color(0xFF8EA0AE),
-                            child: Icon(
-                              Icons.person,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 255,
-                                  height: 17,
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: 'Rain Altmann ',
-                                      style: GoogleFonts.manrope(
-                                        color: isInterior
-                                            ? const Color(0xFF2E2A25)
-                                            : titleColor,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        height: 1.4,
-                                        letterSpacing: 0,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: '(Client)',
-                                          style: GoogleFonts.manrope(
-                                            color: isInterior
-                                                ? const Color(0xFF2E2A25)
-                                                : titleColor,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.4,
-                                            letterSpacing: 0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Great, thank you.',
-                                  style: GoogleFonts.manrope(
-                                    color: isInterior
-                                        ? const Color(0xFF4A4A4A)
-                                        : Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.4,
-                                    letterSpacing: 0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          );
+                        }
+
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: chatMessages.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final message = chatMessages[index];
+                            return _ChatMessageBubble(
+                              message: message,
+                              isInterior: isInterior,
+                            );
+                          },
+                        );
+                      }),
                   ],
                 ),
               ),
@@ -357,62 +299,178 @@ class TaskDetailsScreenView extends StatelessWidget {
             Container(
               padding: EdgeInsets.fromLTRB(
                 16,
-                waitingForApproval ? 8 : 12,
+                widget.waitingForApproval ? 8 : 12,
                 16,
-                waitingForApproval ? 8 : 16,
+                widget.waitingForApproval ? 8 : 16,
               ),
               decoration: BoxDecoration(color: bgColor),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: waitingForApproval ? 40 : 44,
-                      child: ElevatedButton(
-                        onPressed: waitingForApproval ? null : () => Get.back(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: waitingForApproval
-                              ? const Color(0xFF1E2127)
-                              : const Color(0xFFB5946E),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFF1E2127),
-                          disabledForegroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _messageController,
+                          focusNode: _messageFocusNode,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) => _sendMessage(),
+                          decoration: InputDecoration(
+                            hintText: 'Write a message',
+                            hintStyle: GoogleFonts.manrope(
+                              color: const Color(0xFF8E8E93),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: isInterior
+                                ? const Color(0xFFF5F2EC)
+                                : const Color(0xFF1A232A),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          waitingForApproval
-                              ? 'Waiting for Approval...'
-                              : 'Approve & Complete',
                           style: GoogleFonts.manrope(
+                            color: titleColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            height: 1.4,
-                            letterSpacing: 0,
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: widget.waitingForApproval ? 40 : 44,
+                        height: widget.waitingForApproval ? 40 : 44,
+                        child: ElevatedButton(
+                          onPressed: _isSendingMessage ? null : _sendMessage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF8A6B37),
+                            disabledBackgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: _isSendingMessage
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF8A6B37),
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded, size: 22),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    width: waitingForApproval ? 40 : 44,
-                    height: waitingForApproval ? 40 : 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.message,
-                      size: 24,
-                      color: Color(0xFF8A6B37),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: widget.waitingForApproval ? 40 : 44,
+                    child: ElevatedButton(
+                      onPressed: widget.waitingForApproval || _isApproving
+                          ? null
+                          : _approveAndComplete,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.waitingForApproval
+                            ? const Color(0xFF1E2127)
+                            : const Color(0xFFB5946E),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFF1E2127),
+                        disabledForegroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: _isApproving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              widget.waitingForApproval
+                                  ? 'Waiting for Approval...'
+                                  : 'Approve & Complete',
+                              style: GoogleFonts.manrope(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                                letterSpacing: 0,
+                              ),
+                            ),
                     ),
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatMessageBubble extends StatelessWidget {
+  const _ChatMessageBubble({required this.message, required this.isInterior});
+
+  final ChatMessageEntity message;
+  final bool isInterior;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isMine = message.isMine;
+    final Color bubbleColor = isMine
+        ? (isInterior ? const Color(0xFF8D7A56) : const Color(0xFF1B262D))
+        : (isInterior ? const Color(0xFFDAD4C8) : const Color(0xFF10171D));
+    final Color textColor = isMine
+        ? Colors.white
+        : (isInterior ? const Color(0xFF262626) : Colors.white);
+
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 280),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: bubbleColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isMine && message.senderName.trim().isNotEmpty) ...[
+                Text(
+                  message.senderName,
+                  style: GoogleFonts.manrope(
+                    color: textColor.withValues(alpha: 0.9),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                message.text,
+                style: GoogleFonts.manrope(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

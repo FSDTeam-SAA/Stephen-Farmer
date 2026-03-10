@@ -48,8 +48,8 @@ class TaskScreenView extends GetView<TaskController> {
               managerSelectedIndex < managerVisibleItems.length
           ? managerVisibleItems[managerSelectedIndex]
           : null;
-      final approvalFooterColor = isInterior && selectedManagerItem == null
-          ? Colors.transparent
+      final Color approvalFooterColor = isInterior
+          ? RoleBgColor.interiorGradient.colors.last
           : Colors.black;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(

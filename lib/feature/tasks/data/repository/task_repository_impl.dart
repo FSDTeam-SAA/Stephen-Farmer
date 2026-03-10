@@ -22,11 +22,15 @@ class TaskRepositoryImpl implements TaskRepository {
     final response = await _apiClient.get(TaskEndpoints.getTasks);
     final rows = _extractList(
       response.data,
-      preferredKeys: const ['projects', 'items', 'tasks', 'data'],
+      preferredKeys: const ['projects', 'tasks', 'items', 'results', 'data'],
     );
 
     if (rows.isEmpty) {
-      return TaskProjectModel.dummyData;
+      return const <TaskProjectEntity>[];
+    }
+
+    if (_isTaskListPayload(rows)) {
+      return _buildProjectsFromTaskRows(rows);
     }
 
     return rows.map(TaskProjectModel.fromJson).toList();
@@ -130,6 +134,178 @@ class TaskRepositoryImpl implements TaskRepository {
       _extractMap(response.data, preferredKeys: const ['task', 'data']),
     );
   }
+}
+
+bool _isTaskListPayload(List<Map<String, dynamic>> rows) {
+  final first = rows.first;
+  final hasProjectShape =
+      first['sections'] is List ||
+      first['taskSections'] is List ||
+      first['groups'] is List;
+  if (hasProjectShape) {
+    return false;
+  }
+
+  return first.containsKey('title') ||
+      first.containsKey('taskTitle') ||
+      first.containsKey('priority') ||
+      first.containsKey('status');
+}
+
+List<TaskProjectEntity> _buildProjectsFromTaskRows(
+  List<Map<String, dynamic>> rows,
+) {
+  final grouped = <String, List<Map<String, dynamic>>>{};
+  final projectMeta = <String, Map<String, dynamic>>{};
+
+  for (final row in rows) {
+    final project = _extractProjectMap(row);
+    final projectId = _resolveProjectId(row, project);
+    grouped.putIfAbsent(projectId, () => <Map<String, dynamic>>[]).add(row);
+    projectMeta.putIfAbsent(projectId, () => project);
+  }
+
+  return grouped.entries.map((entry) {
+    final projectId = entry.key;
+    final taskRows = entry.value;
+    final meta = projectMeta[projectId] ?? const <String, dynamic>{};
+
+    final sectionRows = <String, List<Map<String, dynamic>>>{};
+    for (final row in taskRows) {
+      final title = _resolveSectionTitle(row);
+      sectionRows.putIfAbsent(title, () => <Map<String, dynamic>>[]).add(row);
+    }
+
+    final sections = sectionRows.entries.map((sectionEntry) {
+      final items = sectionEntry.value.map(TaskItemModel.fromJson).toList();
+      final pendingCount = items.where((item) => !item.isFinished).length;
+      return TaskSectionModel(
+        title: sectionEntry.key,
+        pendingCount: pendingCount,
+        items: items,
+      );
+    }).toList();
+
+    final actionsNeededCount = sections
+        .expand((section) => section.items)
+        .where((item) => item.needsApproval)
+        .length;
+
+    return TaskProjectModel(
+      id: projectId == '__unassigned__' ? '' : projectId,
+      projectName: _resolveProjectName(taskRows.first, meta),
+      projectAddress: _resolveProjectAddress(taskRows.first, meta),
+      thumbnailUrl: _resolveProjectThumbnail(taskRows.first, meta),
+      actionsNeededCount: actionsNeededCount,
+      actionsNeededMessage:
+          'Your decisions are required to keep progress on track',
+      sections: sections,
+    );
+  }).toList();
+}
+
+Map<String, dynamic> _extractProjectMap(Map<String, dynamic> row) {
+  final project = row['project'];
+  if (project is Map<String, dynamic>) return project;
+
+  final projectInfo = row['projectInfo'];
+  if (projectInfo is Map<String, dynamic>) return projectInfo;
+
+  return const <String, dynamic>{};
+}
+
+String _resolveProjectId(
+  Map<String, dynamic> row,
+  Map<String, dynamic> project,
+) {
+  final fromProject = _firstNonEmpty(<dynamic>[
+    project['_id'],
+    project['id'],
+    project['projectId'],
+  ]);
+  if (fromProject.isNotEmpty) return fromProject;
+
+  final direct = row['project'];
+  if (direct is String && direct.trim().isNotEmpty) return direct.trim();
+
+  final fromRow = _firstNonEmpty(<dynamic>[
+    row['projectId'],
+    row['project_id'],
+    row['_projectId'],
+  ]);
+  if (fromRow.isNotEmpty) return fromRow;
+
+  return '__unassigned__';
+}
+
+String _resolveProjectName(
+  Map<String, dynamic> row,
+  Map<String, dynamic> project,
+) {
+  final value = _firstNonEmpty(<dynamic>[
+    row['projectName'],
+    row['project_name'],
+    row['name'],
+    project['projectName'],
+    project['name'],
+    project['title'],
+  ]);
+  return value.isEmpty ? 'Untitled Project' : value;
+}
+
+String _resolveProjectAddress(
+  Map<String, dynamic> row,
+  Map<String, dynamic> project,
+) {
+  final value = _firstNonEmpty(<dynamic>[
+    row['projectAddress'],
+    row['project_address'],
+    row['address'],
+    row['location'],
+    project['projectAddress'],
+    project['address'],
+    project['location'],
+  ]);
+  return value.isEmpty ? 'N/A' : value;
+}
+
+String? _resolveProjectThumbnail(
+  Map<String, dynamic> row,
+  Map<String, dynamic> project,
+) {
+  final value = _firstNonEmpty(<dynamic>[
+    row['thumbnailUrl'],
+    row['thumbnail'],
+    row['imageUrl'],
+    row['image'],
+    project['thumbnailUrl'],
+    project['thumbnail'],
+    project['imageUrl'],
+    project['image'],
+  ]);
+  return value.isEmpty ? null : value;
+}
+
+String _resolveSectionTitle(Map<String, dynamic> row) {
+  final value = _firstNonEmpty(<dynamic>[
+    row['section'],
+    row['sectionName'],
+    row['group'],
+    row['groupName'],
+    row['category'],
+    row['phase'],
+    row['phaseName'],
+  ]);
+  return value.isEmpty ? 'Tasks' : value;
+}
+
+String _firstNonEmpty(List<dynamic> values) {
+  for (final value in values) {
+    if (value == null) continue;
+    final text = value.toString().trim();
+    if (text.isNotEmpty) return text;
+  }
+  return '';
 }
 
 Map<String, dynamic> _extractMap(

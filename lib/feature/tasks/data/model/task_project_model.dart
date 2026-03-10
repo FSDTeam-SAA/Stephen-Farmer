@@ -18,6 +18,8 @@ class TaskItemModel extends TaskItemEntity {
 
   factory TaskItemModel.fromJson(Map<String, dynamic> json) {
     final imageUrls = _readImageUrls(json);
+    final projectMap = _readMap(json, ['project', 'projectInfo']);
+    final projectId = _readString(json, ["projectId", "project_id"]);
     final normalizedStatus = _readString(json, [
       "phaseStatus",
       "status",
@@ -25,7 +27,9 @@ class TaskItemModel extends TaskItemEntity {
     ], fallback: "");
     return TaskItemModel(
       id: _readString(json, ["_id", "id", "taskId"]),
-      projectId: _readString(json, ["project", "projectId"]),
+      projectId: projectId.isNotEmpty
+          ? projectId
+          : _readString(projectMap, ["_id", "id", "projectId"]),
       title: _readString(json, ["title", "name"], fallback: "Untitled task"),
       subtitle: _readString(json, ["subtitle", "description"], fallback: ""),
       priority: _readString(json, ["priority", "level"], fallback: "Medium"),
@@ -42,6 +46,16 @@ class TaskItemModel extends TaskItemEntity {
       status: normalizedStatus,
     );
   }
+}
+
+Map<String, dynamic> _readMap(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+  }
+  return const <String, dynamic>{};
 }
 
 class TaskSectionModel extends TaskSectionEntity {
