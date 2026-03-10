@@ -22,11 +22,9 @@ class ProgressTaskItemCard extends StatelessWidget {
     final Color titleColor = isInteriorTheme
         ? const Color(0xFF1D1D1D)
         : Colors.white;
-    final Color percentColor = isInteriorTheme
-        ? const Color(0xFF1D1D1D)
-        : Colors.white;
+    const Color percentColor = Colors.white;
     final Color cardColor = isInteriorTheme
-        ? Colors.white.withValues(alpha: 0.55)
+        ? const Color(0xFFB8B09F)
         : const Color(0xFF111A1E);
     final Color progressBackground = isInteriorTheme
         ? Colors.black.withValues(alpha: 0.12)

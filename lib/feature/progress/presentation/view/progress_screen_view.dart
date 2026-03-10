@@ -24,7 +24,7 @@ class ProgressScreenView extends GetView<ProgressController> {
       final role = authController.role.value;
       final bool isManager = authController.normalizedRoleKey == 'manager';
       final bool isInterior = RoleBgColor.isInterior(role);
-      final Color titleColor = isInterior ? const Color(0xFF1D1D1D) : Colors.white;
+      const Color progressTitleColor = Colors.white;
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -44,19 +44,34 @@ class ProgressScreenView extends GetView<ProgressController> {
                       child: Text(
                         'Active Project',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500, height: 22 / 16, letterSpacing: 0),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          height: 22 / 16,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     if (controller.isLoading.value && !controller.hasProjects)
-                      const Expanded(child: Center(child: CircularProgressIndicator()))
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
                     else if (project == null)
                       Flexible(
                         child: Center(
                           child: Text(
-                            controller.errorMessage.value.isEmpty ? 'No progress data available' : controller.errorMessage.value,
+                            controller.errorMessage.value.isEmpty
+                                ? 'No progress data available'
+                                : controller.errorMessage.value,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: isInterior ? const Color(0xFF1D1D1D) : Colors.white, fontSize: 16),
+                            style: TextStyle(
+                              color: isInterior
+                                  ? const Color(0xFF1D1D1D)
+                                  : Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       )
@@ -89,24 +104,33 @@ class ProgressScreenView extends GetView<ProgressController> {
                                   ProgressStatCard(
                                     iconAsset: AssetsImages.calendar,
                                     label: 'Day',
-                                    value: '${project.dayCurrent}/${project.dayTotal}',
+                                    value:
+                                        '${project.dayCurrent}/${project.dayTotal}',
                                   ),
                                   const SizedBox(width: 8),
                                   ProgressStatCard(
                                     iconAsset: AssetsImages.task,
                                     label: 'Tasks',
-                                    value: '${project.tasksCompleted}/${project.tasksTotal}',
+                                    value:
+                                        '${project.tasksCompleted}/${project.tasksTotal}',
                                   ),
                                   const SizedBox(width: 8),
-                                  ProgressStatCard(icon: Icons.image_rounded, label: 'Photos', value: '${project.photosTotal}'),
+                                  ProgressStatCard(
+                                    icon: Icons.image_rounded,
+                                    label: 'Photos',
+                                    value: '${project.photosTotal}',
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 14),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
                                     child: SizedBox(
                                       width: 110,
                                       height: 22,
@@ -114,7 +138,7 @@ class ProgressScreenView extends GetView<ProgressController> {
                                         'Progress',
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.outfit(
-                                          color: titleColor,
+                                          color: progressTitleColor,
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
                                           height: 22 / 24,
@@ -126,7 +150,10 @@ class ProgressScreenView extends GetView<ProgressController> {
                                   if (isManager)
                                     InkWell(
                                       onTap: () {
-                                        Get.to(() => const UpdateProgreesScreenView());
+                                        Get.to(
+                                          () =>
+                                              const UpdateProgreesScreenView(),
+                                        );
                                       },
                                       child: const SizedBox(
                                         width: 20,
@@ -148,7 +175,10 @@ class ProgressScreenView extends GetView<ProgressController> {
                                 itemCount: project.updates.length,
                                 itemBuilder: (context, index) {
                                   final update = project.updates[index];
-                                  return ProgressTaskItemCard(task: update, isInteriorTheme: isInterior);
+                                  return ProgressTaskItemCard(
+                                    task: update,
+                                    isInteriorTheme: isInterior,
+                                  );
                                 },
                               ),
                             ],
