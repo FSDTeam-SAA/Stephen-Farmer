@@ -74,7 +74,7 @@ class ChatController extends GetxController {
     final chat = activeChat.value;
     if (chat == null || text.trim().isEmpty) return;
 
-    final payload = <String, dynamic>{'text': text.trim()};
+    final payload = <String, dynamic>{'message': text.trim()};
     final sent = await _repository.sendMessage(chat.id, payload: payload);
     messages.add(sent);
     _socketService.sendMessage(chatId: chat.id, payload: payload);
