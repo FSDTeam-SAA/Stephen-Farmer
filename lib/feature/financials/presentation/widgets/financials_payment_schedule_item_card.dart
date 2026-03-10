@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/financials_project_entity.dart';
 
@@ -10,8 +11,15 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusText = item.isPaid ? 'Paid' : 'Due Now';
-    final statusColor = item.isPaid ? const Color(0xFF7D9975) : const Color(0xFFC08A2B);
-    final iconColor = item.isPaid ? const Color(0xFF8AA481) : const Color(0xFFC08A2B);
+    final statusColor = item.isPaid
+        ? const Color(0xFF7D9975)
+        : const Color(0xFFC08A2B);
+    final iconColor = item.isPaid
+        ? const Color(0xFF8AA481)
+        : const Color(0xFFC08A2B);
+    final iconBackgroundColor = item.isPaid
+        ? const Color(0xFFCFD7C2)
+        : const Color(0x40A77935);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
@@ -19,7 +27,9 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         border: Border.all(
-          color: item.isPaid ? const Color(0xFF7D9975).withValues(alpha: 0.55) : const Color(0xFFC08A2B).withValues(alpha: 0.55),
+          color: item.isPaid
+              ? const Color(0xFF7D9975).withValues(alpha: 0.55)
+              : const Color(0xFFC08A2B).withValues(alpha: 0.55),
 
           width: 1.5,
         ),
@@ -28,14 +38,19 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 40,
-            width: 40,
+            height: 32,
+            width: 32,
+            padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 237, 238, 232),
-              borderRadius: BorderRadius.circular(32),
+              color: iconBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: iconColor.withValues(alpha: 0.55)),
             ),
-            child: Icon(item.isPaid ? Icons.check_rounded : Icons.access_time_rounded, size: 24, color: iconColor),
+            child: Icon(
+              item.isPaid ? Icons.check_rounded : Icons.access_time_rounded,
+              size: 20,
+              color: iconColor,
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -46,13 +61,26 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF1D1D1D), fontSize: 16, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.manrope(
+                    color: const Color(0xFF161D1E),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  item.dateLabel,
+                  _formatDisplayDate(item.dateLabel),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF5A5A5A), fontSize: 16, fontWeight: FontWeight.w400),
+                  style: GoogleFonts.manrope(
+                    color: const Color(0xFF161D1E),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
               ],
             ),
@@ -67,13 +95,28 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(color: Color(0xFF1D1D1D), fontSize: 16, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.manrope(
+                    color: const Color(0xFF161D1E),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   statusText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: statusColor, fontSize: 16, fontWeight: FontWeight.w400),
+                  style: GoogleFonts.manrope(
+                    color: item.isPaid
+                        ? const Color(0xFF798B56)
+                        : statusColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    height: 1,
+                    letterSpacing: 0,
+                  ),
                 ),
               ],
             ),
@@ -85,6 +128,38 @@ class FinancialsPaymentScheduleItemCard extends StatelessWidget {
 }
 
 String _formatAed(int amount) {
-  final formatted = amount.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ',');
+  final formatted = amount.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (match) => ',',
+  );
   return 'AED $formatted';
+}
+
+String _formatDisplayDate(String raw) {
+  final value = raw.trim();
+  if (value.isEmpty) return value;
+
+  final parsed = DateTime.tryParse(value);
+  if (parsed != null) return _formatMmmDyyyy(parsed);
+
+  return value;
+}
+
+String _formatMmmDyyyy(DateTime dt) {
+  const months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  final month = months[dt.month - 1];
+  return '$month ${dt.day}, ${dt.year}';
 }

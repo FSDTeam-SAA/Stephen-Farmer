@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FinancialsBudgetMetricCard extends StatelessWidget {
   const FinancialsBudgetMetricCard({
@@ -31,32 +32,38 @@ class FinancialsBudgetMetricCard extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF232323),
+              style: GoogleFonts.manrope(
+                color: const Color(0xFF161D1E),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
+                height: 1.2,
+                letterSpacing: 0,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               amountText,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF232323),
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF161D1E),
                 fontSize: 20,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
+                height: 1.1,
+                letterSpacing: 0,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 6),
             Text(
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF3A3A3A),
+              style: GoogleFonts.manrope(
+                color: const Color(0xFF161D1E),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
+                height: 1.2,
+                letterSpacing: 0,
               ),
             ),
           ],
