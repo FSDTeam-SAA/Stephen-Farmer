@@ -19,6 +19,7 @@ import 'financials/domain/repository/financials_repository.dart';
 import 'financials/domain/usecase/get_financials_projects_usecase.dart';
 import 'financials/presentation/controller/financials_controller.dart';
 import 'notifications/data/repository/notification_repository_impl.dart';
+import 'notifications/data/service/notification_socket_service.dart';
 import 'notifications/domain/repository/notification_repository.dart';
 import 'notifications/domain/usecase/get_notifications_usecase.dart';
 import 'notifications/domain/usecase/mark_all_notifications_read_usecase.dart';
@@ -171,6 +172,11 @@ class AppDependencies {
       fenix: true,
     );
 
+    Get.lazyPut<NotificationSocketService>(
+      NotificationSocketService.new,
+      fenix: true,
+    );
+
     Get.lazyPut<GetNotificationsUseCase>(
       () => GetNotificationsUseCase(
         repository: Get.find<NotificationRepository>(),
@@ -198,6 +204,7 @@ class AppDependencies {
         markAllNotificationsReadUseCase:
             Get.find<MarkAllNotificationsReadUseCase>(),
         markNotificationReadUseCase: Get.find<MarkNotificationReadUseCase>(),
+        socketService: Get.find<NotificationSocketService>(),
       ),
       fenix: true,
     );

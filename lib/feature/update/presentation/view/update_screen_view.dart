@@ -8,6 +8,7 @@ import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
+import 'package:stephen_farmer/feature/notifications/presentation/controller/notification_controller.dart';
 import 'package:stephen_farmer/feature/notifications/presentation/view/notification_screen_view.dart';
 import 'package:stephen_farmer/feature/profile/presentation/view/profile_screen_view.dart';
 import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
@@ -161,6 +162,7 @@ class UpdateScreenView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(UpdateController());
     final authController = Get.find<LoginController>();
+    final notificationController = Get.find<NotificationController>();
 
     return Obx(() {
       final isInterior = loginCategory.toLowerCase() == 'interior';
@@ -219,10 +221,53 @@ class UpdateScreenView extends StatelessWidget {
                           tooltip: 'Notifications',
                           onPressed: () =>
                               Get.to(() => const NotificationScreenView()),
-                          icon: Icon(
-                            Icons.notifications_rounded,
-                            color: notificationIconColor,
-                            size: 24,
+                          icon: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Icon(
+                                Icons.notifications_rounded,
+                                color: notificationIconColor,
+                                size: 24,
+                              ),
+                              if (notificationController.unreadCount > 0)
+                                Positioned(
+                                  right: -7,
+                                  top: -7,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 2,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 16,
+                                      minHeight: 16,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE53935),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: isInterior
+                                            ? const Color(0xFFF3EFE7)
+                                            : const Color(0xFF0B1218),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        notificationController.unreadCount > 99
+                                            ? '99+'
+                                            : notificationController.unreadCount
+                                                  .toString(),
+                                        style: GoogleFonts.manrope(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         GestureDetector(

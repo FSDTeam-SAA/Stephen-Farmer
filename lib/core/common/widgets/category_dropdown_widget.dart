@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
 
 class CategoryDropdownWidget<T> extends StatelessWidget {
   final List<T> items;
@@ -260,7 +261,7 @@ class _DropdownRow<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumb = thumbnailBuilder(item)?.trim() ?? '';
+    final thumb = _resolveThumbnailUrl(thumbnailBuilder(item));
 
     return Row(
       children: [
@@ -331,5 +332,32 @@ class _DropdownRow<T> extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  String _resolveThumbnailUrl(String? raw) {
+    final value = (raw ?? '').trim();
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (value.startsWith('/')) {
+      return '$origin$value';
+    }
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    return trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
   }
 }

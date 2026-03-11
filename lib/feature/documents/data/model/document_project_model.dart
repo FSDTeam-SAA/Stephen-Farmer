@@ -62,6 +62,7 @@ class DocumentProjectModel extends DocumentProjectEntity {
   });
 
   factory DocumentProjectModel.fromProjectJson(Map<String, dynamic> json) {
+    final thumb = _readProjectThumbnail(json);
     return DocumentProjectModel(
       projectId: _readString(json, ['_id', 'id', 'projectId']),
       projectName: _readString(json, [
@@ -74,22 +75,7 @@ class DocumentProjectModel extends DocumentProjectEntity {
         'address',
         'location',
       ], fallback: 'N/A'),
-      thumbnailUrl:
-          _readString(json, [
-            'thumbnailUrl',
-            'thumbnail',
-            'coverImage',
-            'image',
-            'imageUrl',
-          ]).trim().isEmpty
-          ? null
-          : _readString(json, [
-              'thumbnailUrl',
-              'thumbnail',
-              'coverImage',
-              'image',
-              'imageUrl',
-            ]).trim(),
+      thumbnailUrl: thumb.isEmpty ? null : thumb,
       categories: const <DocumentCategoryEntity>[],
       recentDocuments: const <RecentDocumentEntity>[],
     );
@@ -100,6 +86,7 @@ class DocumentProjectModel extends DocumentProjectEntity {
     required List<Map<String, dynamic>> categoryRows,
     required List<Map<String, dynamic>> documentRows,
   }) {
+    final thumb = _readProjectThumbnail(projectJson);
     final categories = categoryRows
         .map(DocumentCategoryModel.fromJson)
         .toList(growable: false);
@@ -120,22 +107,7 @@ class DocumentProjectModel extends DocumentProjectEntity {
         'address',
         'location',
       ], fallback: 'N/A'),
-      thumbnailUrl:
-          _readString(projectJson, [
-            'thumbnailUrl',
-            'thumbnail',
-            'coverImage',
-            'image',
-            'imageUrl',
-          ]).trim().isEmpty
-          ? null
-          : _readString(projectJson, [
-              'thumbnailUrl',
-              'thumbnail',
-              'coverImage',
-              'image',
-              'imageUrl',
-            ]).trim(),
+      thumbnailUrl: thumb.isEmpty ? null : thumb,
       categories: categories,
       recentDocuments: recentDocuments,
     );
@@ -253,6 +225,49 @@ class DocumentProjectModel extends DocumentProjectEntity {
       ],
     ),
   ];
+}
+
+String _readProjectThumbnail(Map<String, dynamic> json) {
+  final direct = _readString(json, [
+    'thumbnailUrl',
+    'thumbnail',
+    'coverImage',
+    'image',
+    'imageUrl',
+    'projectImage',
+    'logo',
+  ]);
+  if (direct.isNotEmpty) return direct;
+
+  final imageObj = json['image'];
+  if (imageObj is Map<String, dynamic>) {
+    final nested = _readString(imageObj, ['url', 'secure_url', 'src', 'path']);
+    if (nested.isNotEmpty) return nested;
+  }
+
+  final photos = json['photos'];
+  final fromPhotos = _readFirstImageFromCollection(photos);
+  if (fromPhotos.isNotEmpty) return fromPhotos;
+
+  final images = json['images'];
+  final fromImages = _readFirstImageFromCollection(images);
+  if (fromImages.isNotEmpty) return fromImages;
+
+  return '';
+}
+
+String _readFirstImageFromCollection(dynamic collection) {
+  if (collection is! List) return '';
+  for (final item in collection) {
+    if (item is String && item.trim().isNotEmpty) {
+      return item.trim();
+    }
+    if (item is Map<String, dynamic>) {
+      final nested = _readString(item, ['url', 'secure_url', 'src', 'path']);
+      if (nested.isNotEmpty) return nested;
+    }
+  }
+  return '';
 }
 
 String _readString(

@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
+import 'dart:async';
 
+import '../../data/model/app_notification_model.dart';
+import '../../data/service/notification_socket_service.dart';
 import '../../domain/entities/app_notification_entity.dart';
 import '../../domain/usecase/get_notifications_usecase.dart';
 import '../../domain/usecase/mark_all_notifications_read_usecase.dart';
@@ -10,6 +13,7 @@ class NotificationController extends GetxController {
     GetNotificationsUseCase? getNotificationsUseCase,
     MarkAllNotificationsReadUseCase? markAllNotificationsReadUseCase,
     MarkNotificationReadUseCase? markNotificationReadUseCase,
+    NotificationSocketService? socketService,
   }) : _getNotificationsUseCase =
            getNotificationsUseCase ?? Get.find<GetNotificationsUseCase>(),
        _markAllNotificationsReadUseCase =
@@ -17,22 +21,26 @@ class NotificationController extends GetxController {
            Get.find<MarkAllNotificationsReadUseCase>(),
        _markNotificationReadUseCase =
            markNotificationReadUseCase ??
-           Get.find<MarkNotificationReadUseCase>();
+           Get.find<MarkNotificationReadUseCase>(),
+       _socketService = socketService ?? Get.find<NotificationSocketService>();
 
   final GetNotificationsUseCase _getNotificationsUseCase;
   final MarkAllNotificationsReadUseCase _markAllNotificationsReadUseCase;
   final MarkNotificationReadUseCase _markNotificationReadUseCase;
+  final NotificationSocketService _socketService;
 
   final RxBool isLoading = false.obs;
   final RxBool isMarkingAll = false.obs;
   final RxString errorMessage = ''.obs;
   final RxList<AppNotificationEntity> notifications =
       <AppNotificationEntity>[].obs;
+  StreamSubscription<AppNotificationModel>? _socketSubscription;
 
   @override
   void onInit() {
     super.onInit();
     refreshNotifications();
+    _bindSocket();
   }
 
   Future<void> refreshNotifications() async {
@@ -118,6 +126,7 @@ class NotificationController extends GetxController {
   }
 
   bool get hasUnread => notifications.any((item) => !item.isRead);
+  int get unreadCount => notifications.where((item) => !item.isRead).length;
 
   String timeLabel(AppNotificationEntity item) {
     final now = DateTime.now();
@@ -175,5 +184,29 @@ class NotificationController extends GetxController {
     final data = List<AppNotificationEntity>.from(source);
     data.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return data;
+  }
+
+  void _bindSocket() {
+    _socketSubscription?.cancel();
+    _socketSubscription = _socketService.notifications.listen((incoming) {
+      final index = notifications.indexWhere((e) => e.id == incoming.id);
+      if (index >= 0) {
+        notifications[index] = incoming;
+        notifications.assignAll(_sortLatestFirst(notifications.toList()));
+        return;
+      }
+
+      notifications.insert(0, incoming);
+      notifications.assignAll(_sortLatestFirst(notifications.toList()));
+    });
+
+    _socketService.connect();
+  }
+
+  @override
+  void onClose() {
+    _socketSubscription?.cancel();
+    _socketService.disconnect();
+    super.onClose();
   }
 }
