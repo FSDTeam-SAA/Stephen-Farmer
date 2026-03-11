@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../../../../core/network/api_service/api_endpoints.dart';
@@ -11,6 +12,7 @@ class NotificationSocketService {
   NotificationSocketService();
 
   io.Socket? _socket;
+  bool _isConnecting = false;
   final _notificationController =
       StreamController<AppNotificationModel>.broadcast();
 
@@ -18,35 +20,60 @@ class NotificationSocketService {
       _notificationController.stream;
 
   Future<void> connect() async {
-    if (_socket?.connected == true) return;
+    if (_socket?.connected == true || _isConnecting) return;
+    _isConnecting = true;
 
     final token = await TokenManager.getToken();
     final userId = _extractUserIdFromJwt(token);
+    final socketUrl = _resolveSocketBaseUrl(baseUrl);
+    final authToken = token?.trim() ?? '';
 
-    _socket = io.io(baseUrl.replaceFirst('/api/v1', ''), <String, dynamic>{
-      'transports': ['websocket'],
+    _socket = io.io(socketUrl, <String, dynamic>{
+      'transports': ['websocket', 'polling'],
       'autoConnect': false,
+      'reconnection': true,
+      'reconnectionAttempts': 999999,
+      'reconnectionDelay': 1000,
+      'reconnectionDelayMax': 5000,
+      'timeout': 20000,
+      'forceNew': false,
       'auth': <String, dynamic>{
-        if (token != null && token.isNotEmpty) 'token': 'Bearer $token',
+        if (authToken.isNotEmpty) 'token': 'Bearer $authToken',
+      },
+      'extraHeaders': <String, dynamic>{
+        if (authToken.isNotEmpty) 'Authorization': 'Bearer $authToken',
       },
     });
 
     _socket?.onConnect((_) {
+      _isConnecting = false;
       if (userId.isNotEmpty) {
         _socket?.emit('joinUserRoom', userId);
       }
     });
 
-    _socket?.on('notification:new', (payload) {
-      if (payload is Map<String, dynamic>) {
-        _notificationController.add(AppNotificationModel.fromJson(payload));
-      }
-    });
+    _socket?.onConnectError((_) => _isConnecting = false);
+    _socket?.onError((_) => _isConnecting = false);
+    _socket?.onDisconnect((_) => _isConnecting = false);
+
+    const notificationEvents = <String>[
+      'notification:new',
+      'notification',
+      'notifications:new',
+      'notification:created',
+      'new-notification',
+      'notification:updated',
+      'notification:read',
+    ];
+    for (final event in notificationEvents) {
+      _socket?.on(event, _onNotificationPayload);
+    }
 
     _socket?.connect();
   }
 
   void disconnect() {
+    _isConnecting = false;
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
@@ -55,6 +82,52 @@ class NotificationSocketService {
   Future<void> dispose() async {
     disconnect();
     await _notificationController.close();
+  }
+
+  void _onNotificationPayload(dynamic payload) {
+    final rows = _extractNotificationRows(payload);
+    for (final row in rows) {
+      _notificationController.add(AppNotificationModel.fromJson(row));
+    }
+  }
+
+  List<Map<String, dynamic>> _extractNotificationRows(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      final directData = payload['data'];
+      if (directData is Map<String, dynamic>) {
+        return [directData];
+      }
+      if (directData is List) {
+        return directData.whereType<Map<String, dynamic>>().toList();
+      }
+      return [payload];
+    }
+    if (payload is List) {
+      return payload.whereType<Map<String, dynamic>>().toList();
+    }
+    return const <Map<String, dynamic>>[];
+  }
+
+  String _resolveSocketBaseUrl(String rawBaseUrl) {
+    final trimmed = rawBaseUrl.trim();
+    if (trimmed.isEmpty) return trimmed;
+
+    final withoutApi = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(withoutApi);
+    if (uri == null || uri.host.isEmpty) return withoutApi;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
   }
 
   String _extractUserIdFromJwt(String? token) {

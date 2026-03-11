@@ -14,7 +14,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<List<AppNotificationEntity>> fetchNotifications() async {
     try {
-      final response = await _apiClient.get(NotificationEndpoints.getAll);
+      final response = await _getWithFallback(
+        primary: NotificationEndpoints.getAll,
+        alternatives: const <String>[
+          '/notification',
+          '/notification/',
+          '/notifications/',
+        ],
+      );
       final rows = _extractRows(response.data);
       return rows.map(AppNotificationModel.fromJson).toList();
     } catch (e) {
@@ -25,7 +32,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> markAllAsRead() async {
     try {
-      await _apiClient.patch(NotificationEndpoints.markAllAsRead);
+      await _patchWithFallback(
+        primary: NotificationEndpoints.markAllAsRead,
+        alternatives: const <String>[
+          '/notification/read-all',
+          '/notification/read-all/',
+          '/notifications/read-all/',
+        ],
+      );
     } catch (e) {
       throw Exception('Failed to mark all notifications read: $e');
     }
@@ -34,7 +48,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> markAsRead(String notificationId) async {
     try {
-      await _apiClient.patch(NotificationEndpoints.markAsRead(notificationId));
+      await _patchWithFallback(
+        primary: NotificationEndpoints.markAsRead(notificationId),
+        alternatives: <String>[
+          '/notification/$notificationId/read',
+          '/notification/$notificationId/read/',
+          '/notifications/$notificationId/read/',
+        ],
+      );
     } catch (e) {
       throw Exception('Failed to mark notification read: $e');
     }
@@ -47,6 +68,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
       source =
           source['data'] ??
           source['notifications'] ??
+          source['notification'] ??
+          source['docs'] ??
+          source['rows'] ??
           source['items'] ??
           source['results'] ??
           source;
@@ -54,6 +78,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (source is Map<String, dynamic>) {
         source =
             source['notifications'] ??
+            source['notification'] ??
+            source['docs'] ??
+            source['rows'] ??
             source['items'] ??
             source['results'] ??
             source['data'] ??
@@ -66,5 +93,37 @@ class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     return <Map<String, dynamic>>[];
+  }
+
+  Future<dynamic> _getWithFallback({
+    required String primary,
+    required List<String> alternatives,
+  }) async {
+    try {
+      return await _apiClient.get(primary);
+    } catch (_) {
+      for (final path in alternatives) {
+        try {
+          return await _apiClient.get(path);
+        } catch (_) {}
+      }
+      rethrow;
+    }
+  }
+
+  Future<dynamic> _patchWithFallback({
+    required String primary,
+    required List<String> alternatives,
+  }) async {
+    try {
+      return await _apiClient.patch(primary);
+    } catch (_) {
+      for (final path in alternatives) {
+        try {
+          return await _apiClient.patch(path);
+        } catch (_) {}
+      }
+      rethrow;
+    }
   }
 }

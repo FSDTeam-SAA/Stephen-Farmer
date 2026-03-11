@@ -191,7 +191,10 @@ class NotificationController extends GetxController {
     _socketSubscription = _socketService.notifications.listen((incoming) {
       final index = notifications.indexWhere((e) => e.id == incoming.id);
       if (index >= 0) {
-        notifications[index] = incoming;
+        notifications[index] = _mergeNotification(
+          current: notifications[index],
+          incoming: incoming,
+        );
         notifications.assignAll(_sortLatestFirst(notifications.toList()));
         return;
       }
@@ -201,6 +204,23 @@ class NotificationController extends GetxController {
     });
 
     _socketService.connect();
+  }
+
+  AppNotificationEntity _mergeNotification({
+    required AppNotificationEntity current,
+    required AppNotificationEntity incoming,
+  }) {
+    final incomingTitle = incoming.title.trim();
+    final incomingMessage = incoming.message.trim();
+    final incomingType = incoming.type.trim();
+
+    return current.copyWith(
+      title: incomingTitle.isEmpty ? current.title : incomingTitle,
+      message: incomingMessage.isEmpty ? current.message : incomingMessage,
+      type: incomingType.isEmpty ? current.type : incomingType,
+      createdAt: incoming.createdAt,
+      isRead: incoming.isRead,
+    );
   }
 
   @override

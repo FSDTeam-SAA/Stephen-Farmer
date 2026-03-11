@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../data/model/login_model.dart';
 
 abstract class AuthRepository {
@@ -11,4 +13,15 @@ abstract class AuthRepository {
     required String confirmPassword,
   });
   Future<void> logout({String? refreshToken});
+  Future<UserProfileData> getProfile();
+  Future<UserProfileData> updateProfile({
+    required String name,
+    required String email,
+    File? avatarFile,
+  });
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  });
 }

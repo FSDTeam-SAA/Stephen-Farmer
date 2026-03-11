@@ -34,7 +34,9 @@ class UpdateProjectModel {
     final thumbFromImages = _extractString(
       json['images'] ?? json['photos'] ?? json['attachments'],
     );
-    final thumb = thumbFromFields.isNotEmpty ? thumbFromFields : thumbFromImages;
+    final thumb = thumbFromFields.isNotEmpty
+        ? thumbFromFields
+        : thumbFromImages;
 
     return UpdateProjectModel(
       id: readFirst(['_id', 'id', 'projectId']),
@@ -217,7 +219,7 @@ class UpdateModel {
         ? statsRaw
         : <String, dynamic>{};
 
-    final uploadedByRaw = json['uploadedBy'];
+    final uploadedByRaw = json['uploadedBy'] ?? json['user'] ?? json['author'];
     final uploadedBy = uploadedByRaw is Map<String, dynamic>
         ? uploadedByRaw
         : <String, dynamic>{};
@@ -270,12 +272,19 @@ class UpdateModel {
           (uploadedBy['name'] ?? uploadedBy['fullName'] ?? 'Site Manager')
               .toString(),
       authorAvatar:
-          (uploadedBy['avatar'] ?? uploadedBy['photoUrl'] ?? '')
-              .toString()
-              .trim()
-              .isEmpty
+          _extractString(
+            uploadedBy['avatar'] ??
+                uploadedBy['photoUrl'] ??
+                uploadedBy['imageUrl'] ??
+                uploadedBy['image'],
+          ).isEmpty
           ? null
-          : (uploadedBy['avatar'] ?? uploadedBy['photoUrl']).toString().trim(),
+          : _extractString(
+              uploadedBy['avatar'] ??
+                  uploadedBy['photoUrl'] ??
+                  uploadedBy['imageUrl'] ??
+                  uploadedBy['image'],
+            ),
       authorRole: roleText,
       createdAt: _parseDateTime(json['createdAt'] ?? json['updatedAt']),
       likeCount: _asInt(stats['likeCount']) ?? likesCountFromList,

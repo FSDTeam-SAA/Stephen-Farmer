@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:stephen_farmer/app_ground_view.dart';
 import 'package:stephen_farmer/feature/auth/presentation/view/role_screen_view.dart';
 
+import '../../../../core/network/api_service/api_endpoints.dart';
 import '../../../../core/network/api_service/token_meneger.dart';
 import '../../data/model/login_model.dart';
 import '../../domain/repo/auth_repo.dart';
@@ -20,6 +24,7 @@ class LoginController extends GetxController {
   final RxString userName = ''.obs;
   final RxString userEmail = ''.obs;
   final RxString userAvatar = ''.obs;
+  final RxBool isUpdatingProfile = false.obs;
 
   // Text controllers
   final RxString email = ''.obs;
@@ -63,7 +68,7 @@ class LoginController extends GetxController {
   String get roleKey => userRole.value.trim().toLowerCase();
   String get displayName => userName.value.trim();
   String get displayEmail => userEmail.value.trim();
-  String get displayAvatar => userAvatar.value.trim();
+  String get displayAvatar => _resolveMediaUrl(userAvatar.value.trim());
   String get normalizedRoleKey => _normalizeRole(roleKey);
   String get scopeKey => '${categoryKey}_$normalizedRoleKey';
 
@@ -261,6 +266,159 @@ class LoginController extends GetxController {
 
       Get.offAll(() => const RoleSelectScreenView());
     }
+  }
+
+  Future<void> refreshProfile() async {
+    try {
+      final profile = await repository.getProfile();
+      await _applyProfile(profile);
+    } catch (_) {}
+  }
+
+  Future<bool> updateProfile({
+    required String name,
+    required String email,
+    File? avatarFile,
+  }) async {
+    final trimmedName = name.trim();
+    final trimmedEmail = email.trim();
+
+    if (trimmedName.isEmpty) {
+      Get.snackbar('Error', 'Name is required');
+      return false;
+    }
+    if (trimmedEmail.isEmpty) {
+      Get.snackbar('Error', 'Email is required');
+      return false;
+    }
+
+    try {
+      isUpdatingProfile.value = true;
+      final updated = await repository.updateProfile(
+        name: trimmedName,
+        email: trimmedEmail,
+        avatarFile: avatarFile,
+      );
+      await _applyProfile(updated);
+      return true;
+    } catch (e) {
+      Get.snackbar('Error', _friendlyLoginError(e));
+      return false;
+    } finally {
+      isUpdatingProfile.value = false;
+    }
+  }
+
+  Future<bool> changeUserPassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    if (currentPassword.trim().isEmpty ||
+        newPassword.trim().isEmpty ||
+        confirmPassword.trim().isEmpty) {
+      Get.snackbar('Error', 'All password fields are required');
+      return false;
+    }
+
+    if (newPassword != confirmPassword) {
+      Get.snackbar('Error', 'New password and confirm password do not match');
+      return false;
+    }
+
+    try {
+      await repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+      return true;
+    } catch (e) {
+      Get.snackbar('Error', _friendlyLoginError(e));
+      return false;
+    }
+  }
+
+  Future<void> _applyProfile(UserProfileData profile) async {
+    if (profile.name.trim().isNotEmpty) {
+      userName.value = profile.name.trim();
+      await TokenManager.saveUserName(userName.value);
+    }
+    if (profile.email.trim().isNotEmpty) {
+      userEmail.value = profile.email.trim();
+      await TokenManager.saveUserEmail(userEmail.value);
+    }
+
+    final avatar = profile.avatar?.trim() ?? '';
+    userAvatar.value = avatar;
+    await TokenManager.saveUserAvatar(avatar);
+
+    if (profile.role.trim().isNotEmpty) {
+      userRole.value = profile.role.trim().toLowerCase();
+      await TokenManager.saveRole(userRole.value);
+    }
+
+    if (profile.category.trim().isNotEmpty) {
+      role.value = profile.category.trim().toLowerCase();
+      await TokenManager.saveCategory(role.value);
+    }
+  }
+
+  String _resolveMediaUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    // Handle serialized object strings from backend, e.g.
+    // "{public_id: ..., url: https://...}"
+    if (value.startsWith('{') && value.contains('url:')) {
+      final match = RegExp(r'url:\s*([^,}]+)').firstMatch(value);
+      final extracted = match?.group(1)?.trim() ?? '';
+      if (extracted.isEmpty) return '';
+      return _resolveMediaUrl(extracted);
+    }
+
+    // Guard against malformed encoded map string becoming an invalid path.
+    if (value.startsWith('%7B') || value.startsWith('{')) {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return value;
+    if (value.startsWith('/')) {
+      return '$origin$value';
+    }
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
   }
 
   // Login function

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_service/api_client.dart';
@@ -46,9 +48,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> forgotPassword({required String email}) async {
     await apiClient.post(
       AuthEndpoints.forgotPassword,
-      data: {
-        "email": email.trim(),
-      },
+      data: {"email": email.trim()},
     );
   }
 
@@ -56,10 +56,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> verifyOtp({required String email, required String otp}) async {
     await apiClient.post(
       AuthEndpoints.verifyOtp,
-      data: {
-        "email": email.trim(),
-        "otp": otp.trim(),
-      },
+      data: {"email": email.trim(), "otp": otp.trim()},
     );
   }
 
@@ -79,5 +76,66 @@ class AuthRepositoryImpl implements AuthRepository {
         "confirmPassword": confirmPassword,
       },
     );
+  }
+
+  @override
+  Future<UserProfileData> getProfile() async {
+    final response = await apiClient.get(UserProfileEndpoints.getProfile);
+    final map = _extractMap(response.data);
+    return UserProfileData.fromJson(map);
+  }
+
+  @override
+  Future<UserProfileData> updateProfile({
+    required String name,
+    required String email,
+    File? avatarFile,
+  }) async {
+    final payload = <String, dynamic>{
+      'name': name.trim(),
+      'email': email.trim(),
+    };
+
+    dynamic data = payload;
+    if (avatarFile != null) {
+      data = FormData.fromMap({
+        ...payload,
+        'avatar': await MultipartFile.fromFile(avatarFile.path),
+      });
+    }
+
+    final response = await apiClient.put(
+      UserProfileEndpoints.updateProfile,
+      data: data,
+    );
+    final map = _extractMap(response.data);
+    return UserProfileData.fromJson(map);
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await apiClient.put(
+      UserProfileEndpoints.changePassword,
+      data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      },
+    );
+  }
+
+  Map<String, dynamic> _extractMap(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      return payload;
+    }
+    return const <String, dynamic>{};
   }
 }

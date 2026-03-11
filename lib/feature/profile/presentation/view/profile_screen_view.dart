@@ -1,23 +1,106 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 
-class ProfileScreenView extends StatelessWidget {
+class ProfileScreenView extends StatefulWidget {
   const ProfileScreenView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authController = Get.find<LoginController>();
+  State<ProfileScreenView> createState() => _ProfileScreenViewState();
+}
 
+class _ProfileScreenViewState extends State<ProfileScreenView> {
+  late final LoginController _authController;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+
+  bool _isEditing = false;
+  File? _localAvatarFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _authController = Get.find<LoginController>();
+    _syncControllersFromAuth();
+    _authController.refreshProfile();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _syncControllersFromAuth() {
+    final displayName = _authController.displayName.isEmpty
+        ? 'User'
+        : _authController.displayName;
+    final displayEmail = _authController.displayEmail.isEmpty
+        ? _authController.email.value.trim()
+        : _authController.displayEmail;
+
+    _nameController.text = displayName;
+    _emailController.text = displayEmail;
+  }
+
+  Future<void> _pickAvatar(ImageSource source) async {
+    final XFile? picked = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+      maxWidth: 1200,
+    );
+    if (picked == null) return;
+
+    setState(() {
+      _localAvatarFile = File(picked.path);
+    });
+  }
+
+  Future<void> _onTapEditOrSave() async {
+    if (!_isEditing) {
+      setState(() => _isEditing = true);
+      return;
+    }
+
+    final success = await _authController.updateProfile(
+      name: _nameController.text,
+      email: _emailController.text,
+      avatarFile: _localAvatarFile,
+    );
+
+    if (success) {
+      setState(() {
+        _isEditing = false;
+        _localAvatarFile = null;
+      });
+      Get.snackbar('Success', 'Profile updated successfully.');
+    }
+  }
+
+  void _onCancelEdit() {
+    setState(() {
+      _isEditing = false;
+      _localAvatarFile = null;
+    });
+    _syncControllersFromAuth();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Obx(() {
       final bool showBackButton =
           defaultTargetPlatform == TargetPlatform.android;
-      final role = authController.role.value;
+      final role = _authController.role.value;
       final isInterior = RoleBgColor.isInterior(role);
       final titleColor = isInterior ? const Color(0xFF1F1B16) : Colors.white;
       final subtitleColor = isInterior
@@ -30,16 +113,21 @@ class ProfileScreenView extends StatelessWidget {
           ? const Color(0xFFF2EEE6)
           : const Color(0xFF161E23);
       final logoutColor = const Color(0xFFFF2222);
-      final displayName = authController.displayName.isEmpty
+      final displayName = _authController.displayName.isEmpty
           ? 'User'
-          : authController.displayName;
-      final displayEmail = authController.displayEmail.isEmpty
-          ? authController.email.value.trim().isEmpty
+          : _authController.displayName;
+      final displayEmail = _authController.displayEmail.isEmpty
+          ? _authController.email.value.trim().isEmpty
                 ? 'No email available'
-                : authController.email.value.trim()
-          : authController.displayEmail;
-      final displayRole = _formatRole(authController.normalizedRoleKey);
-      final avatar = authController.displayAvatar;
+                : _authController.email.value.trim()
+          : _authController.displayEmail;
+      final displayRole = _formatRole(_authController.normalizedRoleKey);
+      final avatar = _authController.displayAvatar;
+
+      if (!_isEditing) {
+        _nameController.value = TextEditingValue(text: displayName);
+        _emailController.value = TextEditingValue(text: displayEmail);
+      }
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -70,16 +158,40 @@ class ProfileScreenView extends StatelessWidget {
                             ),
                           ),
                         const SizedBox(height: 18),
-                        Text(
-                          'Personal Info',
-                          style: TextStyle(
-                            fontFamily: 'ClashDisplay',
-                            color: titleColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              'Personal Info',
+                              style: TextStyle(
+                                fontFamily: 'ClashDisplay',
+                                color: titleColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: _authController.isUpdatingProfile.value
+                                  ? null
+                                  : _onTapEditOrSave,
+                              icon: Icon(
+                                _isEditing
+                                    ? Icons.check_rounded
+                                    : Icons.edit_rounded,
+                                color: const Color(0xFFA77935),
+                                size: 18,
+                              ),
+                              label: Text(
+                                _isEditing ? 'Save' : 'Edit',
+                                style: GoogleFonts.manrope(
+                                  color: const Color(0xFFA77935),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
                         Text(
                           'Manage Your Profile',
                           style: GoogleFonts.manrope(
@@ -92,10 +204,52 @@ class ProfileScreenView extends StatelessWidget {
                         Center(
                           child: Column(
                             children: [
-                              _ProfileAvatar(
-                                avatarUrl: avatar,
-                                radius: 28,
-                                isInterior: isInterior,
+                              GestureDetector(
+                                onTap: !_isEditing
+                                    ? null
+                                    : () => showModalBottomSheet<void>(
+                                        context: context,
+                                        builder: (_) => SafeArea(
+                                          child: Wrap(
+                                            children: [
+                                              ListTile(
+                                                leading: const Icon(
+                                                  Icons.photo_library_outlined,
+                                                ),
+                                                title: const Text(
+                                                  'Choose from gallery',
+                                                ),
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  _pickAvatar(
+                                                    ImageSource.gallery,
+                                                  );
+                                                },
+                                              ),
+                                              ListTile(
+                                                leading: const Icon(
+                                                  Icons.photo_camera_outlined,
+                                                ),
+                                                title: const Text(
+                                                  'Take a photo',
+                                                ),
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  _pickAvatar(
+                                                    ImageSource.camera,
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                child: _ProfileAvatar(
+                                  avatarUrl: avatar,
+                                  localFile: _localAvatarFile,
+                                  radius: 28,
+                                  isInterior: isInterior,
+                                ),
                               ),
                               const SizedBox(height: 12),
                               Text(
@@ -163,50 +317,186 @@ class ProfileScreenView extends StatelessWidget {
                               ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: Text(
-                                  displayName,
-                                  style: GoogleFonts.manrope(
-                                    color: titleColor,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                child: _isEditing
+                                    ? TextField(
+                                        controller: _nameController,
+                                        style: GoogleFonts.manrope(
+                                          color: titleColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                        ),
+                                      )
+                                    : Text(
+                                        displayName,
+                                        style: GoogleFonts.manrope(
+                                          color: titleColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: fieldFillColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: fieldBorderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  color: isInterior
+                                      ? const Color(0xFFCFBE9A)
+                                      : const Color(0xFFC7B08A),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
+                                child: Icon(
+                                  Icons.email_outlined,
+                                  size: 16,
+                                  color: isInterior
+                                      ? const Color(0xFF594C34)
+                                      : Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _isEditing
+                                    ? TextField(
+                                        controller: _emailController,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        style: GoogleFonts.manrope(
+                                          color: titleColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                        ),
+                                      )
+                                    : Text(
+                                        displayEmail,
+                                        style: GoogleFonts.manrope(
+                                          color: titleColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 22),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final shouldLogout = await _showLogoutDialog(
-                                context: context,
-                                isInterior: isInterior,
-                              );
-                              if (shouldLogout == true) {
-                                await authController.logoutUser();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: logoutColor,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        if (_isEditing)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: 48,
+                                  child: OutlinedButton(
+                                    onPressed: _onCancelEdit,
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: fieldBorderColor),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Cancel',
+                                      style: GoogleFonts.manrope(
+                                        color: titleColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              'Logout',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: SizedBox(
+                                  height: 48,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _authController.isUpdatingProfile.value
+                                        ? null
+                                        : _onTapEditOrSave,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFA77935),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child:
+                                        _authController.isUpdatingProfile.value
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Text(
+                                            'Update',
+                                            style: GoogleFonts.manrope(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final shouldLogout = await _showLogoutDialog(
+                                  context: context,
+                                  isInterior: isInterior,
+                                );
+                                if (shouldLogout == true) {
+                                  await _authController.logoutUser();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: logoutColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                'Logout',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -352,16 +642,28 @@ class ProfileScreenView extends StatelessWidget {
 class _ProfileAvatar extends StatelessWidget {
   const _ProfileAvatar({
     required this.avatarUrl,
+    this.localFile,
     required this.radius,
     required this.isInterior,
   });
 
   final String avatarUrl;
+  final File? localFile;
   final double radius;
   final bool isInterior;
 
   @override
   Widget build(BuildContext context) {
+    if (localFile != null) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: isInterior
+            ? const Color(0xFFE8DFD2)
+            : const Color(0xFF182127),
+        backgroundImage: FileImage(localFile!),
+      );
+    }
+
     final hasAvatar = avatarUrl.trim().isNotEmpty;
     return CircleAvatar(
       radius: radius,
