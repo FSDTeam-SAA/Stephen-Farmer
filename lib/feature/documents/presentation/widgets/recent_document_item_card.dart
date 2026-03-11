@@ -13,11 +13,13 @@ class RecentDocumentItemCard extends StatelessWidget {
     required this.item,
     this.isInteriorTheme,
     this.onTap,
+    this.onDownload,
   });
 
   final RecentDocumentEntity item;
   final bool? isInteriorTheme;
   final VoidCallback? onTap;
+  final VoidCallback? onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -134,14 +136,18 @@ class RecentDocumentItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(
-                height: 20,
-                width: 20,
-                child: Image.asset(
-                  AssetsImages.download,
-                  height: 24,
-                  width: 24,
-                  fit: BoxFit.contain,
+              InkWell(
+                onTap: onDownload,
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: Image.asset(
+                    AssetsImages.download,
+                    height: 24,
+                    width: 24,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ],

@@ -844,14 +844,20 @@ class _ChatMessageBubble extends StatelessWidget {
           if (!isMine) ...[
             Padding(
               padding: EdgeInsets.only(top: avatarTopOffset),
-              child: _MessageAvatar(imageUrl: message.senderAvatar),
+              child: _MessageAvatar(
+                imageUrl: message.senderAvatar,
+                isMine: false,
+              ),
             ),
             const SizedBox(width: 8),
           ],
           bubble,
           if (isMine) ...[
             const SizedBox(width: 8),
-            _MessageAvatar(imageUrl: message.senderAvatar),
+            _MessageAvatar(
+              imageUrl: message.senderAvatar,
+              isMine: true,
+            ),
           ],
         ],
       ),
@@ -860,9 +866,13 @@ class _ChatMessageBubble extends StatelessWidget {
 }
 
 class _MessageAvatar extends StatefulWidget {
-  const _MessageAvatar({required this.imageUrl});
+  const _MessageAvatar({
+    required this.imageUrl,
+    required this.isMine,
+  });
 
   final String imageUrl;
+  final bool isMine;
 
   @override
   State<_MessageAvatar> createState() => _MessageAvatarState();
@@ -879,16 +889,17 @@ class _MessageAvatarState extends State<_MessageAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final resolved = _resolveMediaUrl(widget.imageUrl);
+    final fallbackOwnAvatar = widget.isMine
+        ? Get.find<LoginController>().displayAvatar
+        : '';
+    final raw = widget.imageUrl.trim().isEmpty ? fallbackOwnAvatar : widget.imageUrl;
+    final resolved = _resolveMediaUrl(raw);
     if (resolved.isEmpty) return _fallback();
 
     return FutureBuilder<String?>(
       future: _tokenFuture,
       builder: (context, snapshot) {
-        final token = snapshot.data?.trim() ?? '';
-        final headers = token.isEmpty
-            ? null
-            : <String, String>{'Authorization': 'Bearer $token'};
+        final headers = _buildHeadersFor(resolved, snapshot.data);
         return ClipOval(
           child: Image.network(
             resolved,
@@ -960,6 +971,16 @@ class _MessageAvatarState extends State<_MessageAvatar> {
       host: host,
       port: uri.hasPort ? uri.port : null,
     ).toString();
+  }
+
+  Map<String, String>? _buildHeadersFor(String url, String? token) {
+    final t = token?.trim() ?? '';
+    if (t.isEmpty) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) return null;
+    final apiHost = Uri.tryParse(_apiOrigin())?.host ?? '';
+    if (apiHost.isEmpty || uri.host != apiHost) return null;
+    return <String, String>{'Authorization': 'Bearer $t'};
   }
 }
 

@@ -109,20 +109,40 @@ DateTime? _readDateTime(dynamic raw) {
 }
 
 String _readAvatarUrl(Map<String, dynamic> sender) {
-  final direct = _readString(sender, ['avatar', 'image', 'profileImage']);
-  if (direct.isNotEmpty) return direct;
+  for (final key in const ['avatar', 'image', 'profileImage', 'photoUrl']) {
+    final value = sender[key];
+    final resolved = _extractMediaUrl(value);
+    if (resolved.isNotEmpty) return resolved;
+  }
+  return '';
+}
 
-  final rawAvatar = sender['avatar'] ?? sender['image'] ?? sender['profileImage'];
-  if (rawAvatar is Map<String, dynamic>) {
-    final nested = _readString(rawAvatar, [
+String _extractMediaUrl(dynamic raw) {
+  if (raw == null) return '';
+  if (raw is String) {
+    final value = raw.trim();
+    if (value.isEmpty || value.toLowerCase() == 'null') return '';
+    return value;
+  }
+  if (raw is Map<String, dynamic>) {
+    for (final key in const [
       'url',
       'secure_url',
       'secureUrl',
       'src',
       'path',
       'location',
-    ]);
-    if (nested.isNotEmpty) return nested;
+      'imageUrl',
+      'avatar',
+    ]) {
+      final nested = raw[key];
+      if (nested is String && nested.trim().isNotEmpty) {
+        return nested.trim();
+      }
+    }
+    if (raw.containsKey('document')) {
+      return _extractMediaUrl(raw['document']);
+    }
   }
   return '';
 }

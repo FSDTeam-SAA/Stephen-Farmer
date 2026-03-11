@@ -1,9 +1,15 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/documents/domain/entities/document_project_entity.dart';
@@ -12,7 +18,6 @@ import '../controller/document_controller.dart';
 import '../widgets/document_category_card.dart';
 import '../widgets/recent_document_item_card.dart';
 import 'document_preview_view.dart';
-import 'document_type_list_view.dart';
 
 class DocumentScreenView extends GetView<DocumentController> {
   const DocumentScreenView({super.key});
@@ -92,7 +97,6 @@ class DocumentScreenView extends GetView<DocumentController> {
                               const SizedBox(height: 10),
                               _buildCategoryGrid(
                                 categories: project.categories,
-                                allDocuments: project.recentDocuments,
                                 isInterior: isInterior,
                               ),
                               const SizedBox(height: 12),
@@ -110,6 +114,7 @@ class DocumentScreenView extends GetView<DocumentController> {
                                   onTap: () => Get.to(
                                     () => DocumentPreviewView(item: item),
                                   ),
+                                  onDownload: () => _downloadDocument(item),
                                 ),
                               ),
                               if (controller.errorMessage.value.isNotEmpty)
@@ -188,7 +193,6 @@ class DocumentScreenView extends GetView<DocumentController> {
 
   Widget _buildCategoryGrid({
     required List<DocumentCategoryEntity> categories,
-    required List<RecentDocumentEntity> allDocuments,
     required bool isInterior,
   }) {
     final visibleCategories = categories.take(4).toList();
@@ -209,45 +213,117 @@ class DocumentScreenView extends GetView<DocumentController> {
         return DocumentCategoryCard(
           item: category,
           isInteriorTheme: isInterior,
-          onTap: () {
-            final items = _filterByCategory(
-              category: category,
-              allDocuments: allDocuments,
-            );
-            Get.to(
-              () => DocumentTypeListView(title: category.title, items: items),
-            );
-          },
+          onTap: null,
         );
       },
     );
   }
 
-  List<RecentDocumentEntity> _filterByCategory({
-    required DocumentCategoryEntity category,
-    required List<RecentDocumentEntity> allDocuments,
-  }) {
-    final byType = _normalizeCategoryKey(category.type);
-    final byTitle = _normalizeCategoryKey(category.title);
-
-    return allDocuments.where((doc) {
-      final docCategory = _normalizeCategoryKey(doc.category);
-      return docCategory == byType || docCategory == byTitle;
-    }).toList();
-  }
-
-  String _normalizeCategoryKey(String raw) {
-    final cleaned = raw.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '').trim();
-
-    if (cleaned.startsWith('draw')) return 'drawings';
-    if (cleaned.startsWith('invoice') || cleaned.startsWith('bill')) {
-      return 'invoices';
-    }
-    if (cleaned.startsWith('report')) return 'reports';
-    if (cleaned.startsWith('contract') || cleaned.startsWith('agreement')) {
-      return 'contracts';
+  Future<void> _downloadDocument(RecentDocumentEntity item) async {
+    final resolved = _resolveDownloadUrl(item.fileUrl ?? '');
+    if (resolved.isEmpty) {
+      Get.snackbar('Error', 'No download URL found for this document.');
+      return;
     }
 
-    return cleaned;
+    final uri = Uri.tryParse(resolved);
+    if (uri == null || !uri.hasScheme) {
+      Get.snackbar('Error', 'Invalid download URL.');
+      return;
+    }
+
+    try {
+      final token = await TokenManager.getToken();
+      final filePath = '${Directory.systemTemp.path}/${_safeFileName(item, uri)}';
+
+      await Dio().download(
+        uri.toString(),
+        filePath,
+        options: Options(
+          headers: _authHeadersFor(uri, token),
+          responseType: ResponseType.bytes,
+          followRedirects: true,
+        ),
+      );
+      Get.snackbar('Downloaded', 'Document downloaded successfully.');
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to download document.');
+    }
   }
+
+  String _guessExtension(String path, String? mimeType) {
+    final lowerPath = path.toLowerCase();
+    if (lowerPath.endsWith('.pdf')) return '.pdf';
+    if (lowerPath.endsWith('.png')) return '.png';
+    if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) return '.jpg';
+    if (lowerPath.endsWith('.webp')) return '.webp';
+    if (lowerPath.endsWith('.gif')) return '.gif';
+
+    final mime = (mimeType ?? '').toLowerCase();
+    if (mime == 'application/pdf') return '.pdf';
+    if (mime == 'image/png') return '.png';
+    if (mime == 'image/jpeg' || mime == 'image/jpg') return '.jpg';
+    if (mime == 'image/webp') return '.webp';
+    if (mime == 'image/gif') return '.gif';
+    return '';
+  }
+
+  String _resolveDownloadUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') return '';
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) return value;
+    if (value.startsWith('//')) return 'https:$value';
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return '';
+    if (value.startsWith('/')) return '$origin$value';
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
+  }
+
+  Map<String, String>? _authHeadersFor(Uri uri, String? token) {
+    final t = token?.trim() ?? '';
+    if (t.isEmpty) return null;
+    final apiHost = Uri.tryParse(_apiOrigin())?.host ?? '';
+    if (apiHost.isEmpty || uri.host != apiHost) return null;
+    return <String, String>{'Authorization': 'Bearer $t'};
+  }
+
+  String _safeFileName(RecentDocumentEntity item, Uri uri) {
+    final ext = _guessExtension(uri.path, item.mimeType);
+    final candidate = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : item.title;
+    var safe = candidate
+        .replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .trim();
+    if (safe.isEmpty) {
+      safe = 'document_${DateTime.now().millisecondsSinceEpoch}$ext';
+    }
+    if (safe.length > 80) {
+      safe = safe.substring(0, 80);
+    }
+    if (!safe.contains('.') && ext.isNotEmpty) {
+      safe = '$safe$ext';
+    }
+    return safe;
+  }
+
 }

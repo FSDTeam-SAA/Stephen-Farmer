@@ -143,11 +143,35 @@ class DocumentRepositoryImpl implements DocumentRepository {
   }
 
   List<Map<String, dynamic>> _extractCategoryRows(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      final directData = payload['data'];
+      if (directData is Map<String, dynamic>) {
+        final fromCounts = _extractCategoryRowsFromCounts(directData['counts']);
+        if (fromCounts.isNotEmpty) {
+          return fromCounts;
+        }
+
+        final rows =
+            directData['categories'] ??
+            directData['types'] ??
+            directData['documentTypes'] ??
+            directData['summary'];
+        if (rows is List) {
+          return rows.whereType<Map<String, dynamic>>().toList();
+        }
+      }
+    }
+
     if (payload is List) {
       return <Map<String, dynamic>>[];
     }
 
     final mapPayload = _extractMap(payload);
+    final fromCounts = _extractCategoryRowsFromCounts(mapPayload['counts']);
+    if (fromCounts.isNotEmpty) {
+      return fromCounts;
+    }
+
     final rows =
         mapPayload['categories'] ??
         mapPayload['types'] ??
@@ -162,6 +186,30 @@ class DocumentRepositoryImpl implements DocumentRepository {
   }
 
   List<Map<String, dynamic>> _extractDocumentRows(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      final directData = payload['data'];
+      if (directData is List) {
+        return directData.whereType<Map<String, dynamic>>().toList();
+      }
+      if (directData is Map<String, dynamic>) {
+        final categoryMappedRows = _flattenCategoryDocumentMap(
+          directData['documents'],
+        );
+        if (categoryMappedRows.isNotEmpty) {
+          return categoryMappedRows;
+        }
+
+        final nestedList =
+            directData['documents'] ??
+            directData['items'] ??
+            directData['results'] ??
+            directData['data'];
+        if (nestedList is List) {
+          return nestedList.whereType<Map<String, dynamic>>().toList();
+        }
+      }
+    }
+
     if (payload is List) {
       return payload.whereType<Map<String, dynamic>>().toList();
     }
@@ -173,6 +221,11 @@ class DocumentRepositoryImpl implements DocumentRepository {
         mapPayload['results'] ??
         mapPayload['recentDocuments'] ??
         mapPayload['data'];
+
+    final flattened = _flattenCategoryDocumentMap(source);
+    if (flattened.isNotEmpty) {
+      return flattened;
+    }
 
     if (source is List) {
       return source.whereType<Map<String, dynamic>>().toList();
@@ -190,5 +243,51 @@ class DocumentRepositoryImpl implements DocumentRepository {
     }
 
     return <Map<String, dynamic>>[];
+  }
+
+  List<Map<String, dynamic>> _flattenCategoryDocumentMap(dynamic source) {
+    if (source is! Map<String, dynamic>) return const <Map<String, dynamic>>[];
+
+    final rows = <Map<String, dynamic>>[];
+    for (final entry in source.entries) {
+      final category = entry.key;
+      final value = entry.value;
+      if (value is! List) continue;
+
+      for (final item in value) {
+        if (item is! Map<String, dynamic>) continue;
+        final normalized = Map<String, dynamic>.from(item);
+        if ((normalized['category']?.toString().trim().isEmpty ?? true)) {
+          normalized['category'] = category;
+        }
+        rows.add(normalized);
+      }
+    }
+    return rows;
+  }
+
+  List<Map<String, dynamic>> _extractCategoryRowsFromCounts(dynamic source) {
+    if (source is! Map<String, dynamic>) return const <Map<String, dynamic>>[];
+
+    final rows = <Map<String, dynamic>>[];
+    for (final entry in source.entries) {
+      final key = entry.key.toString().trim();
+      if (key.isEmpty) continue;
+
+      final rawCount = entry.value;
+      final count = rawCount is num ? rawCount.toInt() : 0;
+      rows.add(<String, dynamic>{
+        'title': _capitalize(key),
+        'type': key,
+        'fileCount': count,
+      });
+    }
+    return rows;
+  }
+
+  String _capitalize(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return value;
+    return '${trimmed[0].toUpperCase()}${trimmed.substring(1)}';
   }
 }

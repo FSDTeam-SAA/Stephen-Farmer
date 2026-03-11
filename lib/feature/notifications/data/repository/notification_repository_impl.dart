@@ -65,10 +65,16 @@ class NotificationRepositoryImpl implements NotificationRepository {
     dynamic source = payload;
 
     if (source is Map<String, dynamic>) {
+      final groupedRows = _extractGroupedRows(source['data'] ?? source);
+      if (groupedRows.isNotEmpty) {
+        return groupedRows;
+      }
+
       source =
           source['data'] ??
           source['notifications'] ??
           source['notification'] ??
+          source['grouped'] ??
           source['docs'] ??
           source['rows'] ??
           source['items'] ??
@@ -76,9 +82,15 @@ class NotificationRepositoryImpl implements NotificationRepository {
           source;
 
       if (source is Map<String, dynamic>) {
+        final nestedGrouped = _extractGroupedRows(source);
+        if (nestedGrouped.isNotEmpty) {
+          return nestedGrouped;
+        }
+
         source =
             source['notifications'] ??
             source['notification'] ??
+            source['grouped'] ??
             source['docs'] ??
             source['rows'] ??
             source['items'] ??
@@ -93,6 +105,22 @@ class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     return <Map<String, dynamic>>[];
+  }
+
+  List<Map<String, dynamic>> _extractGroupedRows(dynamic payload) {
+    if (payload is! Map<String, dynamic>) return const <Map<String, dynamic>>[];
+
+    final grouped = payload['grouped'];
+    if (grouped is! Map<String, dynamic>) return const <Map<String, dynamic>>[];
+
+    final rows = <Map<String, dynamic>>[];
+    for (final key in const ['today', 'yesterday', 'earlier']) {
+      final list = grouped[key];
+      if (list is List) {
+        rows.addAll(list.whereType<Map<String, dynamic>>());
+      }
+    }
+    return rows;
   }
 
   Future<dynamic> _getWithFallback({
