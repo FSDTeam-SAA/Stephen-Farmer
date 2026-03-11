@@ -13,6 +13,9 @@ void main() async {
 
   final LoginController loginController = Get.find<LoginController>();
   final bool hasSession = await loginController.restoreSession();
+  if (hasSession) {
+    await loginController.refreshProfile();
+  }
 
   runApp(MyApp(hasSession: hasSession));
 }

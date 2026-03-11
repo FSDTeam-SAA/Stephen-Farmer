@@ -652,10 +652,7 @@ class _AuthAwareAvatarState extends State<_AuthAwareAvatar> {
     return FutureBuilder<String?>(
       future: _tokenFuture,
       builder: (context, snapshot) {
-        final token = snapshot.data?.trim() ?? '';
-        final headers = token.isEmpty
-            ? null
-            : <String, String>{'Authorization': 'Bearer $token'};
+        final headers = _buildHeadersFor(resolvedUrl, snapshot.data);
 
         return CircleAvatar(
           radius: widget.radius,
@@ -726,5 +723,15 @@ class _AuthAwareAvatarState extends State<_AuthAwareAvatar> {
       host: host,
       port: uri.hasPort ? uri.port : null,
     ).toString();
+  }
+
+  Map<String, String>? _buildHeadersFor(String url, String? token) {
+    final t = token?.trim() ?? '';
+    if (t.isEmpty) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) return null;
+    final apiHost = Uri.tryParse(_apiOrigin())?.host ?? '';
+    if (apiHost.isEmpty || uri.host != apiHost) return null;
+    return <String, String>{'Authorization': 'Bearer $t'};
   }
 }

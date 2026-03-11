@@ -195,6 +195,7 @@ class LoginController extends GetxController {
           email: email.trim(),
           password: password,
         );
+        await refreshProfile();
 
         Get.offAll(() => const AppGroundView());
       } else {
