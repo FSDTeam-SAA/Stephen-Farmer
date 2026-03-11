@@ -23,6 +23,7 @@ class RecentDocumentModel extends RecentDocumentEntity {
     required super.category,
     required super.dateLabel,
     super.fileUrl,
+    super.mimeType,
   });
 
   factory RecentDocumentModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +35,15 @@ class RecentDocumentModel extends RecentDocumentEntity {
       'uploadedAt',
     ]);
 
+    final nestedDocument = json['document'];
+    final nestedUrl = nestedDocument is Map<String, dynamic>
+        ? _readString(nestedDocument, ['url', 'secure_url', 'path'])
+        : '';
+    final directUrl = _readString(json, ['url', 'fileUrl', 'documentUrl']);
+    final resolvedUrl = directUrl.trim().isNotEmpty
+        ? directUrl.trim()
+        : nestedUrl.trim();
+
     return RecentDocumentModel(
       id: _readString(json, ['_id', 'id', 'documentId']),
       title: _readString(json, [
@@ -43,10 +53,8 @@ class RecentDocumentModel extends RecentDocumentEntity {
       ], fallback: 'Untitled Document'),
       category: _readString(json, ['category', 'type'], fallback: 'General'),
       dateLabel: _formatDateLabel(dateSource),
-      fileUrl:
-          _readString(json, ['url', 'fileUrl', 'documentUrl']).trim().isEmpty
-          ? null
-          : _readString(json, ['url', 'fileUrl', 'documentUrl']).trim(),
+      fileUrl: resolvedUrl.isEmpty ? null : resolvedUrl,
+      mimeType: _readMimeType(json),
     );
   }
 }
@@ -331,4 +339,21 @@ String _formatDateLabel(String source) {
 
   final local = parsed.toLocal();
   return '${months[local.month - 1]} ${local.day}';
+}
+
+String? _readMimeType(Map<String, dynamic> json) {
+  final direct = _readString(json, ['mimeType']);
+  if (direct.trim().isNotEmpty) {
+    return direct.trim();
+  }
+
+  final meta = json['meta'];
+  if (meta is Map<String, dynamic>) {
+    final nested = _readString(meta, ['mimeType', 'mime_type', 'type']);
+    if (nested.trim().isNotEmpty) {
+      return nested.trim();
+    }
+  }
+
+  return null;
 }

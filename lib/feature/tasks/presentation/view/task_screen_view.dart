@@ -29,6 +29,83 @@ class TaskScreenView extends GetView<TaskController> {
     );
   }
 
+  Future<void> _quickApproveTask(TaskItemEntity item) async {
+    final taskId = item.id.trim();
+    if (taskId.isEmpty) {
+      Get.snackbar('Error', 'Task id is missing.');
+      return;
+    }
+    final result = await controller.approveTask(taskId);
+    if (result == null) {
+      final message = controller.errorMessage.value.trim().isEmpty
+          ? 'Task request failed. Please try again.'
+          : controller.errorMessage.value;
+      Get.snackbar('Error', message);
+      return;
+    }
+    Get.snackbar('Success', 'Task approved successfully.');
+  }
+
+  Future<void> _quickRejectTask(TaskItemEntity item) async {
+    final taskId = item.id.trim();
+    if (taskId.isEmpty) {
+      Get.snackbar('Error', 'Task id is missing.');
+      return;
+    }
+
+    final reason = await _askRejectReason();
+    if (reason == null || reason.trim().isEmpty) return;
+
+    final result = await controller.rejectTask(
+      taskId,
+      payload: <String, dynamic>{'reason': reason.trim()},
+    );
+    if (result == null) {
+      final message = controller.errorMessage.value.trim().isEmpty
+          ? 'Task request failed. Please try again.'
+          : controller.errorMessage.value;
+      Get.snackbar('Error', message);
+      return;
+    }
+    Get.snackbar('Success', 'Task rejected successfully.');
+  }
+
+  Future<String?> _askRejectReason() async {
+    final input = TextEditingController();
+    String? result;
+
+    await Get.dialog<void>(
+      AlertDialog(
+        title: const Text('Reject Task'),
+        content: TextField(
+          controller: input,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Enter rejection reason',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back<void>(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final text = input.text.trim();
+              if (text.isEmpty) return;
+              result = text;
+              Get.back<void>();
+            },
+            child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+    input.dispose();
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -36,6 +113,7 @@ class TaskScreenView extends GetView<TaskController> {
       final project = controller.selectedProject;
       final role = authController.role.value;
       final bool isManager = authController.normalizedRoleKey == 'manager';
+      final bool isClient = authController.roleKey == 'client';
       final isInterior = RoleBgColor.isInterior(role);
       final List<TaskItemEntity> managerVisibleItems =
           isManager && project != null
@@ -188,7 +266,11 @@ class TaskScreenView extends GetView<TaskController> {
                             padding: EdgeInsets.zero,
                             children: isManager
                                 ? _buildManagerContent(project, isInterior)
-                                : _buildUserContent(project, isInterior),
+                                : _buildUserContent(
+                                    project,
+                                    isInterior,
+                                    isClient,
+                                  ),
                           ),
                         ),
                       ),
@@ -203,7 +285,11 @@ class TaskScreenView extends GetView<TaskController> {
     });
   }
 
-  List<Widget> _buildUserContent(TaskProjectEntity project, bool isInterior) {
+  List<Widget> _buildUserContent(
+    TaskProjectEntity project,
+    bool isInterior,
+    bool isClient,
+  ) {
     return [
       TaskActionAttentionCard(
         count: project.actionsNeededCount,
@@ -224,11 +310,19 @@ class TaskScreenView extends GetView<TaskController> {
             item: item,
             isInterior: isInterior,
             onTap: () => _openTaskDetails(item),
+            showQuickActions: isClient && item.isAwaitingApproval,
+            onApprove: isClient && item.isAwaitingApproval
+                ? () => _quickApproveTask(item)
+                : null,
+            onReject: isClient && item.isAwaitingApproval
+                ? () => _quickRejectTask(item)
+                : null,
           ),
         ),
         const SizedBox(height: 12),
       ],
-      if (controller.errorMessage.value.isNotEmpty)
+      if (controller.errorMessage.value.isNotEmpty &&
+          controller.projects.isEmpty)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
@@ -318,7 +412,8 @@ class TaskScreenView extends GetView<TaskController> {
             onTap: () => controller.selectManagerTask(entry.key),
           ),
         ),
-      if (controller.errorMessage.value.isNotEmpty)
+      if (controller.errorMessage.value.isNotEmpty &&
+          controller.projects.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 10, bottom: 8),
           child: Text(

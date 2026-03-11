@@ -7,7 +7,7 @@ abstract class DocumentRepository {
   Future<void> uploadDocument({
     required String projectId,
     required File document,
-    String? title,
-    String? category,
+    required String title,
+    required String category,
   });
 }

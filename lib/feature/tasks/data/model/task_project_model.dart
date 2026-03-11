@@ -14,6 +14,7 @@ class TaskItemModel extends TaskItemEntity {
     super.chatId,
     super.needsApproval,
     super.status,
+    super.approvalStatus,
   });
 
   factory TaskItemModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +45,7 @@ class TaskItemModel extends TaskItemEntity {
       chatId: _readString(json, ["chatId", "chat"]),
       needsApproval: _readBool(json, ["needsApproval", "requiresApproval"]),
       status: normalizedStatus,
+      approvalStatus: _readString(json, ["approvalStatus", "approval_status"]),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/documents/domain/entities/document_project_entity.dart';
+import 'package:stephen_farmer/feature/documents/presentation/view/document_preview_view.dart';
 import 'package:stephen_farmer/feature/documents/presentation/widgets/recent_document_item_card.dart';
 
 class DocumentTypeListView extends StatelessWidget {
@@ -92,7 +93,12 @@ class DocumentTypeListView extends StatelessWidget {
                           physics: const BouncingScrollPhysics(),
                           itemCount: items.length,
                           itemBuilder: (context, index) {
-                            return RecentDocumentItemCard(item: items[index]);
+                            return RecentDocumentItemCard(
+                              item: items[index],
+                              onTap: () => Get.to(
+                                () => DocumentPreviewView(item: items[index]),
+                              ),
+                            );
                           },
                         ),
                 ),

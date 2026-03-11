@@ -53,15 +53,20 @@ class DocumentRepositoryImpl implements DocumentRepository {
   Future<void> uploadDocument({
     required String projectId,
     required File document,
-    String? title,
-    String? category,
+    required String title,
+    required String category,
   }) async {
+    final trimmedTitle = title.trim();
+    final trimmedCategory = category.trim();
+    if (trimmedTitle.isEmpty || trimmedCategory.isEmpty) {
+      throw Exception('Document title and category are required.');
+    }
+
     final payload = FormData.fromMap({
       'projectId': projectId,
       'document': await MultipartFile.fromFile(document.path),
-      if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
-      if (category != null && category.trim().isNotEmpty)
-        'category': category.trim(),
+      'title': trimmedTitle,
+      'category': trimmedCategory,
     });
 
     await _apiClient.post(DocumentEndpoints.create, data: payload);
@@ -70,34 +75,26 @@ class DocumentRepositoryImpl implements DocumentRepository {
   Future<DocumentProjectEntity> _enrichProjectWithDocuments(
     DocumentProjectModel project,
   ) async {
-    try {
-      final response = await _apiClient.get(
-        DocumentEndpoints.getByProject(project.projectId),
-      );
+    final response = await _apiClient.get(
+      DocumentEndpoints.getByProject(project.projectId),
+    );
 
-      final payload = _extractMap(response.data);
-      final categoryRows = _extractCategoryRows(payload);
-      final documentRows = _extractDocumentRows(payload);
+    final categoryRows = _extractCategoryRows(response.data);
+    final documentRows = _extractDocumentRows(response.data);
 
-      final categories = categoryRows.isNotEmpty
-          ? categoryRows
-                .map(DocumentCategoryModel.fromJson)
-                .toList(growable: false)
-          : DocumentProjectModel.summarizeCategories(documentRows);
-      final recents = documentRows
-          .map(RecentDocumentModel.fromJson)
-          .toList(growable: false);
+    final categories = categoryRows.isNotEmpty
+        ? categoryRows
+              .map(DocumentCategoryModel.fromJson)
+              .toList(growable: false)
+        : DocumentProjectModel.summarizeCategories(documentRows);
+    final recents = documentRows
+        .map(RecentDocumentModel.fromJson)
+        .toList(growable: false);
 
-      return project.copyWithDocuments(
-        categories: categories,
-        recentDocuments: recents,
-      );
-    } catch (_) {
-      return project.copyWithDocuments(
-        categories: const <DocumentCategoryEntity>[],
-        recentDocuments: const <RecentDocumentEntity>[],
-      );
-    }
+    return project.copyWithDocuments(
+      categories: categories,
+      recentDocuments: recents,
+    );
   }
 
   Map<String, dynamic> _extractMap(dynamic payload) {
@@ -145,14 +142,17 @@ class DocumentRepositoryImpl implements DocumentRepository {
     return <Map<String, dynamic>>[];
   }
 
-  List<Map<String, dynamic>> _extractCategoryRows(
-    Map<String, dynamic> payload,
-  ) {
+  List<Map<String, dynamic>> _extractCategoryRows(dynamic payload) {
+    if (payload is List) {
+      return <Map<String, dynamic>>[];
+    }
+
+    final mapPayload = _extractMap(payload);
     final rows =
-        payload['categories'] ??
-        payload['types'] ??
-        payload['documentTypes'] ??
-        payload['summary'];
+        mapPayload['categories'] ??
+        mapPayload['types'] ??
+        mapPayload['documentTypes'] ??
+        mapPayload['summary'];
 
     if (rows is List) {
       return rows.whereType<Map<String, dynamic>>().toList();
@@ -161,14 +161,18 @@ class DocumentRepositoryImpl implements DocumentRepository {
     return <Map<String, dynamic>>[];
   }
 
-  List<Map<String, dynamic>> _extractDocumentRows(
-    Map<String, dynamic> payload,
-  ) {
+  List<Map<String, dynamic>> _extractDocumentRows(dynamic payload) {
+    if (payload is List) {
+      return payload.whereType<Map<String, dynamic>>().toList();
+    }
+
+    final mapPayload = _extractMap(payload);
     final source =
-        payload['documents'] ??
-        payload['items'] ??
-        payload['results'] ??
-        payload['recentDocuments'];
+        mapPayload['documents'] ??
+        mapPayload['items'] ??
+        mapPayload['results'] ??
+        mapPayload['recentDocuments'] ??
+        mapPayload['data'];
 
     if (source is List) {
       return source.whereType<Map<String, dynamic>>().toList();

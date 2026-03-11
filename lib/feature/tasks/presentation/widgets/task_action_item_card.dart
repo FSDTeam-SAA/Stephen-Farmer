@@ -9,11 +9,17 @@ class TaskActionItemCard extends StatelessWidget {
     required this.item,
     required this.isInterior,
     this.onTap,
+    this.showQuickActions = false,
+    this.onApprove,
+    this.onReject,
   });
 
   final TaskItemEntity item;
   final bool isInterior;
   final VoidCallback? onTap;
+  final bool showQuickActions;
+  final VoidCallback? onApprove;
+  final VoidCallback? onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +111,60 @@ class TaskActionItemCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (showQuickActions) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 34,
+                      child: ElevatedButton(
+                        onPressed: onApprove,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB5946E),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Text(
+                          'Approve',
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: SizedBox(
+                      height: 34,
+                      child: OutlinedButton(
+                        onPressed: onReject,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFB84B4B)),
+                          foregroundColor: const Color(0xFFFFCACA),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Text(
+                          'Reject',
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

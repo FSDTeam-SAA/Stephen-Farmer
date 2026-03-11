@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:stephen_farmer/core/colors/app_color.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
 import 'package:stephen_farmer/core/common/widgets/category_dropdown_widget.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/notifications/presentation/controller/notification_controller.dart';
@@ -14,6 +17,7 @@ import 'package:stephen_farmer/feature/profile/presentation/view/profile_screen_
 import 'package:stephen_farmer/feature/update/data/model/update_model.dart';
 import 'package:stephen_farmer/feature/update/presentation/controller/update_controller.dart';
 import 'package:stephen_farmer/feature/update/presentation/view/add_update_screen_view.dart';
+import 'package:stephen_farmer/feature/update/presentation/view/update_comments_view.dart';
 import 'package:stephen_farmer/feature/update/presentation/widgets/update_card.dart';
 
 class UpdateScreenView extends StatelessWidget {
@@ -272,15 +276,12 @@ class UpdateScreenView extends StatelessWidget {
                         ),
                         GestureDetector(
                           onTap: () => Get.to(() => const ProfileScreenView()),
-                          child: CircleAvatar(
+                          child: _AuthAwareAvatar(
                             radius: 18,
+                            imageUrl: profileAvatar,
                             backgroundColor: isInterior
                                 ? const Color(0xFFE8DFD2)
                                 : const Color(0xFF182127),
-                            backgroundImage: profileAvatar.isNotEmpty
-                                ? NetworkImage(profileAvatar)
-                                : const AssetImage(AssetsImages.placeholder)
-                                      as ImageProvider,
                           ),
                         ),
                       ],
@@ -468,521 +469,13 @@ class UpdateScreenView extends StatelessWidget {
     required String updateId,
     required bool isInterior,
   }) async {
-    final textController = TextEditingController();
-    final inputFocusNode = FocusNode();
-    final comments = await controller.fetchComments(updateId);
-
-    if (!context.mounted) return;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        final localComments = List<UpdateCommentModel>.from(comments);
-        bool isSending = false;
-        String? replyToName;
-        final authController = Get.find<LoginController>();
-        final currentUserName = authController.displayName.isEmpty
-            ? 'User'
-            : authController.displayName;
-        final currentUserAvatar = authController.displayAvatar.isEmpty
-            ? null
-            : authController.displayAvatar;
-        final panelColor = isInterior
-            ? const Color(0xFFD6D1C7)
-            : const Color(0xFF111B21);
-        final titleColor = isInterior ? Colors.black : Colors.white;
-        final bodyColor = isInterior
-            ? const Color(0xFF181818)
-            : const Color(0xFFF2F2F2);
-        final mutedColor = isInterior
-            ? const Color(0xFF4B4B4B)
-            : const Color(0xFF8E8E93);
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return SafeArea(
-              top: false,
-              child: AnimatedPadding(
-                duration: const Duration(milliseconds: 180),
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: FractionallySizedBox(
-                  heightFactor: 0.88,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: panelColor,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(28),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Container(
-                          width: 62,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: isInterior
-                                ? const Color(0xFF9D9D9D)
-                                : const Color(0xFF5C636B),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Text(
-                          'Comments',
-                          style: GoogleFonts.manrope(
-                            color: titleColor,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Expanded(
-                          child: localComments.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'No comments yet',
-                                    style: GoogleFonts.manrope(
-                                      color: mutedColor,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                )
-                              : Builder(
-                                  builder: (_) {
-                                    final commentThreads = _buildCommentThreads(
-                                      localComments,
-                                    );
-                                    return ListView.separated(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 8,
-                                      ),
-                                      itemCount: commentThreads.length,
-                                      separatorBuilder: (_, __) =>
-                                          const SizedBox(height: 14),
-                                      itemBuilder: (_, index) {
-                                        final thread = commentThreads[index];
-                                        final comment = thread.parent;
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _buildCommentTile(
-                                              comment: comment,
-                                              isInterior: isInterior,
-                                              titleColor: titleColor,
-                                              bodyColor: bodyColor,
-                                              mutedColor: mutedColor,
-                                              messageText: comment.text,
-                                              onReply: () {
-                                                final name = comment.userName
-                                                    .trim();
-                                                if (name.isEmpty) return;
-                                                setState(() {
-                                                  replyToName = name;
-                                                  textController.text =
-                                                      '@$name ';
-                                                  textController.selection =
-                                                      TextSelection.collapsed(
-                                                        offset: textController
-                                                            .text
-                                                            .length,
-                                                      );
-                                                });
-                                                inputFocusNode.requestFocus();
-                                              },
-                                            ),
-                                            if (thread.replies.isNotEmpty) ...[
-                                              const SizedBox(height: 8),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 18,
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.fromLTRB(
-                                                        12,
-                                                        2,
-                                                        0,
-                                                        0,
-                                                      ),
-                                                  child: Column(
-                                                    children: List.generate(
-                                                      thread.replies.length,
-                                                      (replyIndex) {
-                                                        final reply = thread
-                                                            .replies[replyIndex];
-                                                        return Padding(
-                                                          padding: EdgeInsets.only(
-                                                            bottom:
-                                                                replyIndex ==
-                                                                    thread
-                                                                            .replies
-                                                                            .length -
-                                                                        1
-                                                                ? 0
-                                                                : 10,
-                                                          ),
-                                                          child: _buildCommentTile(
-                                                            comment:
-                                                                reply.comment,
-                                                            isInterior:
-                                                                isInterior,
-                                                            titleColor:
-                                                                titleColor,
-                                                            bodyColor:
-                                                                bodyColor,
-                                                            mutedColor:
-                                                                mutedColor,
-                                                            messageText: reply
-                                                                .displayText,
-                                                            onReply: () {
-                                                              final name = reply
-                                                                  .comment
-                                                                  .userName
-                                                                  .trim();
-                                                              if (name
-                                                                  .isEmpty) {
-                                                                return;
-                                                              }
-                                                              setState(() {
-                                                                replyToName =
-                                                                    name;
-                                                                textController
-                                                                        .text =
-                                                                    '@$name ';
-                                                                textController
-                                                                        .selection =
-                                                                    TextSelection.collapsed(
-                                                                      offset: textController
-                                                                          .text
-                                                                          .length,
-                                                                    );
-                                                              });
-                                                              inputFocusNode
-                                                                  .requestFocus();
-                                                            },
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                        ),
-                        if (replyToName != null)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isInterior
-                                        ? const Color(0xFFB0A38D)
-                                        : const Color(0xFF232A33),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    'Replying to $replyToName',
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      replyToName = null;
-                                      textController.clear();
-                                    });
-                                  },
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    size: 18,
-                                    color: mutedColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: isInterior
-                                        ? const Color(0xFF7A787A)
-                                        : const Color(0xFF2B2E37),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: TextField(
-                                    controller: textController,
-                                    focusNode: inputFocusNode,
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: 'Write a Comment...',
-                                      hintStyle: GoogleFonts.manrope(
-                                        color: const Color(0xFFDBDBDB),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      isDense: true,
-                                      border: InputBorder.none,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 14,
-                                            vertical: 12,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              IconButton(
-                                onPressed: isSending
-                                    ? null
-                                    : () async {
-                                        final text = textController.text.trim();
-                                        if (text.isEmpty) return;
-                                        final payloadText =
-                                            replyToName != null &&
-                                                !text.startsWith('@')
-                                            ? '@$replyToName $text'
-                                            : text;
-                                        final tempComment = UpdateCommentModel(
-                                          id: 'local-${DateTime.now().microsecondsSinceEpoch}',
-                                          updateId: updateId,
-                                          text: payloadText,
-                                          userName: currentUserName,
-                                          userAvatar: currentUserAvatar,
-                                          createdAt: DateTime.now(),
-                                        );
-                                        setState(() => isSending = true);
-                                        setState(() {
-                                          localComments.add(tempComment);
-                                          textController.clear();
-                                          replyToName = null;
-                                        });
-                                        final added = await controller
-                                            .addComment(
-                                              updateId: updateId,
-                                              comment: payloadText,
-                                            );
-                                        setState(() {
-                                          final tempIndex = localComments
-                                              .indexWhere(
-                                                (c) => c.id == tempComment.id,
-                                              );
-                                          if (tempIndex >= 0) {
-                                            if (added != null) {
-                                              localComments[tempIndex] = added;
-                                            } else {
-                                              localComments.removeAt(tempIndex);
-                                            }
-                                          }
-                                        });
-                                        setState(() => isSending = false);
-                                      },
-                                icon: Icon(
-                                  Icons.send_rounded,
-                                  size: 30,
-                                  color: isInterior
-                                      ? const Color(0xFF8E6500)
-                                      : const Color(0xFFD09A2F),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+    await Get.to(
+      () => UpdateCommentsView(
+        controller: controller,
+        updateId: updateId,
+        isInterior: isInterior,
+      ),
     );
-
-    inputFocusNode.dispose();
-    textController.dispose();
-  }
-
-  Widget _buildCommentTile({
-    required UpdateCommentModel comment,
-    required bool isInterior,
-    required Color titleColor,
-    required Color bodyColor,
-    required Color mutedColor,
-    required String messageText,
-    required VoidCallback onReply,
-  }) {
-    final avatarUrl = comment.userAvatar;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: isInterior
-              ? const Color(0xFFC3BEB4)
-              : const Color(0xFF2D3238),
-          backgroundImage: avatarUrl != null && avatarUrl.trim().isNotEmpty
-              ? NetworkImage(avatarUrl.trim())
-              : null,
-          child: avatarUrl == null || avatarUrl.trim().isEmpty
-              ? Icon(
-                  Icons.person_rounded,
-                  size: 18,
-                  color: isInterior
-                      ? const Color(0xFF6A6358)
-                      : const Color(0xFFD0D0D0),
-                )
-              : null,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      comment.userName,
-                      style: GoogleFonts.manrope(
-                        color: titleColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    _timeLabel(comment.createdAt),
-                    style: GoogleFonts.manrope(
-                      color: mutedColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                messageText,
-                style: GoogleFonts.manrope(
-                  color: bodyColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 4),
-              GestureDetector(
-                onTap: onReply,
-                child: Text(
-                  'Reply',
-                  style: GoogleFonts.manrope(
-                    color: mutedColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<_CommentThread> _buildCommentThreads(List<UpdateCommentModel> comments) {
-    final threads = <_CommentThread>[];
-
-    for (final comment in comments) {
-      final targetName = _extractReplyTargetName(
-        comment.text,
-        threads.map((thread) => thread.parent.userName).toList(),
-      );
-
-      if (targetName == null) {
-        threads.add(_CommentThread(parent: comment, replies: []));
-        continue;
-      }
-
-      final parentIndex = threads.lastIndexWhere(
-        (thread) =>
-            thread.parent.userName.trim().toLowerCase() ==
-            targetName.trim().toLowerCase(),
-      );
-
-      if (parentIndex < 0) {
-        threads.add(_CommentThread(parent: comment, replies: []));
-        continue;
-      }
-
-      final replyText = _stripReplyPrefix(comment.text, targetName);
-      threads[parentIndex].replies.add(
-        _ThreadedReply(comment: comment, displayText: replyText),
-      );
-    }
-
-    return threads;
-  }
-
-  String? _extractReplyTargetName(String message, List<String> candidateNames) {
-    final trimmedMessage = message.trimLeft();
-    if (!trimmedMessage.startsWith('@')) return null;
-
-    String? bestMatch;
-    var bestLength = -1;
-    for (final name in candidateNames) {
-      final trimmedName = name.trim();
-      if (trimmedName.isEmpty) continue;
-      final tag = '@$trimmedName ';
-      if (trimmedMessage.toLowerCase().startsWith(tag.toLowerCase()) &&
-          tag.length > bestLength) {
-        bestMatch = trimmedName;
-        bestLength = tag.length;
-      }
-    }
-    return bestMatch;
-  }
-
-  String _stripReplyPrefix(String message, String targetName) {
-    final trimmed = message.trimLeft();
-    final prefix = '@${targetName.trim()} ';
-    if (!trimmed.toLowerCase().startsWith(prefix.toLowerCase())) {
-      return message;
-    }
-    final stripped = trimmed.substring(prefix.length).trimLeft();
-    return stripped.isEmpty ? message : stripped;
   }
 
   Future<void> _shareUpdate({
@@ -1126,25 +619,112 @@ class UpdateScreenView extends StatelessWidget {
     );
   }
 
-  String _timeLabel(DateTime dateTime) {
-    final diff = DateTime.now().difference(dateTime);
-    if (diff.inMinutes < 1) return 'Now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m';
-    if (diff.inDays < 1) return '${diff.inHours}h';
-    return '${diff.inDays}d';
+}
+
+class _AuthAwareAvatar extends StatefulWidget {
+  const _AuthAwareAvatar({
+    required this.radius,
+    required this.imageUrl,
+    required this.backgroundColor,
+  });
+
+  final double radius;
+  final String imageUrl;
+  final Color backgroundColor;
+
+  @override
+  State<_AuthAwareAvatar> createState() => _AuthAwareAvatarState();
+}
+
+class _AuthAwareAvatarState extends State<_AuthAwareAvatar> {
+  late final Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = TokenManager.getToken();
   }
-}
 
-class _CommentThread {
-  final UpdateCommentModel parent;
-  final List<_ThreadedReply> replies;
+  @override
+  Widget build(BuildContext context) {
+    final resolvedUrl = _resolveAvatarUrl(widget.imageUrl);
 
-  const _CommentThread({required this.parent, required this.replies});
-}
+    return FutureBuilder<String?>(
+      future: _tokenFuture,
+      builder: (context, snapshot) {
+        final token = snapshot.data?.trim() ?? '';
+        final headers = token.isEmpty
+            ? null
+            : <String, String>{'Authorization': 'Bearer $token'};
 
-class _ThreadedReply {
-  final UpdateCommentModel comment;
-  final String displayText;
+        return CircleAvatar(
+          radius: widget.radius,
+          backgroundColor: widget.backgroundColor,
+          child: ClipOval(
+            child: resolvedUrl.isEmpty
+                ? Image.asset(
+                    AssetsImages.placeholder,
+                    width: widget.radius * 2,
+                    height: widget.radius * 2,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    resolvedUrl,
+                    width: widget.radius * 2,
+                    height: widget.radius * 2,
+                    fit: BoxFit.cover,
+                    headers: headers,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      AssetsImages.placeholder,
+                      width: widget.radius * 2,
+                      height: widget.radius * 2,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
 
-  const _ThreadedReply({required this.comment, required this.displayText});
+  String _resolveAvatarUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return value;
+    if (value.startsWith('/')) return '$origin$value';
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
+  }
 }

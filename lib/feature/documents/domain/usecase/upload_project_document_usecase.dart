@@ -11,8 +11,8 @@ class UploadProjectDocumentUseCase {
   Future<void> call({
     required String projectId,
     required File document,
-    String? title,
-    String? category,
+    required String title,
+    required String category,
   }) {
     return _repository.uploadDocument(
       projectId: projectId,

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 
 import '../../domain/entities/task_project_entity.dart';
 import '../../domain/usecase/get_task_projects_usecase.dart';
@@ -161,11 +162,24 @@ class TaskController extends GetxController {
       taskDetails.value = result;
       await refreshProjects();
       return result;
-    } catch (_) {
-      errorMessage.value = 'Task request failed. Please try again.';
+    } catch (error) {
+      errorMessage.value = _resolveTaskErrorMessage(error);
       return null;
     } finally {
       isLoading.value = false;
     }
+  }
+
+  String _resolveTaskErrorMessage(Object error) {
+    if (error is DioException) {
+      final payload = error.response?.data;
+      if (payload is Map<String, dynamic>) {
+        final message = payload['message']?.toString().trim() ?? '';
+        if (message.isNotEmpty) return message;
+        final errorText = payload['error']?.toString().trim() ?? '';
+        if (errorText.isNotEmpty) return errorText;
+      }
+    }
+    return 'Task request failed. Please try again.';
   }
 }

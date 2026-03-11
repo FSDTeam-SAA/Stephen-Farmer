@@ -16,6 +16,7 @@ class RecentDocumentEntity {
   final String category;
   final String dateLabel;
   final String? fileUrl;
+  final String? mimeType;
 
   const RecentDocumentEntity({
     required this.id,
@@ -23,6 +24,7 @@ class RecentDocumentEntity {
     required this.category,
     required this.dateLabel,
     this.fileUrl,
+    this.mimeType,
   });
 }
 

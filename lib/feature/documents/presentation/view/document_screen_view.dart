@@ -11,6 +11,7 @@ import 'package:stephen_farmer/feature/documents/domain/entities/document_projec
 import '../controller/document_controller.dart';
 import '../widgets/document_category_card.dart';
 import '../widgets/recent_document_item_card.dart';
+import 'document_preview_view.dart';
 import 'document_type_list_view.dart';
 
 class DocumentScreenView extends GetView<DocumentController> {
@@ -106,6 +107,9 @@ class DocumentScreenView extends GetView<DocumentController> {
                                 (item) => RecentDocumentItemCard(
                                   item: item,
                                   isInteriorTheme: isInterior,
+                                  onTap: () => Get.to(
+                                    () => DocumentPreviewView(item: item),
+                                  ),
                                 ),
                               ),
                               if (controller.errorMessage.value.isNotEmpty)

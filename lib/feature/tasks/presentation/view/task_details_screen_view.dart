@@ -37,6 +37,7 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
   bool _isOpeningChat = false;
   bool _isSendingMessage = false;
   bool _isApproving = false;
+  bool _isRejecting = false;
   String _chatError = '';
 
   @override
@@ -99,11 +100,23 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
       Get.snackbar('Error', 'Task id is missing.');
       return;
     }
+    final roleKey = _authController.roleKey;
+    final isClientUser = roleKey == 'client';
+    if (isClientUser && !widget.item.isAwaitingApproval) {
+      Get.snackbar(
+        'Info',
+        'This task is not waiting for approval yet.',
+      );
+      return;
+    }
+    if (!isClientUser && widget.item.isFinished) {
+      Get.snackbar('Info', 'This task is already completed.');
+      return;
+    }
 
     setState(() => _isApproving = true);
     try {
-      final roleKey = _authController.normalizedRoleKey;
-      final result = roleKey == 'client'
+      final result = isClientUser
           ? await _taskController.approveTask(taskId)
           : await _taskController.updateTaskStatus(
               taskId,
@@ -118,8 +131,8 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
         return;
       }
       Get.back();
-      final successMessage = roleKey == 'client'
-          ? 'Task approved successfully.'
+      final successMessage = isClientUser
+          ? 'Task accepted successfully.'
           : 'Task marked completed and sent for approval.';
       Get.snackbar('Success', successMessage);
     } finally {
@@ -127,6 +140,88 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
         setState(() => _isApproving = false);
       }
     }
+  }
+
+  Future<void> _rejectTask() async {
+    if (_isRejecting || widget.waitingForApproval) return;
+    final taskId = widget.item.id.trim();
+    if (taskId.isEmpty) {
+      Get.snackbar('Error', 'Task id is missing.');
+      return;
+    }
+    if (_authController.roleKey != 'client') {
+      Get.snackbar('Info', 'Only client can reject tasks.');
+      return;
+    }
+    if (!widget.item.isAwaitingApproval) {
+      Get.snackbar('Info', 'This task is not waiting for approval yet.');
+      return;
+    }
+
+    final reason = await _showRejectReasonDialog();
+    if (reason == null || reason.trim().isEmpty) return;
+
+    setState(() => _isRejecting = true);
+    try {
+      final result = await _taskController.rejectTask(
+        taskId,
+        payload: <String, dynamic>{'reason': reason.trim()},
+      );
+      if (!mounted) return;
+      if (result == null) {
+        final message = _taskController.errorMessage.value.trim().isEmpty
+            ? 'Task request failed. Please try again.'
+            : _taskController.errorMessage.value;
+        Get.snackbar('Error', message);
+        return;
+      }
+      Get.back();
+      Get.snackbar('Success', 'Task rejected successfully.');
+    } finally {
+      if (mounted) {
+        setState(() => _isRejecting = false);
+      }
+    }
+  }
+
+  Future<String?> _showRejectReasonDialog() async {
+    final controller = TextEditingController();
+    String? result;
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+        title: const Text('Reject Task'),
+          content: TextField(
+            controller: controller,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: 'Enter rejection reason',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                if (text.isEmpty) {
+                  return;
+                }
+                result = text;
+                Navigator.of(context).pop();
+              },
+            child: const Text('Reject'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    return result;
   }
 
   @override
@@ -141,6 +236,7 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
     final authController = Get.find<LoginController>();
     final role = authController.role.value;
     final bool isInterior = RoleBgColor.isInterior(role);
+    final roleKey = authController.roleKey;
     final List<String> photoUrls = _resolveTaskPhotoUrls();
 
     final Color bgColor = isInterior
@@ -415,46 +511,136 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: widget.waitingForApproval ? 40 : 44,
-                    child: ElevatedButton(
-                      onPressed: widget.waitingForApproval || _isApproving
-                          ? null
-                          : _approveAndComplete,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.waitingForApproval
-                            ? const Color(0xFF1E2127)
-                            : const Color(0xFFB5946E),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF1E2127),
-                        disabledForegroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: _isApproving
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                  if (roleKey == 'client' && !widget.waitingForApproval)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: _isApproving || _isRejecting
+                                  ? null
+                                  : _approveAndComplete,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB5946E),
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: const Color(
+                                  0xFF1E2127,
+                                ),
+                                disabledForegroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
-                            )
-                          : Text(
-                              widget.waitingForApproval
-                                  ? 'Waiting for Approval...'
-                                  : 'Approve & Complete',
-                              style: GoogleFonts.manrope(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0,
-                              ),
+                              child: _isApproving
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Accept',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.4,
+                                        letterSpacing: 0,
+                                      ),
+                                    ),
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: OutlinedButton(
+                              onPressed: _isApproving || _isRejecting
+                                  ? null
+                                  : _rejectTask,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: isInterior
+                                      ? Colors.white
+                                      : const Color(0xFFB84B4B),
+                                ),
+                                foregroundColor: isInterior
+                                    ? Colors.white
+                                    : const Color(0xFFFFCACA),
+                                disabledForegroundColor: isInterior
+                                    ? Colors.white70
+                                    : const Color(0xFF6F7479),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: _isRejecting
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFFFFCACA),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Reject',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.4,
+                                        letterSpacing: 0,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: widget.waitingForApproval ? 40 : 44,
+                      child: ElevatedButton(
+                        onPressed: widget.waitingForApproval || _isApproving
+                            ? null
+                            : _approveAndComplete,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: widget.waitingForApproval
+                              ? const Color(0xFF1E2127)
+                              : const Color(0xFFB5946E),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: const Color(0xFF1E2127),
+                          disabledForegroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: _isApproving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                widget.waitingForApproval
+                                    ? 'Waiting for Approval...'
+                                    : 'Approve & Complete',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.4,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -673,31 +859,56 @@ class _ChatMessageBubble extends StatelessWidget {
   }
 }
 
-class _MessageAvatar extends StatelessWidget {
+class _MessageAvatar extends StatefulWidget {
   const _MessageAvatar({required this.imageUrl});
 
   final String imageUrl;
 
   @override
+  State<_MessageAvatar> createState() => _MessageAvatarState();
+}
+
+class _MessageAvatarState extends State<_MessageAvatar> {
+  late final Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = TokenManager.getToken();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final trimmed = imageUrl.trim();
-    if (trimmed.isNotEmpty) {
-      return ClipOval(
-        child: Image.network(
-          trimmed,
-          width: 28,
-          height: 28,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Image.asset(
-            AssetsImages.placeholder,
+    final resolved = _resolveMediaUrl(widget.imageUrl);
+    if (resolved.isEmpty) return _fallback();
+
+    return FutureBuilder<String?>(
+      future: _tokenFuture,
+      builder: (context, snapshot) {
+        final token = snapshot.data?.trim() ?? '';
+        final headers = token.isEmpty
+            ? null
+            : <String, String>{'Authorization': 'Bearer $token'};
+        return ClipOval(
+          child: Image.network(
+            resolved,
             width: 28,
             height: 28,
             fit: BoxFit.cover,
+            headers: headers,
+            errorBuilder: (_, __, ___) => Image.asset(
+              AssetsImages.placeholder,
+              width: 28,
+              height: 28,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-      );
-    }
+        );
+      },
+    );
+  }
 
+  Widget _fallback() {
     return ClipOval(
       child: Image.asset(
         AssetsImages.placeholder,
@@ -706,6 +917,49 @@ class _MessageAvatar extends StatelessWidget {
         fit: BoxFit.cover,
       ),
     );
+  }
+
+  String _resolveMediaUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return value;
+    if (value.startsWith('/')) {
+      return '$origin$value';
+    }
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
   }
 }
 

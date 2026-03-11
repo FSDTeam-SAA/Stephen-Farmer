@@ -51,7 +51,7 @@ class ChatMessageModel extends ChatMessageEntity {
       chatId: _readEntityId(json['chat'] ?? json['chatId'] ?? json['chatRoom']),
       senderId: senderId,
       senderName: _readString(sender, ['name', 'fullName'], fallback: 'User'),
-      senderAvatar: _readString(sender, ['avatar', 'image', 'profileImage']),
+      senderAvatar: _readAvatarUrl(sender),
       senderRole: _readString(sender, ['role', 'userRole']),
       text: _readString(json, ['text', 'message', 'content', 'body']),
       createdAt: _readDateTime(json['createdAt'] ?? json['timestamp']),
@@ -106,4 +106,23 @@ DateTime? _readDateTime(dynamic raw) {
   if (raw == null) return null;
   if (raw is DateTime) return raw;
   return DateTime.tryParse(raw.toString());
+}
+
+String _readAvatarUrl(Map<String, dynamic> sender) {
+  final direct = _readString(sender, ['avatar', 'image', 'profileImage']);
+  if (direct.isNotEmpty) return direct;
+
+  final rawAvatar = sender['avatar'] ?? sender['image'] ?? sender['profileImage'];
+  if (rawAvatar is Map<String, dynamic>) {
+    final nested = _readString(rawAvatar, [
+      'url',
+      'secure_url',
+      'secureUrl',
+      'src',
+      'path',
+      'location',
+    ]);
+    if (nested.isNotEmpty) return nested;
+  }
+  return '';
 }

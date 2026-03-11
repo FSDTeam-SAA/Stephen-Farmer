@@ -10,6 +10,7 @@ class TaskItemEntity {
   final String chatId;
   final bool needsApproval;
   final String status;
+  final String approvalStatus;
 
   const TaskItemEntity({
     this.id = '',
@@ -23,10 +24,12 @@ class TaskItemEntity {
     this.chatId = '',
     this.needsApproval = false,
     this.status = '',
+    this.approvalStatus = '',
   });
 
   String get normalizedPhaseStatus => phaseStatus.trim().toLowerCase();
   String get normalizedStatus => status.trim().toLowerCase();
+  String get normalizedApprovalStatus => approvalStatus.trim().toLowerCase();
 
   bool get isFinished {
     final value = normalizedPhaseStatus.isEmpty
@@ -48,6 +51,9 @@ class TaskItemEntity {
         value == 'in progress' ||
         value == 'ongoing';
   }
+
+  bool get isAwaitingApproval =>
+      normalizedStatus == 'completed' && normalizedApprovalStatus == 'pending';
 }
 
 class TaskSectionEntity {

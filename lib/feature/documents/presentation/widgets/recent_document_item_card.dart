@@ -12,10 +12,12 @@ class RecentDocumentItemCard extends StatelessWidget {
     super.key,
     required this.item,
     this.isInteriorTheme,
+    this.onTap,
   });
 
   final RecentDocumentEntity item;
   final bool? isInteriorTheme;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -35,109 +37,116 @@ class RecentDocumentItemCard extends StatelessWidget {
     final primaryText = const Color(0xFF161D1E);
     final secondaryText = const Color(0xFF4A5256);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColor,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 25,
-            width: 25,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(AssetsImages.invoices2, fit: BoxFit.fill),
-            ),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: borderColor),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 168,
-                  child: Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.manrope(
-                      color: primaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1,
-                      letterSpacing: 0,
-                    ),
-                  ),
+          child: Row(
+            children: [
+              Container(
+                height: 25,
+                width: 25,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 1),
-                Row(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(AssetsImages.invoices2, fit: BoxFit.fill),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: 69,
+                      width: 168,
                       child: Text(
-                        item.category,
+                        item.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
-                          color: secondaryText,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
+                          color: primaryText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                           height: 1,
                           letterSpacing: 0,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '•',
-                      style: GoogleFonts.manrope(
-                        color: secondaryText,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        height: 1,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 69,
-                      child: Text(
-                        item.dateLabel,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.manrope(
-                          color: secondaryText,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          height: 1,
-                          letterSpacing: 0,
+                    const SizedBox(height: 1),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 69,
+                          child: Text(
+                            item.category,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.manrope(
+                              color: secondaryText,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              height: 1,
+                              letterSpacing: 0,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '•',
+                          style: GoogleFonts.manrope(
+                            color: secondaryText,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            height: 1,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 69,
+                          child: Text(
+                            item.dateLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.manrope(
+                              color: secondaryText,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              height: 1,
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              SizedBox(
+                height: 20,
+                width: 20,
+                child: Image.asset(
+                  AssetsImages.download,
+                  height: 24,
+                  width: 24,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ],
           ),
-          SizedBox(
-            height: 20,
-            width: 20,
-            child: Image.asset(
-              AssetsImages.download,
-              height: 24,
-              width: 24,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

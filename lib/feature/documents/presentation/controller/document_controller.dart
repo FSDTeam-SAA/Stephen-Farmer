@@ -73,12 +73,16 @@ class DocumentController extends GetxController {
 
   Future<bool> uploadDocument({
     required File file,
-    String? title,
-    String? category,
+    required String title,
+    required String category,
   }) async {
     final current = selectedProject;
     if (current == null || current.projectId.trim().isEmpty) {
       errorMessage.value = 'No project selected.';
+      return false;
+    }
+    if (title.trim().isEmpty || category.trim().isEmpty) {
+      errorMessage.value = 'Document title and category are required.';
       return false;
     }
 
@@ -88,8 +92,8 @@ class DocumentController extends GetxController {
       await _uploadProjectDocumentUseCase.call(
         projectId: current.projectId,
         document: file,
-        title: title,
-        category: category,
+        title: title.trim(),
+        category: category.trim(),
       );
       await refreshProjects();
       return true;
