@@ -29,11 +29,15 @@ class TaskRepositoryImpl implements TaskRepository {
       return const <TaskProjectEntity>[];
     }
 
+    final projectImageIndex = await _fetchProjectImageIndex(_apiClient);
+
     if (_isTaskListPayload(rows)) {
-      return _buildProjectsFromTaskRows(rows);
+      final built = _buildProjectsFromTaskRows(rows);
+      return _hydrateMissingThumbnails(built, projectImageIndex);
     }
 
-    return rows.map(TaskProjectModel.fromJson).toList();
+    final built = rows.map(TaskProjectModel.fromJson).toList();
+    return _hydrateMissingThumbnails(built, projectImageIndex);
   }
 
   @override
@@ -134,6 +138,84 @@ class TaskRepositoryImpl implements TaskRepository {
       _extractMap(response.data, preferredKeys: const ['task', 'data']),
     );
   }
+}
+
+Future<Map<String, String>> _fetchProjectImageIndex(ApiClient apiClient) async {
+  try {
+    final response = await apiClient.get(ProjectEndpoints.getAll);
+    final rows = _extractList(
+      response.data,
+      preferredKeys: const ['projects', 'items', 'results', 'data'],
+    );
+    if (rows.isEmpty) return const <String, String>{};
+
+    final index = <String, String>{};
+    for (final row in rows) {
+      final projectId = _firstNonEmpty(<dynamic>[
+        row['_id'],
+        row['id'],
+        row['projectId'],
+      ]);
+      final projectName = _firstNonEmpty(<dynamic>[
+        row['projectName'],
+        row['name'],
+        row['title'],
+      ]).toLowerCase();
+      final image = _firstImageValue(<dynamic>[
+        row['thumbnailUrl'],
+        row['thumbnail'],
+        row['thumb'],
+        row['imageUrl'],
+        row['image'],
+        row['coverImage'],
+        row['projectImage'],
+        row['images'],
+        row['photos'],
+        row['attachments'],
+      ]);
+
+      if (image.isEmpty) continue;
+      if (projectId.isNotEmpty) {
+        index['id:$projectId'] = image;
+      }
+      if (projectName.isNotEmpty) {
+        index['name:$projectName'] = image;
+      }
+    }
+    return index;
+  } catch (_) {
+    return const <String, String>{};
+  }
+}
+
+List<TaskProjectEntity> _hydrateMissingThumbnails(
+  List<TaskProjectEntity> projects,
+  Map<String, String> imageIndex,
+) {
+  if (projects.isEmpty || imageIndex.isEmpty) return projects;
+
+  return projects.map((project) {
+    final existing = (project.thumbnailUrl ?? '').trim();
+    if (existing.isNotEmpty && existing.toLowerCase() != 'null') {
+      return project;
+    }
+
+    final byId = imageIndex['id:${project.id.trim()}'] ?? '';
+    final byName =
+        imageIndex['name:${project.projectName.trim().toLowerCase()}'] ?? '';
+    final resolved = byId.isNotEmpty ? byId : byName;
+    if (resolved.isEmpty) return project;
+
+    return TaskProjectModel(
+      id: project.id,
+      projectName: project.projectName,
+      projectAddress: project.projectAddress,
+      thumbnailUrl: resolved,
+      actionsNeededCount: project.actionsNeededCount,
+      actionsNeededMessage: project.actionsNeededMessage,
+      sections: project.sections,
+    );
+  }).toList();
 }
 
 bool _isTaskListPayload(List<Map<String, dynamic>> rows) {
@@ -273,15 +355,27 @@ String? _resolveProjectThumbnail(
   Map<String, dynamic> row,
   Map<String, dynamic> project,
 ) {
-  final value = _firstNonEmpty(<dynamic>[
+  final value = _firstImageValue(<dynamic>[
     row['thumbnailUrl'],
     row['thumbnail'],
+    row['thumb'],
     row['imageUrl'],
     row['image'],
+    row['coverImage'],
+    row['projectImage'],
+    row['images'],
+    row['photos'],
+    row['attachments'],
     project['thumbnailUrl'],
     project['thumbnail'],
+    project['thumb'],
     project['imageUrl'],
     project['image'],
+    project['coverImage'],
+    project['projectImage'],
+    project['images'],
+    project['photos'],
+    project['attachments'],
   ]);
   return value.isEmpty ? null : value;
 }
@@ -301,10 +395,106 @@ String _resolveSectionTitle(Map<String, dynamic> row) {
 
 String _firstNonEmpty(List<dynamic> values) {
   for (final value in values) {
-    if (value == null) continue;
-    final text = value.toString().trim();
+    final text = _extractText(value);
     if (text.isNotEmpty) return text;
   }
+  return '';
+}
+
+String _firstImageValue(List<dynamic> values) {
+  for (final value in values) {
+    final text = _extractImageText(value);
+    if (text.isNotEmpty) return text;
+  }
+  return '';
+}
+
+String _extractText(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is num || value is bool) {
+    return value.toString();
+  }
+
+  if (value is Map) {
+    const preferredKeys = <String>[
+      'id',
+      '_id',
+      'projectId',
+      'name',
+      'title',
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+    ];
+    for (final key in preferredKeys) {
+      final candidate = _extractText(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final candidate = _extractText(item);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  return '';
+}
+
+String _extractImageText(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is Map) {
+    const imageKeys = <String>[
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+      'thumbnailUrl',
+      'thumbnail',
+      'thumb',
+      'coverImage',
+      'image',
+      'projectImage',
+    ];
+    for (final key in imageKeys) {
+      final candidate = _extractImageText(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final candidate = _extractImageText(item);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
   return '';
 }
 

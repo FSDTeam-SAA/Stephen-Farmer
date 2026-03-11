@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 
-class CategoryDropdownWidget<T> extends StatelessWidget {
+class CategoryDropdownWidget<T> extends StatefulWidget {
   final List<T> items;
   final int selectedIndex;
   final bool isMenuOpen;
@@ -75,133 +77,271 @@ class CategoryDropdownWidget<T> extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
+  State<CategoryDropdownWidget<T>> createState() =>
+      _CategoryDropdownWidgetState<T>();
+}
 
-    final int safeSelectedIndex = selectedIndex.clamp(0, items.length - 1);
-    final T selectedItem = items[safeSelectedIndex];
-    final bool canExpand = items.length > 1;
-    final bool showChevron = canExpand || alwaysShowChevron;
-    final resolvedBackgroundColor =
-        backgroundColor ??
-        (isInteriorTheme ? const Color(0xFFF3EFE7) : Colors.transparent);
-    final resolvedBorderColor =
-        borderColor ??
-        (isInteriorTheme ? const Color(0xFF6B6458) : const Color(0xFFD7C5A4));
-    final resolvedTitleColor =
-        titleColor ??
-        (isInteriorTheme ? const Color(0xFF131313) : Colors.white);
-    final resolvedSubtitleColor =
-        subtitleColor ??
-        (isInteriorTheme ? const Color(0xFF5C554C) : const Color(0xFF8A979D));
-    final resolvedChevronColor =
-        chevronColor ??
-        (isInteriorTheme ? const Color(0xFF584A2D) : const Color(0xFFD2A75D));
+class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
+  final LayerLink _layerLink = LayerLink();
+  final GlobalKey _triggerKey = GlobalKey();
+  OverlayEntry? _menuOverlayEntry;
 
-    return Container(
-      constraints: minHeight == null
-          ? null
-          : BoxConstraints(minHeight: minHeight!),
-      decoration: BoxDecoration(
-        color: resolvedBackgroundColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: resolvedBorderColor),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Material(
+  @override
+  void initState() {
+    super.initState();
+    _syncMenuOverlay();
+  }
+
+  @override
+  void didUpdateWidget(covariant CategoryDropdownWidget<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncMenuOverlay();
+    if (_menuOverlayEntry != null && widget.isMenuOpen) {
+      _menuOverlayEntry!.markNeedsBuild();
+    }
+  }
+
+  @override
+  void dispose() {
+    _removeMenuOverlay();
+    super.dispose();
+  }
+
+  void _syncMenuOverlay() {
+    final bool canExpand = widget.items.length > 1;
+    final bool shouldShowMenu = widget.isMenuOpen && canExpand;
+    if (shouldShowMenu) {
+      if (_menuOverlayEntry == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || _menuOverlayEntry != null) return;
+          final bool stillCanExpand = widget.items.length > 1;
+          if (widget.isMenuOpen && stillCanExpand) {
+            _insertMenuOverlay();
+          }
+        });
+      }
+      return;
+    }
+    _removeMenuOverlay();
+  }
+
+  void _insertMenuOverlay() {
+    final overlay = Overlay.of(context, rootOverlay: true);
+    _menuOverlayEntry = OverlayEntry(builder: _buildMenuOverlay);
+    overlay.insert(_menuOverlayEntry!);
+  }
+
+  void _removeMenuOverlay() {
+    _menuOverlayEntry?.remove();
+    _menuOverlayEntry = null;
+  }
+
+  Widget _buildMenuOverlay(BuildContext context) {
+    if (!mounted) return const SizedBox.shrink();
+    final int safeSelectedIndex = widget.selectedIndex.clamp(
+      0,
+      widget.items.length - 1,
+    );
+    final Color resolvedBackgroundColor =
+        widget.backgroundColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFFF3EFE7)
+            : const Color(0xFF111A1E));
+    final Color resolvedBorderColor =
+        widget.borderColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF6B6458)
+            : const Color(0xFFD7C5A4));
+    final Color resolvedTitleColor =
+        widget.titleColor ??
+        (widget.isInteriorTheme ? const Color(0xFF131313) : Colors.white);
+    final Color resolvedSubtitleColor =
+        widget.subtitleColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF5C554C)
+            : const Color(0xFF8A979D));
+    final Color resolvedChevronColor =
+        widget.chevronColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF584A2D)
+            : const Color(0xFFD2A75D));
+    final RenderBox? triggerBox =
+        _triggerKey.currentContext?.findRenderObject() as RenderBox?;
+    final Size triggerSize = triggerBox?.size ?? Size.zero;
+
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: widget.onToggle,
+            child: const SizedBox.expand(),
+          ),
+          CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: Offset(0, triggerSize.height + 4),
+            child: Material(
               color: Colors.transparent,
-              child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: onToggle,
-                child: Padding(
-                  padding: rowPadding,
-                  child: _DropdownRow<T>(
-                    item: selectedItem,
-                    showChevron: showChevron,
-                    isMenuOpen: isMenuOpen,
-                    titleBuilder: titleBuilder,
-                    subtitleBuilder: subtitleBuilder,
-                    thumbnailBuilder: thumbnailBuilder,
-                    fallbackAsset: fallbackAsset,
-                    titleColor: resolvedTitleColor,
-                    subtitleColor: resolvedSubtitleColor,
-                    chevronColor: resolvedChevronColor,
-                    thumbnailWidth: thumbnailWidth,
-                    thumbnailHeight: thumbnailHeight,
-                    thumbnailBorderRadius: thumbnailBorderRadius,
-                    titleFontSize: titleFontSize,
-                    titleFontWeight: titleFontWeight,
-                    subtitleFontSize: subtitleFontSize,
-                    subtitleFontWeight: subtitleFontWeight,
-                    titleTextStyle: titleTextStyle,
-                    subtitleTextStyle: subtitleTextStyle,
-                    subtitleWidth: subtitleWidth,
-                    subtitleHeight: subtitleHeight,
-                    chevronSize: chevronSize,
-                    titleSubtitleSpacing: titleSubtitleSpacing,
+              child: SizedBox(
+                width: triggerSize.width,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: resolvedBackgroundColor,
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    border: Border.all(color: resolvedBorderColor),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: widget.maxMenuHeight,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (int i = 0; i < widget.items.length; i++)
+                              if (i != safeSelectedIndex)
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => widget.onSelect(i),
+                                    child: Padding(
+                                      padding: widget.rowPadding,
+                                      child: _DropdownRow<T>(
+                                        item: widget.items[i],
+                                        showChevron: false,
+                                        isMenuOpen: false,
+                                        titleBuilder: widget.titleBuilder,
+                                        subtitleBuilder: widget.subtitleBuilder,
+                                        thumbnailBuilder:
+                                            widget.thumbnailBuilder,
+                                        fallbackAsset: widget.fallbackAsset,
+                                        titleColor: resolvedTitleColor,
+                                        subtitleColor: resolvedSubtitleColor,
+                                        chevronColor: resolvedChevronColor,
+                                        thumbnailWidth: widget.thumbnailWidth,
+                                        thumbnailHeight: widget.thumbnailHeight,
+                                        thumbnailBorderRadius:
+                                            widget.thumbnailBorderRadius,
+                                        titleFontSize: widget.titleFontSize,
+                                        titleFontWeight: widget.titleFontWeight,
+                                        subtitleFontSize:
+                                            widget.subtitleFontSize,
+                                        subtitleFontWeight:
+                                            widget.subtitleFontWeight,
+                                        titleTextStyle: widget.titleTextStyle,
+                                        subtitleTextStyle:
+                                            widget.subtitleTextStyle,
+                                        subtitleWidth: widget.subtitleWidth,
+                                        subtitleHeight: widget.subtitleHeight,
+                                        chevronSize: widget.chevronSize,
+                                        titleSubtitleSpacing:
+                                            widget.titleSubtitleSpacing,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            if (isMenuOpen && canExpand) ...[
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: resolvedBorderColor.withValues(alpha: 0.35),
-              ),
-              ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxMenuHeight),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (int i = 0; i < items.length; i++)
-                        if (i != safeSelectedIndex)
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => onSelect(i),
-                              child: Padding(
-                                padding: rowPadding,
-                                child: _DropdownRow<T>(
-                                  item: items[i],
-                                  showChevron: false,
-                                  isMenuOpen: false,
-                                  titleBuilder: titleBuilder,
-                                  subtitleBuilder: subtitleBuilder,
-                                  thumbnailBuilder: thumbnailBuilder,
-                                  fallbackAsset: fallbackAsset,
-                                  titleColor: resolvedTitleColor,
-                                  subtitleColor: resolvedSubtitleColor,
-                                  chevronColor: resolvedChevronColor,
-                                  thumbnailWidth: thumbnailWidth,
-                                  thumbnailHeight: thumbnailHeight,
-                                  thumbnailBorderRadius: thumbnailBorderRadius,
-                                  titleFontSize: titleFontSize,
-                                  titleFontWeight: titleFontWeight,
-                                  subtitleFontSize: subtitleFontSize,
-                                  subtitleFontWeight: subtitleFontWeight,
-                                  titleTextStyle: titleTextStyle,
-                                  subtitleTextStyle: subtitleTextStyle,
-                                  subtitleWidth: subtitleWidth,
-                                  subtitleHeight: subtitleHeight,
-                                  chevronSize: chevronSize,
-                                  titleSubtitleSpacing: titleSubtitleSpacing,
-                                ),
-                              ),
-                            ),
-                          ),
-                    ],
-                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.items.isEmpty) return const SizedBox.shrink();
+
+    final int safeSelectedIndex = widget.selectedIndex.clamp(
+      0,
+      widget.items.length - 1,
+    );
+    final T selectedItem = widget.items[safeSelectedIndex];
+    final bool canExpand = widget.items.length > 1;
+    final bool showChevron = canExpand || widget.alwaysShowChevron;
+    final resolvedBackgroundColor =
+        widget.backgroundColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFFF3EFE7)
+            : const Color(0xFF111A1E));
+    final resolvedBorderColor =
+        widget.borderColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF6B6458)
+            : const Color(0xFFD7C5A4));
+    final resolvedTitleColor =
+        widget.titleColor ??
+        (widget.isInteriorTheme ? const Color(0xFF131313) : Colors.white);
+    final resolvedSubtitleColor =
+        widget.subtitleColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF5C554C)
+            : const Color(0xFF8A979D));
+    final resolvedChevronColor =
+        widget.chevronColor ??
+        (widget.isInteriorTheme
+            ? const Color(0xFF584A2D)
+            : const Color(0xFFD2A75D));
+
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: Container(
+        key: _triggerKey,
+        constraints: widget.minHeight == null
+            ? null
+            : BoxConstraints(minHeight: widget.minHeight!),
+        decoration: BoxDecoration(
+          color: resolvedBackgroundColor,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          border: Border.all(color: resolvedBorderColor),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: widget.onToggle,
+              child: Padding(
+                padding: widget.rowPadding,
+                child: _DropdownRow<T>(
+                  item: selectedItem,
+                  showChevron: showChevron,
+                  isMenuOpen: widget.isMenuOpen,
+                  titleBuilder: widget.titleBuilder,
+                  subtitleBuilder: widget.subtitleBuilder,
+                  thumbnailBuilder: widget.thumbnailBuilder,
+                  fallbackAsset: widget.fallbackAsset,
+                  titleColor: resolvedTitleColor,
+                  subtitleColor: resolvedSubtitleColor,
+                  chevronColor: resolvedChevronColor,
+                  thumbnailWidth: widget.thumbnailWidth,
+                  thumbnailHeight: widget.thumbnailHeight,
+                  thumbnailBorderRadius: widget.thumbnailBorderRadius,
+                  titleFontSize: widget.titleFontSize,
+                  titleFontWeight: widget.titleFontWeight,
+                  subtitleFontSize: widget.subtitleFontSize,
+                  subtitleFontWeight: widget.subtitleFontWeight,
+                  titleTextStyle: widget.titleTextStyle,
+                  subtitleTextStyle: widget.subtitleTextStyle,
+                  subtitleWidth: widget.subtitleWidth,
+                  subtitleHeight: widget.subtitleHeight,
+                  chevronSize: widget.chevronSize,
+                  titleSubtitleSpacing: widget.titleSubtitleSpacing,
                 ),
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -271,11 +411,9 @@ class _DropdownRow<T> extends StatelessWidget {
             height: thumbnailHeight,
             width: thumbnailWidth,
             child: thumb.isNotEmpty
-                ? Image.network(
-                    thumb,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        Image.asset(fallbackAsset, fit: BoxFit.cover),
+                ? _AuthorizedNetworkImage(
+                    imageUrl: thumb,
+                    fallbackAsset: fallbackAsset,
                   )
                 : Image.asset(fallbackAsset, fit: BoxFit.cover),
           ),
@@ -335,7 +473,7 @@ class _DropdownRow<T> extends StatelessWidget {
   }
 
   String _resolveThumbnailUrl(String? raw) {
-    final value = (raw ?? '').trim();
+    final value = (raw ?? '').trim().replaceAll('\\', '/');
     if (value.isEmpty || value.toLowerCase() == 'null') {
       return '';
     }
@@ -358,6 +496,66 @@ class _DropdownRow<T> extends StatelessWidget {
   String _apiOrigin() {
     final trimmed = baseUrl.trim();
     if (trimmed.isEmpty) return '';
-    return trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
+  }
+}
+
+class _AuthorizedNetworkImage extends StatefulWidget {
+  const _AuthorizedNetworkImage({
+    required this.imageUrl,
+    required this.fallbackAsset,
+  });
+
+  final String imageUrl;
+  final String fallbackAsset;
+
+  @override
+  State<_AuthorizedNetworkImage> createState() =>
+      _AuthorizedNetworkImageState();
+}
+
+class _AuthorizedNetworkImageState extends State<_AuthorizedNetworkImage> {
+  late final Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = TokenManager.getToken();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _tokenFuture,
+      builder: (context, snapshot) {
+        final token = snapshot.data?.trim() ?? '';
+        final headers = token.isEmpty
+            ? null
+            : <String, String>{'Authorization': 'Bearer $token'};
+
+        return Image.network(
+          widget.imageUrl,
+          fit: BoxFit.cover,
+          headers: headers,
+          errorBuilder: (_, __, ___) =>
+              Image.asset(widget.fallbackAsset, fit: BoxFit.cover),
+        );
+      },
+    );
   }
 }

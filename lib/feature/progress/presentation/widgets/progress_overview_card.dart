@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 
 import '../../domain/entities/progress_entity.dart';
@@ -12,6 +15,7 @@ class ProgressOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fallbackAsset = AssetsImages.constructionIgm;
+    final heroImageUrl = _resolveMediaUrl(project.heroImageUrl);
     final startedLabel = _formatDateLabel(
       project.startedDate,
       longMonth: false,
@@ -34,11 +38,9 @@ class ProgressOverviewCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              project.heroImageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Image.asset(fallbackAsset, fit: BoxFit.cover),
+            _AuthorizedHeroImage(
+              imageUrl: heroImageUrl,
+              fallbackAsset: fallbackAsset,
             ),
             Container(
               decoration: BoxDecoration(
@@ -187,6 +189,97 @@ class ProgressOverviewCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  String _resolveMediaUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return value;
+    if (value.startsWith('/')) {
+      return '$origin$value';
+    }
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
+  }
+}
+
+class _AuthorizedHeroImage extends StatefulWidget {
+  const _AuthorizedHeroImage({
+    required this.imageUrl,
+    required this.fallbackAsset,
+  });
+
+  final String imageUrl;
+  final String fallbackAsset;
+
+  @override
+  State<_AuthorizedHeroImage> createState() => _AuthorizedHeroImageState();
+}
+
+class _AuthorizedHeroImageState extends State<_AuthorizedHeroImage> {
+  late final Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = TokenManager.getToken();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrl.trim().isEmpty) {
+      return Image.asset(widget.fallbackAsset, fit: BoxFit.cover);
+    }
+
+    return FutureBuilder<String?>(
+      future: _tokenFuture,
+      builder: (context, snapshot) {
+        final token = snapshot.data?.trim() ?? '';
+        final headers = token.isEmpty
+            ? null
+            : <String, String>{'Authorization': 'Bearer $token'};
+
+        return Image.network(
+          widget.imageUrl,
+          fit: BoxFit.cover,
+          headers: headers,
+          errorBuilder: (_, __, ___) =>
+              Image.asset(widget.fallbackAsset, fit: BoxFit.cover),
+        );
+      },
     );
   }
 }

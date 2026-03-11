@@ -85,7 +85,8 @@ class ProgressScreenView extends GetView<ProgressController> {
                         onSelect: controller.selectProject,
                         titleBuilder: (item) => item.name,
                         subtitleBuilder: (item) => item.address,
-                        thumbnailBuilder: (item) => item.thumbnailUrl,
+                        thumbnailBuilder: (item) =>
+                            item.thumbnailUrl ?? item.heroImageUrl,
                         fallbackAsset: AssetsImages.constructionIgm,
                         titleSubtitleSpacing: 4,
                       ),

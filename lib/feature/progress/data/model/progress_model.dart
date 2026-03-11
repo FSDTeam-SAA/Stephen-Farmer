@@ -9,26 +9,33 @@ class ProgressTaskModel extends ProgressTaskEntity {
   });
 
   factory ProgressTaskModel.fromJson(Map<String, dynamic> json) {
-    final date = _readFirstDateLabel(
-      json,
-      [
-        "date",
-        "createdAt",
-        "created_at",
-        "updatedAt",
-        "updated_at",
-        "completedAt",
-        "completed_at",
-        "startedAt",
-        "started_at",
-      ],
-      fallback: "",
-    );
+    final date = _readFirstDateLabel(json, [
+      "date",
+      "createdAt",
+      "created_at",
+      "updatedAt",
+      "updated_at",
+      "completedAt",
+      "completed_at",
+      "startedAt",
+      "started_at",
+    ], fallback: "");
 
     return ProgressTaskModel(
-      title: _readFirstString(json, ["title", "name", "task"], fallback: "Untitled Task"),
-      status: _readFirstString(json, ["status", "state"], fallback: "In Progress"),
-      progressPercent: _readFirstInt(json, ["progressPercent", "progress", "completion"], fallback: 0),
+      title: _readFirstString(json, [
+        "title",
+        "name",
+        "task",
+      ], fallback: "Untitled Task"),
+      status: _readFirstString(json, [
+        "status",
+        "state",
+      ], fallback: "In Progress"),
+      progressPercent: _readFirstInt(json, [
+        "progressPercent",
+        "progress",
+        "completion",
+      ], fallback: 0),
       dateLabel: date.trim().isEmpty ? null : date,
     );
   }
@@ -45,25 +52,21 @@ class ProgressUpdateModel extends ProgressUpdateEntity {
   });
 
   factory ProgressUpdateModel.fromJson(Map<String, dynamic> json) {
-    final updatedAt = _readFirstDateLabel(
-      json,
-      [
-        "updatedAt",
-        "updated_at",
-        "createdAt",
-        "created_at",
-        "date",
-      ],
-      fallback: "",
-    );
+    final updatedAt = _readFirstDateLabel(json, [
+      "updatedAt",
+      "updated_at",
+      "createdAt",
+      "created_at",
+      "date",
+    ], fallback: "");
 
     return ProgressUpdateModel(
       id: _readFirstString(json, ["_id", "id", "progressId"]),
-      progressName: _readFirstString(
-        json,
-        ["progressName", "name", "title"],
-        fallback: "Progress Update",
-      ),
+      progressName: _readFirstString(json, [
+        "progressName",
+        "name",
+        "title",
+      ], fallback: "Progress Update"),
       percent: _readFirstInt(json, ["percent", "progressPercent", "progress"]),
       note: _readFirstString(json, ["note", "status", "message"], fallback: ""),
       updatedBy: _readFirstString(json, ["updatedBy", "userId", "user"]),
@@ -92,6 +95,9 @@ class ProjectProgressModel extends ProjectProgressEntity {
   });
 
   factory ProjectProgressModel.fromJson(Map<String, dynamic> json) {
+    final project = json["project"] is Map<String, dynamic>
+        ? json["project"] as Map<String, dynamic>
+        : const <String, dynamic>{};
     final taskPayload = json["tasks"] ?? json["milestones"] ?? json["items"];
     final taskList = _extractTaskList(taskPayload);
     final updatePayload =
@@ -103,48 +109,104 @@ class ProjectProgressModel extends ProjectProgressEntity {
         json["progress_update"];
     final updates = _extractUpdateList(updatePayload);
 
+    final imageFromCollection = _extractString(
+      json["images"] ?? json["photos"] ?? json["attachments"],
+    );
+    final projectImageFromCollection = _extractString(
+      project["images"] ?? project["photos"] ?? project["attachments"],
+    );
+    final genericImage = imageFromCollection.isNotEmpty
+        ? imageFromCollection
+        : projectImageFromCollection;
+
+    final heroImageUrl = _readFirstString(
+      json,
+      ["heroImageUrl", "coverImage", "imageUrl", "image", "projectImage"],
+      fallback: _readFirstString(project, [
+        "heroImageUrl",
+        "coverImage",
+        "imageUrl",
+        "image",
+        "projectImage",
+      ], fallback: genericImage),
+    );
+    final thumbnailUrl = _readFirstString(
+      json,
+      [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "coverImage",
+        "imageUrl",
+        "image",
+        "projectImage",
+      ],
+      fallback: _readFirstString(project, [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "coverImage",
+        "imageUrl",
+        "image",
+        "projectImage",
+      ], fallback: genericImage),
+    );
+
     return ProjectProgressModel(
       id: _readFirstString(json, ["_id", "id", "projectId"]),
-      name: _readFirstString(json, ["name", "title", "projectName"], fallback: "Untitled Project"),
+      name: _readFirstString(json, [
+        "name",
+        "title",
+        "projectName",
+      ], fallback: "Untitled Project"),
       address: _readFirstString(json, ["address", "location"], fallback: "N/A"),
-      heroImageUrl: _readFirstString(json, ["heroImageUrl", "coverImage", "imageUrl", "image"], fallback: ""),
-      thumbnailUrl: _readFirstString(json, ["thumbnailUrl", "thumbnail", "thumb"]).isEmpty
-          ? null
-          : _readFirstString(json, ["thumbnailUrl", "thumbnail", "thumb"]),
-      overallCompletion: _readFirstInt(json, ["overallCompletion", "progressPercent", "completion"], fallback: 0),
-      dayCurrent: _readFirstInt(json, ["dayCurrent", "dayProgress", "elapsedDays"], fallback: 0),
+      heroImageUrl: heroImageUrl,
+      thumbnailUrl: thumbnailUrl.isEmpty
+          ? (heroImageUrl.isEmpty ? null : heroImageUrl)
+          : thumbnailUrl,
+      overallCompletion: _readFirstInt(json, [
+        "overallCompletion",
+        "progressPercent",
+        "completion",
+      ], fallback: 0),
+      dayCurrent: _readFirstInt(json, [
+        "dayCurrent",
+        "dayProgress",
+        "elapsedDays",
+      ], fallback: 0),
       dayTotal: _readFirstInt(json, ["dayTotal", "totalDays"], fallback: 0),
-      tasksCompleted: _readFirstInt(json, ["tasksCompleted", "completedTasks"], fallback: 0),
-      tasksTotal: _readFirstInt(json, ["tasksTotal", "totalTasks"], fallback: 0),
-      photosTotal: _readFirstInt(json, ["photosTotal", "totalPhotos"], fallback: 0),
-      startedDate: _readFirstDateLabel(
-        json,
-        [
-          "startedDate",
-          "startDate",
-          "start_date",
-          "startedAt",
-          "startAt",
-          "createdAt",
-          "created_at",
-        ],
-        fallback: "N/A",
-      ),
-      handoverDate: _readFirstDateLabel(
-        json,
-        [
-          "handoverDate",
-          "estHandoverDate",
-          "handover_date",
-          "est_handover_date",
-          "handoverAt",
-          "endDate",
-          "end_date",
-          "deadline",
-          "deadlineDate",
-        ],
-        fallback: "N/A",
-      ),
+      tasksCompleted: _readFirstInt(json, [
+        "tasksCompleted",
+        "completedTasks",
+      ], fallback: 0),
+      tasksTotal: _readFirstInt(json, [
+        "tasksTotal",
+        "totalTasks",
+      ], fallback: 0),
+      photosTotal: _readFirstInt(json, [
+        "photosTotal",
+        "totalPhotos",
+      ], fallback: 0),
+      startedDate: _readFirstDateLabel(json, [
+        "startedDate",
+        "startDate",
+        "start_date",
+        "startedAt",
+        "startAt",
+        "createdAt",
+        "created_at",
+      ], fallback: "N/A"),
+      handoverDate: _readFirstDateLabel(json, [
+        "handoverDate",
+        "estHandoverDate",
+        "handover_date",
+        "est_handover_date",
+        "handoverAt",
+        "endDate",
+        "end_date",
+        "deadline",
+        "deadlineDate",
+      ], fallback: "N/A"),
       tasks: taskList,
       updates: updates,
     );
@@ -240,7 +302,10 @@ class ProjectProgressModel extends ProjectProgressEntity {
 
 List<ProgressTaskModel> _extractTaskList(dynamic payload) {
   if (payload is List) {
-    return payload.whereType<Map<String, dynamic>>().map(ProgressTaskModel.fromJson).toList();
+    return payload
+        .whereType<Map<String, dynamic>>()
+        .map(ProgressTaskModel.fromJson)
+        .toList();
   }
   return <ProgressTaskModel>[];
 }
@@ -261,12 +326,51 @@ String _readFirstString(
   String fallback = "",
 }) {
   for (final key in keys) {
-    final value = json[key];
-    if (value != null && value.toString().trim().isNotEmpty) {
-      return value.toString().trim();
-    }
+    final extracted = _extractString(json[key]);
+    if (extracted.isNotEmpty) return extracted;
   }
   return fallback;
+}
+
+String _extractString(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is num || value is bool) {
+    return value.toString();
+  }
+
+  if (value is Map) {
+    const imageKeys = <String>[
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+    ];
+    for (final key in imageKeys) {
+      final candidate = _extractString(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final candidate = _extractString(item);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  return '';
 }
 
 int _readFirstInt(

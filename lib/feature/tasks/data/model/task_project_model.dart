@@ -96,6 +96,9 @@ class TaskProjectModel extends TaskProjectEntity {
   });
 
   factory TaskProjectModel.fromJson(Map<String, dynamic> json) {
+    final project = json["project"] is Map<String, dynamic>
+        ? json["project"] as Map<String, dynamic>
+        : const <String, dynamic>{};
     final rows = json["sections"] ?? json["taskSections"] ?? json["groups"];
     final sections = rows is List
         ? rows
@@ -113,6 +116,38 @@ class TaskProjectModel extends TaskProjectEntity {
         ? "Your decisions are required to keep progress on track"
         : "No actions needed right now";
 
+    final imageFromCollection = _extractString(
+      json["images"] ?? json["photos"] ?? json["attachments"],
+    );
+    final projectImageFromCollection = _extractString(
+      project["images"] ?? project["photos"] ?? project["attachments"],
+    );
+    final genericImage = imageFromCollection.isNotEmpty
+        ? imageFromCollection
+        : projectImageFromCollection;
+
+    final thumbnailUrl = _readString(
+      json,
+      [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "imageUrl",
+        "image",
+        "coverImage",
+        "projectImage",
+      ],
+      fallback: _readString(project, [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "imageUrl",
+        "image",
+        "coverImage",
+        "projectImage",
+      ], fallback: genericImage),
+    );
+
     return TaskProjectModel(
       id: _readString(json, ["_id", "id", "projectId"]),
       projectName: _readString(json, [
@@ -125,10 +160,7 @@ class TaskProjectModel extends TaskProjectEntity {
         "address",
         "location",
       ], fallback: "N/A"),
-      thumbnailUrl:
-          _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
-          ? null
-          : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
+      thumbnailUrl: thumbnailUrl.isEmpty ? null : thumbnailUrl,
       actionsNeededCount: resolvedActionsCount,
       actionsNeededMessage: _readString(json, [
         "actionsNeededMessage",
@@ -263,12 +295,51 @@ String _readString(
   String fallback = "",
 }) {
   for (final key in keys) {
-    final value = json[key];
-    if (value != null && value.toString().trim().isNotEmpty) {
-      return value.toString().trim();
-    }
+    final extracted = _extractString(json[key]);
+    if (extracted.isNotEmpty) return extracted;
   }
   return fallback;
+}
+
+String _extractString(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is num || value is bool) {
+    return value.toString();
+  }
+
+  if (value is Map) {
+    const imageKeys = <String>[
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+    ];
+    for (final key in imageKeys) {
+      final candidate = _extractString(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final candidate = _extractString(item);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  return '';
 }
 
 int? _readOptionalInt(Map<String, dynamic> json, List<String> keys) {

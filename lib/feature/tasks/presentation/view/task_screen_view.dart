@@ -176,7 +176,7 @@ class TaskScreenView extends GetView<TaskController> {
                         onSelect: controller.selectProject,
                         titleBuilder: (item) => item.projectName,
                         subtitleBuilder: (item) => item.projectAddress,
-                        thumbnailBuilder: (item) => item.thumbnailUrl,
+                        thumbnailBuilder: _projectThumbnail,
                         fallbackAsset: AssetsImages.constructionIgm,
                       ),
                       const SizedBox(height: 10),
@@ -396,6 +396,26 @@ class TaskScreenView extends GetView<TaskController> {
     }
 
     return _PhaseItems(active: active, finished: finished);
+  }
+
+  String? _projectThumbnail(TaskProjectEntity project) {
+    final direct = (project.thumbnailUrl ?? '').trim();
+    if (direct.isNotEmpty && direct.toLowerCase() != 'null') {
+      return direct;
+    }
+
+    for (final section in project.sections) {
+      for (final item in section.items) {
+        for (final image in item.imageUrls) {
+          final candidate = image.trim();
+          if (candidate.isNotEmpty && candidate.toLowerCase() != 'null') {
+            return candidate;
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   bool _hasAnyKeyword(String source, List<String> keywords) {

@@ -14,21 +14,27 @@ class UpdateProjectModel {
   factory UpdateProjectModel.fromJson(Map<String, dynamic> json) {
     String readFirst(List<String> keys, {String fallback = ''}) {
       for (final key in keys) {
-        final value = json[key];
-        if (value != null && value.toString().trim().isNotEmpty) {
-          return value.toString().trim();
+        final value = _extractString(json[key]);
+        if (value.isNotEmpty) {
+          return value;
         }
       }
       return fallback;
     }
 
-    final thumb = readFirst([
+    final thumbFromFields = readFirst([
       'thumbnailUrl',
       'thumbnail',
+      'thumb',
       'coverImage',
       'image',
       'imageUrl',
+      'projectImage',
     ]);
+    final thumbFromImages = _extractString(
+      json['images'] ?? json['photos'] ?? json['attachments'],
+    );
+    final thumb = thumbFromFields.isNotEmpty ? thumbFromFields : thumbFromImages;
 
     return UpdateProjectModel(
       id: readFirst(['_id', 'id', 'projectId']),
@@ -309,6 +315,47 @@ DateTime _parseDateTime(dynamic value) {
     if (parsed != null) return parsed.toLocal();
   }
   return DateTime.now();
+}
+
+String _extractString(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is num || value is bool) {
+    return value.toString();
+  }
+
+  if (value is Map) {
+    const keys = <String>[
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+    ];
+    for (final key in keys) {
+      final nested = _extractString(value[key]);
+      if (nested.isNotEmpty) return nested;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final nested = _extractString(item);
+      if (nested.isNotEmpty) return nested;
+    }
+    return '';
+  }
+
+  return '';
 }
 
 int? _asInt(dynamic value) {

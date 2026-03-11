@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stephen_farmer/core/common/role_bg_color.dart';
+import 'package:stephen_farmer/core/network/api_service/api_endpoints.dart';
+import 'package:stephen_farmer/core/network/api_service/token_meneger.dart';
 import 'package:stephen_farmer/core/utils/images.dart';
 import 'package:stephen_farmer/feature/auth/presentation/controller/login_controller.dart';
 import 'package:stephen_farmer/feature/chat/domain/entities/chat_entity.dart';
@@ -139,6 +141,7 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
     final authController = Get.find<LoginController>();
     final role = authController.role.value;
     final bool isInterior = RoleBgColor.isInterior(role);
+    final List<String> photoUrls = _resolveTaskPhotoUrls();
 
     final Color bgColor = isInterior
         ? const Color(0xFFE4DED2)
@@ -215,7 +218,7 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                       width: 335,
                       height: 20,
                       child: Text(
-                        'See Photos (4)',
+                        'See Photos (${photoUrls.length})',
                         style: TextStyle(
                           fontFamily: 'ClashDisplay',
                           color: titleColor,
@@ -227,23 +230,48 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: 194,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 2,
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (_, __) => ClipRRect(
+                    if (photoUrls.isEmpty)
+                      Container(
+                        height: 194,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: isInterior
+                              ? const Color(0xFFF5F2EC)
+                              : const Color(0xFF1A232A),
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            AssetsImages.constructionIgm,
-                            width: 219,
-                            height: 194,
-                            fit: BoxFit.cover,
+                        ),
+                        child: Center(
+                          child: Text(
+                            'No photos available',
+                            style: GoogleFonts.manrope(
+                              color: isInterior
+                                  ? const Color(0xFF5B5347)
+                                  : const Color(0xFF9EA9AD),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        height: 194,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: photoUrls.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 12),
+                          itemBuilder: (_, index) => ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _AuthorizedImage(
+                              imageUrl: photoUrls[index],
+                              width: 219,
+                              height: 194,
+                              fallbackAsset: AssetsImages.constructionIgm,
+                            ),
                           ),
                         ),
                       ),
-                    ),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: 335,
@@ -433,6 +461,134 @@ class _TaskDetailsScreenViewState extends State<TaskDetailsScreenView> {
           ],
         ),
       ),
+    );
+  }
+
+  List<String> _resolveTaskPhotoUrls() {
+    final ordered = <String>[];
+    final seen = <String>{};
+
+    void add(String raw) {
+      final resolved = _resolveMediaUrl(raw);
+      if (resolved.isEmpty) return;
+      if (seen.add(resolved)) {
+        ordered.add(resolved);
+      }
+    }
+
+    for (final image in widget.item.imageUrls) {
+      add(image);
+    }
+
+    final selectedProject = _taskController.selectedProject;
+    if (selectedProject != null) {
+      add(selectedProject.thumbnailUrl ?? '');
+      for (final section in selectedProject.sections) {
+        for (final item in section.items) {
+          for (final image in item.imageUrls) {
+            add(image);
+          }
+        }
+      }
+    }
+
+    return ordered;
+  }
+
+  String _resolveMediaUrl(String raw) {
+    final value = raw.trim().replaceAll('\\', '/');
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return '';
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return value;
+    }
+    if (value.startsWith('//')) {
+      return 'https:$value';
+    }
+
+    final origin = _apiOrigin();
+    if (origin.isEmpty) return value;
+    if (value.startsWith('/')) {
+      return '$origin$value';
+    }
+    return '$origin/$value';
+  }
+
+  String _apiOrigin() {
+    final trimmed = baseUrl.trim();
+    if (trimmed.isEmpty) return '';
+    final normalized = trimmed.replaceFirst(RegExp(r'/api/v\d+/?$'), '');
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || uri.host.isEmpty) return normalized;
+
+    var host = uri.host;
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        (host == 'localhost' || host == '127.0.0.1')) {
+      host = '10.0.2.2';
+    }
+
+    return Uri(
+      scheme: uri.scheme,
+      host: host,
+      port: uri.hasPort ? uri.port : null,
+    ).toString();
+  }
+}
+
+class _AuthorizedImage extends StatefulWidget {
+  const _AuthorizedImage({
+    required this.imageUrl,
+    required this.width,
+    required this.height,
+    required this.fallbackAsset,
+  });
+
+  final String imageUrl;
+  final double width;
+  final double height;
+  final String fallbackAsset;
+
+  @override
+  State<_AuthorizedImage> createState() => _AuthorizedImageState();
+}
+
+class _AuthorizedImageState extends State<_AuthorizedImage> {
+  late final Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = TokenManager.getToken();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _tokenFuture,
+      builder: (context, snapshot) {
+        final token = snapshot.data?.trim() ?? '';
+        final headers = token.isEmpty
+            ? null
+            : <String, String>{'Authorization': 'Bearer $token'};
+
+        return Image.network(
+          widget.imageUrl,
+          width: widget.width,
+          height: widget.height,
+          fit: BoxFit.cover,
+          headers: headers,
+          errorBuilder: (_, __, ___) => Image.asset(
+            widget.fallbackAsset,
+            width: widget.width,
+            height: widget.height,
+            fit: BoxFit.cover,
+          ),
+        );
+      },
     );
   }
 }

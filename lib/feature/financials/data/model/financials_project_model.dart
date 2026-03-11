@@ -27,7 +27,10 @@ class PaymentScheduleSectionModel extends PaymentScheduleSectionEntity {
   factory PaymentScheduleSectionModel.fromJson(Map<String, dynamic> json) {
     final rows = json["items"];
     final items = rows is List
-        ? rows.whereType<Map<String, dynamic>>().map(PaymentScheduleItemModel.fromJson).toList()
+        ? rows
+              .whereType<Map<String, dynamic>>()
+              .map(PaymentScheduleItemModel.fromJson)
+              .toList()
         : <PaymentScheduleItemModel>[];
 
     return PaymentScheduleSectionModel(
@@ -51,9 +54,16 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
   });
 
   factory FinancialsProjectModel.fromJson(Map<String, dynamic> json) {
-    final sectionRows = json["scheduleSections"] ?? json["schedules"] ?? json["schedule"];
+    final project = json["project"] is Map<String, dynamic>
+        ? json["project"] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final sectionRows =
+        json["scheduleSections"] ?? json["schedules"] ?? json["schedule"];
     final sections = sectionRows is List
-        ? sectionRows.whereType<Map<String, dynamic>>().map(PaymentScheduleSectionModel.fromJson).toList()
+        ? sectionRows
+              .whereType<Map<String, dynamic>>()
+              .map(PaymentScheduleSectionModel.fromJson)
+              .toList()
         : <PaymentScheduleSectionModel>[];
 
     final phasesRaw = json["phases"];
@@ -61,12 +71,29 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
         ? phasesRaw.whereType<Map<String, dynamic>>().toList()
         : <Map<String, dynamic>>[];
 
-    final scheduleFromPhases = phases.isEmpty ? <PaymentScheduleSectionModel>[] : _buildScheduleFromPhases(phases);
-    final resolvedSections = sections.isNotEmpty ? sections : scheduleFromPhases;
+    final scheduleFromPhases = phases.isEmpty
+        ? <PaymentScheduleSectionModel>[]
+        : _buildScheduleFromPhases(phases);
+    final resolvedSections = sections.isNotEmpty
+        ? sections
+        : scheduleFromPhases;
 
-    final totalBudget = _readInt(json, ["totalBudget", "projectBudget", "budget"], fallback: 0);
-    final paidToDate = _readInt(json, ["paidToDate", "totalPaid", "paidAmount", "totalPaid"], fallback: 0);
-    final remainingBalance = _readInt(json, ["remainingBalance", "remainingBudget", "remainingAmount"], fallback: 0);
+    final totalBudget = _readInt(json, [
+      "totalBudget",
+      "projectBudget",
+      "budget",
+    ], fallback: 0);
+    final paidToDate = _readInt(json, [
+      "paidToDate",
+      "totalPaid",
+      "paidAmount",
+      "totalPaid",
+    ], fallback: 0);
+    final remainingBalance = _readInt(json, [
+      "remainingBalance",
+      "remainingBudget",
+      "remainingAmount",
+    ], fallback: 0);
     final paidPercent = _readPercent(
       json,
       ["paidPercent", "paidPercentage", "paid_percentage"],
@@ -74,13 +101,51 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
       paidToDate: paidToDate,
     );
 
+    final imageFromCollection = _extractString(
+      json["images"] ?? json["photos"] ?? json["attachments"],
+    );
+    final projectImageFromCollection = _extractString(
+      project["images"] ?? project["photos"] ?? project["attachments"],
+    );
+    final genericImage = imageFromCollection.isNotEmpty
+        ? imageFromCollection
+        : projectImageFromCollection;
+
+    final thumbnailUrl = _readString(
+      json,
+      [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "imageUrl",
+        "image",
+        "coverImage",
+        "projectImage",
+      ],
+      fallback: _readString(project, [
+        "thumbnailUrl",
+        "thumbnail",
+        "thumb",
+        "imageUrl",
+        "image",
+        "coverImage",
+        "projectImage",
+      ], fallback: genericImage),
+    );
+
     return FinancialsProjectModel(
       id: _readString(json, ["_id", "id", "projectId"]),
-      projectName: _readString(json, ["projectName", "name", "title"], fallback: "Untitled Project"),
-      projectAddress: _readString(json, ["projectAddress", "address", "location"], fallback: "N/A"),
-      thumbnailUrl: _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]).isEmpty
-          ? null
-          : _readString(json, ["thumbnailUrl", "thumbnail", "imageUrl"]),
+      projectName: _readString(json, [
+        "projectName",
+        "name",
+        "title",
+      ], fallback: "Untitled Project"),
+      projectAddress: _readString(json, [
+        "projectAddress",
+        "address",
+        "location",
+      ], fallback: "N/A"),
+      thumbnailUrl: thumbnailUrl.isEmpty ? null : thumbnailUrl,
       totalBudget: totalBudget,
       paidToDate: paidToDate,
       remainingBalance: remainingBalance,
@@ -94,7 +159,8 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
       id: "demo-1",
       projectName: "Riverside Apartment Renovation",
       projectAddress: "42 Harbor View Drive, Apt 8",
-      thumbnailUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop",
+      thumbnailUrl:
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&auto=format&fit=crop",
       totalBudget: 166130,
       paidToDate: 92500,
       remainingBalance: 93630,
@@ -152,7 +218,8 @@ class FinancialsProjectModel extends FinancialsProjectEntity {
       id: "demo-2",
       projectName: "Cityline Duplex Build",
       projectAddress: "15 Lakefront Ave, Unit 12",
-      thumbnailUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
+      thumbnailUrl:
+          "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&auto=format&fit=crop",
       totalBudget: 220000,
       paidToDate: 120000,
       remainingBalance: 100000,
@@ -203,19 +270,54 @@ String _readString(
   String fallback = "",
 }) {
   for (final key in keys) {
-    final value = json[key];
-    if (value != null && value.toString().trim().isNotEmpty) {
-      return value.toString().trim();
-    }
+    final extracted = _extractString(json[key]);
+    if (extracted.isNotEmpty) return extracted;
   }
   return fallback;
 }
 
-int _readInt(
-  Map<String, dynamic> json,
-  List<String> keys, {
-  int fallback = 0,
-}) {
+String _extractString(dynamic value) {
+  if (value == null) return '';
+
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.toLowerCase() == 'null' ? '' : trimmed;
+  }
+
+  if (value is num || value is bool) {
+    return value.toString();
+  }
+
+  if (value is Map) {
+    const imageKeys = <String>[
+      'url',
+      'imageUrl',
+      'image_url',
+      'secureUrl',
+      'secure_url',
+      'src',
+      'path',
+      'location',
+    ];
+    for (final key in imageKeys) {
+      final candidate = _extractString(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  if (value is List) {
+    for (final item in value) {
+      final candidate = _extractString(item);
+      if (candidate.isNotEmpty) return candidate;
+    }
+    return '';
+  }
+
+  return '';
+}
+
+int _readInt(Map<String, dynamic> json, List<String> keys, {int fallback = 0}) {
   for (final key in keys) {
     final value = json[key];
     if (value is int) return value;
@@ -254,9 +356,16 @@ List<PaymentScheduleSectionModel> _buildScheduleFromPhases(
   final due = <PaymentScheduleItemModel>[];
 
   for (final phase in phases) {
-    final name = _readString(phase, ["phaseName", "title", "name"], fallback: "Phase");
+    final name = _readString(phase, [
+      "phaseName",
+      "title",
+      "name",
+    ], fallback: "Phase");
     final amount = _readInt(phase, ["amount", "value"], fallback: 0);
-    final paymentStatus = _readString(phase, ["paymentStatus", "status"], fallback: "unpaid").toLowerCase();
+    final paymentStatus = _readString(phase, [
+      "paymentStatus",
+      "status",
+    ], fallback: "unpaid").toLowerCase();
     final isPaid = paymentStatus == "paid";
 
     final dueDateLabel = _readDateLabel(phase["dueDate"] ?? phase["due_date"]);
@@ -280,8 +389,10 @@ List<PaymentScheduleSectionModel> _buildScheduleFromPhases(
   }
 
   return [
-    if (paid.isNotEmpty) PaymentScheduleSectionModel(title: "Paid Amount", items: paid),
-    if (due.isNotEmpty) PaymentScheduleSectionModel(title: "Due Amount", items: due),
+    if (paid.isNotEmpty)
+      PaymentScheduleSectionModel(title: "Paid Amount", items: paid),
+    if (due.isNotEmpty)
+      PaymentScheduleSectionModel(title: "Due Amount", items: due),
   ];
 }
 
