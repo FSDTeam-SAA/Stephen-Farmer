@@ -440,10 +440,7 @@ List<TaskProjectEntity> _buildProjectsFromTaskRows(
       );
     }).toList();
 
-    final actionsNeededCount = sections
-        .expand((section) => section.items)
-        .where((item) => item.needsApproval)
-        .length;
+    final actionsNeededCount = _deriveActionsNeededCountFromSections(sections);
 
     return TaskProjectModel(
       id: projectId == '__unassigned__' ? '' : projectId,
@@ -451,11 +448,32 @@ List<TaskProjectEntity> _buildProjectsFromTaskRows(
       projectAddress: _resolveProjectAddress(taskRows.first, meta),
       thumbnailUrl: _resolveProjectThumbnail(taskRows.first, meta),
       actionsNeededCount: actionsNeededCount,
-      actionsNeededMessage:
-          'Your decisions are required to keep progress on track',
+      actionsNeededMessage: actionsNeededCount > 0
+          ? 'Your decisions are required to keep progress on track'
+          : 'No actions needed right now',
       sections: sections,
     );
   }).toList();
+}
+
+int _deriveActionsNeededCountFromSections(List<TaskSectionModel> sections) {
+  if (sections.isEmpty) return 0;
+
+  int fromActionSections = 0;
+  bool hasActionSection = false;
+  for (final section in sections) {
+    final normalized = section.title.trim().toLowerCase();
+    if (normalized.contains('your actions')) {
+      hasActionSection = true;
+      fromActionSections += section.pendingCount;
+    }
+  }
+  if (hasActionSection) return fromActionSections;
+
+  return sections
+      .expand((section) => section.items)
+      .where((item) => !item.isFinished)
+      .length;
 }
 
 Map<String, dynamic> _extractProjectMap(Map<String, dynamic> row) {
