@@ -4,15 +4,16 @@ import '../../domain/entities/financials_project_entity.dart';
 import '../../domain/usecase/get_financials_projects_usecase.dart';
 
 class FinancialsController extends GetxController {
-  FinancialsController({
-    GetFinancialsProjectsUseCase? getProjectsUseCase,
-  }) : _getProjectsUseCase = getProjectsUseCase ?? Get.find<GetFinancialsProjectsUseCase>();
+  FinancialsController({GetFinancialsProjectsUseCase? getProjectsUseCase})
+    : _getProjectsUseCase =
+          getProjectsUseCase ?? Get.find<GetFinancialsProjectsUseCase>();
 
   final GetFinancialsProjectsUseCase _getProjectsUseCase;
 
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
-  final RxList<FinancialsProjectEntity> projects = <FinancialsProjectEntity>[].obs;
+  final RxList<FinancialsProjectEntity> projects =
+      <FinancialsProjectEntity>[].obs;
   final RxInt selectedProjectIndex = 0.obs;
   final RxBool isProjectMenuOpen = false.obs;
 
@@ -52,7 +53,6 @@ class FinancialsController extends GetxController {
   }
 
   void toggleProjectMenu() {
-    if (projects.length <= 1) return;
     isProjectMenuOpen.value = !isProjectMenuOpen.value;
   }
 

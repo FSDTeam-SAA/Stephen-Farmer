@@ -7,8 +7,10 @@ class ProgressController extends GetxController {
   ProgressController({
     GetProgressProjectsUseCase? getProjectsUseCase,
     SubmitProgressUseCase? submitProgressUseCase,
-  }) : _getProjectsUseCase = getProjectsUseCase ?? Get.find<GetProgressProjectsUseCase>(),
-       _submitProgressUseCase = submitProgressUseCase ?? Get.find<SubmitProgressUseCase>();
+  }) : _getProjectsUseCase =
+           getProjectsUseCase ?? Get.find<GetProgressProjectsUseCase>(),
+       _submitProgressUseCase =
+           submitProgressUseCase ?? Get.find<SubmitProgressUseCase>();
 
   final GetProgressProjectsUseCase _getProjectsUseCase;
   final SubmitProgressUseCase _submitProgressUseCase;
@@ -29,7 +31,7 @@ class ProgressController extends GetxController {
 
   bool get hasProjects => projects.isNotEmpty;
 
-  bool get shouldShowProjectDropdown => projects.length > 1;
+  bool get shouldShowProjectDropdown => projects.isNotEmpty;
 
   ProjectProgressEntity? get selectedProject {
     if (!hasProjects) return null;
@@ -63,8 +65,9 @@ class ProgressController extends GetxController {
       isSubmitting.value = true;
       submitErrorMessage.value = '';
 
-      final resolvedProjectId =
-          (projectId ?? '').trim().isNotEmpty ? projectId!.trim() : selectedProject?.id ?? '';
+      final resolvedProjectId = (projectId ?? '').trim().isNotEmpty
+          ? projectId!.trim()
+          : selectedProject?.id ?? '';
       if (resolvedProjectId.trim().isEmpty) {
         submitErrorMessage.value = 'Select a project first.';
         return false;

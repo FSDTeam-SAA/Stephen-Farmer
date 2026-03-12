@@ -201,17 +201,102 @@ List<TaskProjectEntity> _mergeWithProjectCatalog(
 ) {
   if (catalogRows.isEmpty) return projects;
 
+  final catalogById = <String, Map<String, dynamic>>{};
+  final catalogByName = <String, Map<String, dynamic>>{};
+  for (final row in catalogRows) {
+    final id = _firstNonEmpty(<dynamic>[
+      row['_id'],
+      row['id'],
+      row['projectId'],
+      row['project_id'],
+    ]).trim().toLowerCase();
+    final name = _firstNonEmpty(<dynamic>[
+      row['projectName'],
+      row['name'],
+      row['title'],
+    ]).trim().toLowerCase();
+    if (id.isNotEmpty) catalogById[id] = row;
+    if (name.isNotEmpty) catalogByName[name] = row;
+  }
+
+  TaskProjectEntity enrichProject(TaskProjectEntity project) {
+    final idKey = project.id.trim().toLowerCase();
+    final nameKey = project.projectName.trim().toLowerCase();
+    final row =
+        (idKey.isNotEmpty ? catalogById[idKey] : null) ??
+        (nameKey.isNotEmpty ? catalogByName[nameKey] : null);
+    if (row == null) return project;
+
+    final resolvedAddress = _firstNonEmpty(<dynamic>[
+      project.projectAddress,
+      row['projectAddress'],
+      row['project_address'],
+      row['address'],
+      row['location'],
+      row['city'],
+      row['state'],
+      row['country'],
+    ]);
+    final normalizedAddress = resolvedAddress.trim();
+    final useAddress =
+        normalizedAddress.isEmpty || normalizedAddress.toLowerCase() == 'n/a'
+        ? _firstNonEmpty(<dynamic>[
+            row['projectAddress'],
+            row['project_address'],
+            row['address'],
+            row['location'],
+            row['city'],
+            row['state'],
+            row['country'],
+          ])
+        : normalizedAddress;
+
+    final existingThumb = (project.thumbnailUrl ?? '').trim();
+    final resolvedThumb =
+        existingThumb.isNotEmpty && existingThumb.toLowerCase() != 'null'
+        ? existingThumb
+        : _firstImageValue(<dynamic>[
+            row['thumbnailUrl'],
+            row['thumbnail'],
+            row['thumb'],
+            row['imageUrl'],
+            row['image'],
+            row['coverImage'],
+            row['projectImage'],
+            row['images'],
+            row['photos'],
+            row['attachments'],
+          ]);
+
+    if (useAddress == project.projectAddress &&
+        resolvedThumb == (project.thumbnailUrl ?? '').trim()) {
+      return project;
+    }
+
+    return TaskProjectModel(
+      id: project.id,
+      projectName: project.projectName,
+      projectAddress: useAddress.isEmpty ? project.projectAddress : useAddress,
+      thumbnailUrl: resolvedThumb.isEmpty
+          ? project.thumbnailUrl
+          : resolvedThumb,
+      actionsNeededCount: project.actionsNeededCount,
+      actionsNeededMessage: project.actionsNeededMessage,
+      sections: project.sections,
+    );
+  }
+
+  final merged = projects.map(enrichProject).toList(growable: true);
+
   final byId = <String, TaskProjectEntity>{};
   final byName = <String, TaskProjectEntity>{};
 
-  for (final project in projects) {
+  for (final project in merged) {
     final id = project.id.trim().toLowerCase();
     final name = project.projectName.trim().toLowerCase();
     if (id.isNotEmpty) byId[id] = project;
     if (name.isNotEmpty) byName[name] = project;
   }
-
-  final merged = <TaskProjectEntity>[...projects];
 
   for (final row in catalogRows) {
     final id = _firstNonEmpty(<dynamic>[
@@ -239,6 +324,9 @@ List<TaskProjectEntity> _mergeWithProjectCatalog(
       row['project_address'],
       row['address'],
       row['location'],
+      row['city'],
+      row['state'],
+      row['country'],
     ]);
 
     final thumbnail = _firstImageValue(<dynamic>[
@@ -444,9 +532,16 @@ String _resolveProjectAddress(
     row['project_address'],
     row['address'],
     row['location'],
+    row['city'],
+    row['state'],
+    row['country'],
     project['projectAddress'],
+    project['project_address'],
     project['address'],
     project['location'],
+    project['city'],
+    project['state'],
+    project['country'],
   ]);
   return value.isEmpty ? 'N/A' : value;
 }
@@ -522,10 +617,25 @@ String _extractText(dynamic value) {
   }
 
   if (value is Map) {
+    final city = _extractText(value['city']);
+    final state = _extractText(value['state']);
+    final country = _extractText(value['country']);
+    final addressParts = <String>[
+      if (city.isNotEmpty) city,
+      if (state.isNotEmpty) state,
+      if (country.isNotEmpty) country,
+    ];
+    if (addressParts.isNotEmpty) {
+      return addressParts.join(', ');
+    }
+
     const preferredKeys = <String>[
       'id',
       '_id',
       'projectId',
+      'projectAddress',
+      'project_address',
+      'address',
       'name',
       'title',
       'url',

@@ -37,7 +37,7 @@ class UpdateController extends GetxController {
   bool get shouldShowCategoryDropdown =>
       _useCase.shouldShowCategoryDropdown(categoryFilters);
 
-  bool get shouldShowProjectDropdown => projects.length > 1;
+  bool get shouldShowProjectDropdown => projects.isNotEmpty;
 
   bool get hasProjects => projects.isNotEmpty;
 

@@ -85,6 +85,7 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
   final LayerLink _layerLink = LayerLink();
   final GlobalKey _triggerKey = GlobalKey();
   OverlayEntry? _menuOverlayEntry;
+  bool _overlayRebuildScheduled = false;
 
   @override
   void initState() {
@@ -97,7 +98,7 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
     super.didUpdateWidget(oldWidget);
     _syncMenuOverlay();
     if (_menuOverlayEntry != null && widget.isMenuOpen) {
-      _menuOverlayEntry!.markNeedsBuild();
+      _scheduleOverlayRebuild();
     }
   }
 
@@ -108,14 +109,14 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
   }
 
   void _syncMenuOverlay() {
-    final bool canExpand = widget.items.length > 1;
-    final bool shouldShowMenu = widget.isMenuOpen && canExpand;
+    final bool hasItems = widget.items.isNotEmpty;
+    final bool shouldShowMenu = widget.isMenuOpen && hasItems;
     if (shouldShowMenu) {
       if (_menuOverlayEntry == null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted || _menuOverlayEntry != null) return;
-          final bool stillCanExpand = widget.items.length > 1;
-          if (widget.isMenuOpen && stillCanExpand) {
+          final bool stillHasItems = widget.items.isNotEmpty;
+          if (widget.isMenuOpen && stillHasItems) {
             _insertMenuOverlay();
           }
         });
@@ -134,6 +135,18 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
   void _removeMenuOverlay() {
     _menuOverlayEntry?.remove();
     _menuOverlayEntry = null;
+  }
+
+  void _scheduleOverlayRebuild() {
+    if (_overlayRebuildScheduled) return;
+    _overlayRebuildScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _overlayRebuildScheduled = false;
+      if (!mounted) return;
+      if (_menuOverlayEntry != null && widget.isMenuOpen) {
+        _menuOverlayEntry!.markNeedsBuild();
+      }
+    });
   }
 
   Widget _buildMenuOverlay(BuildContext context) {
@@ -202,7 +215,8 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             for (int i = 0; i < widget.items.length; i++)
-                              if (i != safeSelectedIndex)
+                              if (widget.items.length == 1 ||
+                                  i != safeSelectedIndex)
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
@@ -267,7 +281,8 @@ class _CategoryDropdownWidgetState<T> extends State<CategoryDropdownWidget<T>> {
     );
     final T selectedItem = widget.items[safeSelectedIndex];
     final bool canExpand = widget.items.length > 1;
-    final bool showChevron = canExpand || widget.alwaysShowChevron;
+    final bool showChevron =
+        canExpand || widget.alwaysShowChevron || widget.isInteriorTheme;
     final resolvedBackgroundColor =
         widget.backgroundColor ??
         (widget.isInteriorTheme

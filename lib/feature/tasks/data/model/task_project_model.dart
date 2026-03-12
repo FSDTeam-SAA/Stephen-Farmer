@@ -160,16 +160,26 @@ class TaskProjectModel extends TaskProjectEntity {
 
     return TaskProjectModel(
       id: _readString(json, ["_id", "id", "projectId"]),
-      projectName: _readString(json, [
-        "projectName",
-        "name",
-        "title",
-      ], fallback: "Untitled Project"),
-      projectAddress: _readString(json, [
-        "projectAddress",
-        "address",
-        "location",
-      ], fallback: "N/A"),
+      projectName: _readString(
+        json,
+        ["projectName", "name", "title"],
+        fallback: _readString(project, [
+          "projectName",
+          "name",
+          "title",
+        ], fallback: "Untitled Project"),
+      ),
+      projectAddress: _readString(
+        json,
+        ["projectAddress", "project_address", "address", "location", "city"],
+        fallback: _readString(project, [
+          "projectAddress",
+          "project_address",
+          "address",
+          "location",
+          "city",
+        ], fallback: "N/A"),
+      ),
       thumbnailUrl: thumbnailUrl.isEmpty ? null : thumbnailUrl,
       actionsNeededCount: resolvedActionsCount,
       actionsNeededMessage: _readString(json, [
@@ -324,6 +334,35 @@ String _extractString(dynamic value) {
   }
 
   if (value is Map) {
+    final city = _extractString(value['city']);
+    final state = _extractString(value['state']);
+    final country = _extractString(value['country']);
+    final localityParts = <String>[
+      if (city.isNotEmpty) city,
+      if (state.isNotEmpty) state,
+      if (country.isNotEmpty) country,
+    ];
+    if (localityParts.isNotEmpty) {
+      return localityParts.join(', ');
+    }
+
+    const textKeys = <String>[
+      'projectAddress',
+      'project_address',
+      'address',
+      'location',
+      'street',
+      'line1',
+      'line2',
+      'name',
+      'title',
+      'label',
+    ];
+    for (final key in textKeys) {
+      final candidate = _extractString(value[key]);
+      if (candidate.isNotEmpty) return candidate;
+    }
+
     const imageKeys = <String>[
       'url',
       'imageUrl',

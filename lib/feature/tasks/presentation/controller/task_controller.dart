@@ -61,7 +61,6 @@ class TaskController extends GetxController {
   }
 
   void toggleProjectMenu() {
-    if (projects.length <= 1) return;
     isProjectMenuOpen.value = !isProjectMenuOpen.value;
   }
 
