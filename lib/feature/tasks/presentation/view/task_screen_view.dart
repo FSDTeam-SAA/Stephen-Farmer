@@ -171,7 +171,6 @@ class TaskScreenView extends GetView<TaskController> {
                         selectedIndex: controller.selectedProjectIndex.value,
                         isMenuOpen: controller.isProjectMenuOpen.value,
                         isInteriorTheme: isInterior,
-                        alwaysShowChevron: true,
                         onToggle: controller.toggleProjectMenu,
                         onSelect: controller.selectProject,
                         titleBuilder: (item) => item.projectName,

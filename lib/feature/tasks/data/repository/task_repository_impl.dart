@@ -33,11 +33,13 @@ class TaskRepositoryImpl implements TaskRepository {
 
     if (_isTaskListPayload(rows)) {
       final built = _buildProjectsFromTaskRows(rows);
-      return _hydrateMissingThumbnails(built, projectImageIndex);
+      final hydrated = _hydrateMissingThumbnails(built, projectImageIndex);
+      return _mergeWithProjectCatalog(hydrated, _latestProjectCatalogRows);
     }
 
     final built = rows.map(TaskProjectModel.fromJson).toList();
-    return _hydrateMissingThumbnails(built, projectImageIndex);
+    final hydrated = _hydrateMissingThumbnails(built, projectImageIndex);
+    return _mergeWithProjectCatalog(hydrated, _latestProjectCatalogRows);
   }
 
   @override
@@ -140,6 +142,9 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 }
 
+List<Map<String, dynamic>> _latestProjectCatalogRows =
+    const <Map<String, dynamic>>[];
+
 Future<Map<String, String>> _fetchProjectImageIndex(ApiClient apiClient) async {
   try {
     final response = await apiClient.get(ProjectEndpoints.getAll);
@@ -147,6 +152,7 @@ Future<Map<String, String>> _fetchProjectImageIndex(ApiClient apiClient) async {
       response.data,
       preferredKeys: const ['projects', 'items', 'results', 'data'],
     );
+    _latestProjectCatalogRows = rows;
     if (rows.isEmpty) return const <String, String>{};
 
     final index = <String, String>{};
@@ -184,8 +190,86 @@ Future<Map<String, String>> _fetchProjectImageIndex(ApiClient apiClient) async {
     }
     return index;
   } catch (_) {
+    _latestProjectCatalogRows = const <Map<String, dynamic>>[];
     return const <String, String>{};
   }
+}
+
+List<TaskProjectEntity> _mergeWithProjectCatalog(
+  List<TaskProjectEntity> projects,
+  List<Map<String, dynamic>> catalogRows,
+) {
+  if (catalogRows.isEmpty) return projects;
+
+  final byId = <String, TaskProjectEntity>{};
+  final byName = <String, TaskProjectEntity>{};
+
+  for (final project in projects) {
+    final id = project.id.trim().toLowerCase();
+    final name = project.projectName.trim().toLowerCase();
+    if (id.isNotEmpty) byId[id] = project;
+    if (name.isNotEmpty) byName[name] = project;
+  }
+
+  final merged = <TaskProjectEntity>[...projects];
+
+  for (final row in catalogRows) {
+    final id = _firstNonEmpty(<dynamic>[
+      row['_id'],
+      row['id'],
+      row['projectId'],
+      row['project_id'],
+    ]).trim();
+    final name = _firstNonEmpty(<dynamic>[
+      row['projectName'],
+      row['name'],
+      row['title'],
+    ]).trim();
+    if (id.isEmpty && name.isEmpty) continue;
+
+    final idKey = id.toLowerCase();
+    final nameKey = name.toLowerCase();
+    if ((idKey.isNotEmpty && byId.containsKey(idKey)) ||
+        (nameKey.isNotEmpty && byName.containsKey(nameKey))) {
+      continue;
+    }
+
+    final address = _firstNonEmpty(<dynamic>[
+      row['projectAddress'],
+      row['project_address'],
+      row['address'],
+      row['location'],
+    ]);
+
+    final thumbnail = _firstImageValue(<dynamic>[
+      row['thumbnailUrl'],
+      row['thumbnail'],
+      row['thumb'],
+      row['imageUrl'],
+      row['image'],
+      row['coverImage'],
+      row['projectImage'],
+      row['images'],
+      row['photos'],
+      row['attachments'],
+    ]);
+
+    final placeholder = TaskProjectModel(
+      id: id,
+      projectName: name.isEmpty ? 'Untitled Project' : name,
+      projectAddress: address.isEmpty ? 'N/A' : address,
+      thumbnailUrl: thumbnail.isEmpty ? null : thumbnail,
+      actionsNeededCount: 0,
+      actionsNeededMessage: 'No actions needed right now',
+      sections: const <TaskSectionEntity>[],
+    );
+
+    if (idKey.isNotEmpty) byId[idKey] = placeholder;
+    if (nameKey.isNotEmpty) byName[nameKey] = placeholder;
+    merged.add(placeholder);
+  }
+
+  return merged;
 }
 
 List<TaskProjectEntity> _hydrateMissingThumbnails(
@@ -304,6 +388,7 @@ String _resolveProjectId(
     project['_id'],
     project['id'],
     project['projectId'],
+    project['project_id'],
   ]);
   if (fromProject.isNotEmpty) return fromProject;
 
@@ -313,9 +398,24 @@ String _resolveProjectId(
   final fromRow = _firstNonEmpty(<dynamic>[
     row['projectId'],
     row['project_id'],
+    row['projectID'],
     row['_projectId'],
   ]);
   if (fromRow.isNotEmpty) return fromRow;
+
+  // Some payloads omit stable project ids; use project identity fields
+  // so dropdown grouping still works per project instead of collapsing all.
+  final projectIdentity = _firstNonEmpty(<dynamic>[
+    row['projectName'],
+    row['project_name'],
+    row['projectTitle'],
+    project['projectName'],
+    project['name'],
+    project['title'],
+  ]);
+  if (projectIdentity.isNotEmpty) {
+    return '__project__${projectIdentity.trim().toLowerCase()}';
+  }
 
   return '__unassigned__';
 }
