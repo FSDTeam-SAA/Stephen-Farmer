@@ -30,6 +30,7 @@ import 'progress/domain/repository/progress_repository.dart';
 import 'progress/domain/usecase/get_progress_projects_usecase.dart';
 import 'progress/domain/usecase/submit_progress_usecase.dart';
 import 'progress/presentation/controller/progress_controller.dart';
+import 'realtime/data/service/realtime_sync_service.dart';
 import 'tasks/data/repository/task_repository_impl.dart';
 import 'tasks/domain/repository/task_repository.dart';
 import 'tasks/domain/usecase/get_task_projects_usecase.dart';
@@ -176,6 +177,8 @@ class AppDependencies {
       NotificationSocketService.new,
       fenix: true,
     );
+
+    Get.lazyPut<RealtimeSyncService>(RealtimeSyncService.new, fenix: true);
 
     Get.lazyPut<GetNotificationsUseCase>(
       () => GetNotificationsUseCase(

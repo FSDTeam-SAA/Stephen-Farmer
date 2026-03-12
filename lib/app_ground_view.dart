@@ -6,6 +6,8 @@ import 'package:stephen_farmer/feature/financials/presentation/controller/financ
 import 'package:stephen_farmer/feature/financials/presentation/view/financials_screen_view.dart';
 import 'package:stephen_farmer/feature/notifications/presentation/controller/notification_controller.dart';
 import 'package:stephen_farmer/feature/progress/presentation/controller/progress_controller.dart';
+import 'package:stephen_farmer/feature/realtime/data/service/realtime_sync_service.dart';
+import 'dart:async';
 
 import 'package:stephen_farmer/feature/progress/presentation/view/progress_screen_view.dart';
 import 'package:stephen_farmer/feature/tasks/presentation/controller/task_controller.dart';
@@ -25,8 +27,13 @@ class AppGroundView extends StatefulWidget {
 
 class _AppGroundViewState extends State<AppGroundView> {
   final LoginController _auth = Get.find<LoginController>();
+  final RealtimeSyncService _realtimeSync = Get.find<RealtimeSyncService>();
   int _currentIndex = 0;
   bool _didBootstrapData = false;
+  StreamSubscription<RealtimeSyncEvent>? _realtimeSubscription;
+  StreamSubscription<bool>? _realtimeConnectionSubscription;
+  final Map<String, Timer> _refreshDebounceTimers = <String, Timer>{};
+  Timer? _fallbackPollingTimer;
 
   bool get _isManager => _auth.normalizedRoleKey == 'manager';
 
@@ -43,7 +50,21 @@ class _AppGroundViewState extends State<AppGroundView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bootstrapDataAfterLogin();
+      _bindRealtimeSync();
     });
+  }
+
+  @override
+  void dispose() {
+    _realtimeSubscription?.cancel();
+    _realtimeConnectionSubscription?.cancel();
+    _fallbackPollingTimer?.cancel();
+    for (final timer in _refreshDebounceTimers.values) {
+      timer.cancel();
+    }
+    _refreshDebounceTimers.clear();
+    _realtimeSync.disconnect();
+    super.dispose();
   }
 
   @override
@@ -144,6 +165,102 @@ class _AppGroundViewState extends State<AppGroundView> {
         notificationController.errorMessage.value.isNotEmpty) {
       await _safeRun(notificationController.refreshNotifications);
     }
+  }
+
+  Future<void> _bindRealtimeSync() async {
+    _realtimeSubscription?.cancel();
+    _realtimeConnectionSubscription?.cancel();
+    _realtimeSubscription = _realtimeSync.events.listen(_onRealtimeSyncEvent);
+    _realtimeConnectionSubscription = _realtimeSync.connectionState.listen((
+      connected,
+    ) {
+      if (connected) {
+        _stopFallbackPolling();
+      } else {
+        _startFallbackPolling();
+      }
+    });
+    await _realtimeSync.connect();
+    if (!_realtimeSync.isConnected) {
+      _startFallbackPolling();
+    }
+  }
+
+  void _onRealtimeSyncEvent(RealtimeSyncEvent event) {
+    if (event.areas.contains(RealtimeArea.all)) {
+      _debouncedRefresh(
+        key: 'all',
+        duration: const Duration(milliseconds: 600),
+        action: _refreshAllTabsData,
+      );
+      return;
+    }
+
+    if (event.areas.contains(RealtimeArea.updates)) {
+      _debouncedRefresh(
+        key: 'updates',
+        duration: const Duration(milliseconds: 450),
+        action: _resolveUpdateController().refreshAll,
+      );
+    }
+    if (event.areas.contains(RealtimeArea.progress)) {
+      _debouncedRefresh(
+        key: 'progress',
+        duration: const Duration(milliseconds: 450),
+        action: Get.find<ProgressController>().refreshProjects,
+      );
+    }
+    if (event.areas.contains(RealtimeArea.tasks)) {
+      _debouncedRefresh(
+        key: 'tasks',
+        duration: const Duration(milliseconds: 450),
+        action: Get.find<TaskController>().refreshProjects,
+      );
+    }
+    if (event.areas.contains(RealtimeArea.financials) && !_isManager) {
+      _debouncedRefresh(
+        key: 'financials',
+        duration: const Duration(milliseconds: 450),
+        action: Get.find<FinancialsController>().refreshProjects,
+      );
+    }
+    if (event.areas.contains(RealtimeArea.documents)) {
+      _debouncedRefresh(
+        key: 'documents',
+        duration: const Duration(milliseconds: 450),
+        action: Get.find<DocumentController>().refreshProjects,
+      );
+    }
+    if (event.areas.contains(RealtimeArea.notifications)) {
+      _debouncedRefresh(
+        key: 'notifications',
+        duration: const Duration(milliseconds: 350),
+        action: Get.find<NotificationController>().refreshNotifications,
+      );
+    }
+  }
+
+  void _debouncedRefresh({
+    required String key,
+    required Duration duration,
+    required Future<void> Function() action,
+  }) {
+    _refreshDebounceTimers[key]?.cancel();
+    _refreshDebounceTimers[key] = Timer(duration, () {
+      _safeRun(action);
+    });
+  }
+
+  void _startFallbackPolling() {
+    _fallbackPollingTimer?.cancel();
+    _fallbackPollingTimer = Timer.periodic(const Duration(seconds: 45), (_) {
+      _safeRun(_refreshAllTabsData);
+    });
+  }
+
+  void _stopFallbackPolling() {
+    _fallbackPollingTimer?.cancel();
+    _fallbackPollingTimer = null;
   }
 
   void _refreshCurrentTabIfNeeded(int index) {
