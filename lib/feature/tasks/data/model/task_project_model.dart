@@ -31,7 +31,15 @@ class TaskItemModel extends TaskItemEntity {
       projectId: projectId.isNotEmpty
           ? projectId
           : _readString(projectMap, ["_id", "id", "projectId"]),
-      title: _readString(json, ["title", "name"], fallback: "Untitled task"),
+      title: _readString(json, [
+        "title",
+        "taskTitle",
+        "task_title",
+        "taskName",
+        "task_name",
+        "subject",
+        "name",
+      ], fallback: "Untitled task"),
       subtitle: _readString(json, ["subtitle", "description"], fallback: ""),
       priority: _readString(json, ["priority", "level"], fallback: "Medium"),
       phaseStatus: normalizedStatus,
@@ -79,7 +87,7 @@ class TaskSectionModel extends TaskSectionEntity {
     final derivedPending = items.where((item) => !item.isFinished).length;
 
     return TaskSectionModel(
-      title: _readString(json, ["title", "name"], fallback: "Tasks"),
+      title: _readString(json, ["title", "name"], fallback: "Your Actions"),
       pendingCount: explicitPending ?? derivedPending,
       items: items,
     );
