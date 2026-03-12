@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -120,16 +121,31 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
   @override
   Widget build(BuildContext context) {
     final isInterior = widget.isInterior;
-    final panelColor = isInterior ? const Color(0xFFD6D1C7) : const Color(0xFF111B21);
+    final showBackButton = defaultTargetPlatform == TargetPlatform.android;
+    final panelColor = isInterior
+        ? const Color(0xFFD6D1C7)
+        : const Color(0xFF111B21);
     final titleColor = isInterior ? Colors.black : Colors.white;
-    final bodyColor = isInterior ? const Color(0xFF181818) : const Color(0xFFF2F2F2);
-    final mutedColor = isInterior ? const Color(0xFF4B4B4B) : const Color(0xFF8E8E93);
+    final bodyColor = isInterior
+        ? const Color(0xFF181818)
+        : const Color(0xFFF2F2F2);
+    final mutedColor = isInterior
+        ? const Color(0xFF4B4B4B)
+        : const Color(0xFF8E8E93);
 
     return Scaffold(
       backgroundColor: panelColor,
       appBar: AppBar(
         backgroundColor: panelColor,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: showBackButton
+            ? IconButton(
+                onPressed: () => Get.back<void>(),
+                icon: const Icon(Icons.chevron_left_rounded),
+                color: titleColor,
+              )
+            : null,
         title: Text(
           'Comments',
           style: GoogleFonts.manrope(
@@ -160,7 +176,10 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                       final commentThreads = _buildCommentThreads(_comments);
                       return ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         itemCount: commentThreads.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 14),
                         itemBuilder: (_, index) {
@@ -182,9 +201,10 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                                   setState(() {
                                     _replyToName = name;
                                     _textController.text = '@$name ';
-                                    _textController.selection = TextSelection.collapsed(
-                                      offset: _textController.text.length,
-                                    );
+                                    _textController.selection =
+                                        TextSelection.collapsed(
+                                          offset: _textController.text.length,
+                                        );
                                   });
                                   _inputFocusNode.requestFocus();
                                 },
@@ -194,35 +214,49 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 24),
                                   child: Column(
-                                    children: List.generate(thread.replies.length, (replyIndex) {
-                                      final reply = thread.replies[replyIndex];
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                          bottom: replyIndex == thread.replies.length - 1 ? 0 : 10,
-                                        ),
-                                        child: _buildCommentTile(
-                                          comment: reply.comment,
-                                          isInterior: isInterior,
-                                          titleColor: titleColor,
-                                          bodyColor: bodyColor,
-                                          mutedColor: mutedColor,
-                                          messageText: reply.displayText,
-                                          onReply: () {
-                                            final name = reply.comment.userName.trim();
-                                            if (name.isEmpty) return;
-                                            setState(() {
-                                              _replyToName = name;
-                                              _textController.text = '@$name ';
-                                              _textController.selection =
-                                                  TextSelection.collapsed(
-                                                offset: _textController.text.length,
-                                              );
-                                            });
-                                            _inputFocusNode.requestFocus();
-                                          },
-                                        ),
-                                      );
-                                    }),
+                                    children: List.generate(
+                                      thread.replies.length,
+                                      (replyIndex) {
+                                        final reply =
+                                            thread.replies[replyIndex];
+                                        return Padding(
+                                          padding: EdgeInsets.only(
+                                            bottom:
+                                                replyIndex ==
+                                                    thread.replies.length - 1
+                                                ? 0
+                                                : 10,
+                                          ),
+                                          child: _buildCommentTile(
+                                            comment: reply.comment,
+                                            isInterior: isInterior,
+                                            titleColor: titleColor,
+                                            bodyColor: bodyColor,
+                                            mutedColor: mutedColor,
+                                            messageText: reply.displayText,
+                                            onReply: () {
+                                              final name = reply
+                                                  .comment
+                                                  .userName
+                                                  .trim();
+                                              if (name.isEmpty) return;
+                                              setState(() {
+                                                _replyToName = name;
+                                                _textController.text =
+                                                    '@$name ';
+                                                _textController.selection =
+                                                    TextSelection.collapsed(
+                                                      offset: _textController
+                                                          .text
+                                                          .length,
+                                                    );
+                                              });
+                                              _inputFocusNode.requestFocus();
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                               ],
@@ -239,9 +273,14 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
-                      color: isInterior ? const Color(0xFFB0A38D) : const Color(0xFF232A33),
+                      color: isInterior
+                          ? const Color(0xFFB0A38D)
+                          : const Color(0xFF232A33),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
@@ -261,7 +300,11 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                         _textController.clear();
                       });
                     },
-                    child: Icon(Icons.close_rounded, size: 18, color: mutedColor),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: mutedColor,
+                    ),
                   ),
                 ],
               ),
@@ -273,7 +316,9 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isInterior ? const Color(0xFF7A787A) : const Color(0xFF2B2E37),
+                      color: isInterior
+                          ? const Color(0xFF7A787A)
+                          : const Color(0xFF2B2E37),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: TextField(
@@ -295,7 +340,10 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                         ),
                         isDense: true,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -312,7 +360,9 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
                       : Icon(
                           Icons.send_rounded,
                           size: 30,
-                          color: isInterior ? const Color(0xFF8E6500) : const Color(0xFFD09A2F),
+                          color: isInterior
+                              ? const Color(0xFF8E6500)
+                              : const Color(0xFFD09A2F),
                         ),
                 ),
               ],
@@ -338,7 +388,9 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
       children: [
         CircleAvatar(
           radius: 16,
-          backgroundColor: isInterior ? const Color(0xFFC3BEB4) : const Color(0xFF2D3238),
+          backgroundColor: isInterior
+              ? const Color(0xFFC3BEB4)
+              : const Color(0xFF2D3238),
           backgroundImage: avatarUrl != null && avatarUrl.trim().isNotEmpty
               ? NetworkImage(avatarUrl.trim())
               : null,
@@ -346,7 +398,9 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
               ? Icon(
                   Icons.person_rounded,
                   size: 18,
-                  color: isInterior ? const Color(0xFF6A6358) : const Color(0xFFD0D0D0),
+                  color: isInterior
+                      ? const Color(0xFF6A6358)
+                      : const Color(0xFFD0D0D0),
                 )
               : null,
         ),
@@ -358,7 +412,9 @@ class _UpdateCommentsViewState extends State<UpdateCommentsView> {
               Container(
                 padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
                 decoration: BoxDecoration(
-                  color: isInterior ? const Color(0xFFE3DED3) : const Color(0xFF1E2A33),
+                  color: isInterior
+                      ? const Color(0xFFE3DED3)
+                      : const Color(0xFF1E2A33),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -504,4 +560,3 @@ class _ThreadedReply {
 
   const _ThreadedReply({required this.comment, required this.displayText});
 }
-

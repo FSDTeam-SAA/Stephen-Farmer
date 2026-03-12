@@ -17,16 +17,16 @@ class ProgressTaskItemCard extends StatelessWidget {
     final bool isCompleted = task.status.toLowerCase() == 'completed';
     final Color statusColor = isCompleted
         ? const Color(0xFF009A0A)
-        : const Color(0xFFAAB5BA);
+        : (isInteriorTheme ? const Color(0xFFE3D2AA) : const Color(0xFFAAB5BA));
     final Color titleColor = isInteriorTheme
-        ? const Color(0xFF1D1D1D)
+        ? const Color(0xFFFFFFFF)
         : Colors.white;
     const Color percentColor = Colors.white;
     final Color cardColor = isInteriorTheme
-        ? const Color(0xFFB8B09F)
+        ? Colors.transparent
         : const Color(0xFF111A1E);
     final Color progressBackground = isInteriorTheme
-        ? Colors.black.withValues(alpha: 0.12)
+        ? const Color(0xFFFFFFFF)
         : Colors.white;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
