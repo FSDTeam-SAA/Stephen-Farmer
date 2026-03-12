@@ -54,16 +54,33 @@ class _ProfileScreenViewState extends State<ProfileScreenView> {
   }
 
   Future<void> _pickAvatar(ImageSource source) async {
-    final XFile? picked = await _picker.pickImage(
-      source: source,
-      imageQuality: 80,
-      maxWidth: 1200,
-    );
-    if (picked == null) return;
+    if (!_picker.supportsImageSource(source)) {
+      Get.snackbar(
+        'Unavailable',
+        source == ImageSource.camera
+            ? 'Camera is not available on this device.'
+            : 'Gallery is not available on this device.',
+      );
+      return;
+    }
 
-    setState(() {
-      _localAvatarFile = File(picked.path);
-    });
+    try {
+      final XFile? picked = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1200,
+      );
+      if (picked == null) return;
+
+      setState(() {
+        _localAvatarFile = File(picked.path);
+      });
+    } on PlatformException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.message ?? 'Unable to open image source right now.',
+      );
+    }
   }
 
   Future<void> _onTapEditOrSave() async {
@@ -123,6 +140,7 @@ class _ProfileScreenViewState extends State<ProfileScreenView> {
           : _authController.displayEmail;
       final displayRole = _formatRole(_authController.normalizedRoleKey);
       final avatar = _authController.displayAvatar;
+      final canUseCamera = _picker.supportsImageSource(ImageSource.camera);
 
       if (!_isEditing) {
         _nameController.value = TextEditingValue(text: displayName);
@@ -226,20 +244,21 @@ class _ProfileScreenViewState extends State<ProfileScreenView> {
                                                   );
                                                 },
                                               ),
-                                              ListTile(
-                                                leading: const Icon(
-                                                  Icons.photo_camera_outlined,
+                                              if (canUseCamera)
+                                                ListTile(
+                                                  leading: const Icon(
+                                                    Icons.photo_camera_outlined,
+                                                  ),
+                                                  title: const Text(
+                                                    'Take a photo',
+                                                  ),
+                                                  onTap: () {
+                                                    Navigator.pop(context);
+                                                    _pickAvatar(
+                                                      ImageSource.camera,
+                                                    );
+                                                  },
                                                 ),
-                                                title: const Text(
-                                                  'Take a photo',
-                                                ),
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  _pickAvatar(
-                                                    ImageSource.camera,
-                                                  );
-                                                },
-                                              ),
                                             ],
                                           ),
                                         ),

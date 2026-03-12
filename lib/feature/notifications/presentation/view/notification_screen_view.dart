@@ -34,10 +34,17 @@ class NotificationScreenView extends GetView<NotificationController> {
           : const Color(0xFF4A565D);
       final Color subtitleColor = isInterior
           ? const Color(0xFF585858)
-          : const Color(0xFF9AA7AD);
+          : const Color(0xFF8E8E93);
       final Color messageColor = isInterior
           ? const Color(0xFF4C4C4C)
           : Colors.white;
+      final sectionTextStyle = GoogleFonts.manrope(
+        color: sectionColor,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        height: 1,
+        letterSpacing: 0,
+      );
 
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: RoleBgColor.overlayStyle(role),
@@ -47,7 +54,7 @@ class NotificationScreenView extends GetView<NotificationController> {
             decoration: RoleBgColor.decoration(role),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 child: Column(
                   children: [
                     Row(
@@ -82,8 +89,7 @@ class NotificationScreenView extends GetView<NotificationController> {
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               child: Text(
                                 controller.isMarkingAll.value
@@ -102,133 +108,112 @@ class NotificationScreenView extends GetView<NotificationController> {
                         ),
                       ],
                     ),
-                  const SizedBox(height: 10),
-                  Divider(
-                    color: isInterior
-                        ? const Color(0xFF9A968E)
-                        : const Color(0xFF3A454C),
-                    thickness: 1,
-                    height: 1,
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: controller.isLoading.value
-                        ? const Center(child: CircularProgressIndicator())
-                        : RefreshIndicator(
-                            onRefresh: controller.refreshNotifications,
-                            child: ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.zero,
-                              children: [
-                                if (controller
-                                    .todayNotifications
-                                    .isNotEmpty) ...[
-                                  Text(
-                                    'Today',
-                                    style: TextStyle(
-                                      color: sectionColor,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 10),
+                    Divider(
+                      color: isInterior
+                          ? const Color(0xFF9A968E)
+                          : const Color(0xFF3A454C),
+                      thickness: 1,
+                      height: 1,
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: controller.isLoading.value
+                          ? const Center(child: CircularProgressIndicator())
+                          : RefreshIndicator(
+                              onRefresh: controller.refreshNotifications,
+                              child: ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  if (controller
+                                      .todayNotifications
+                                      .isNotEmpty) ...[
+                                    Text('Today', style: sectionTextStyle),
+                                    const SizedBox(height: 10),
+                                    ...controller.todayNotifications.map(
+                                      (item) => _NotificationCard(
+                                        item: item,
+                                        onTap: () =>
+                                            controller.markSingleAsRead(item),
+                                        isInterior: isInterior,
+                                        cardBackground: cardBackground,
+                                        cardBorder: cardBorder,
+                                        subtitleColor: subtitleColor,
+                                        messageColor: messageColor,
+                                        timeLabel: controller.timeLabel(item),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ...controller.todayNotifications.map(
-                                    (item) => _NotificationCard(
-                                      item: item,
-                                      onTap: () =>
-                                          controller.markSingleAsRead(item),
-                                      isInterior: isInterior,
-                                      cardBackground: cardBackground,
-                                      cardBorder: cardBorder,
-                                      subtitleColor: subtitleColor,
-                                      messageColor: messageColor,
-                                      timeLabel: controller.timeLabel(item),
+                                    const SizedBox(height: 14),
+                                  ],
+                                  if (controller
+                                      .yesterdayNotifications
+                                      .isNotEmpty) ...[
+                                    Text('Yesterday', style: sectionTextStyle),
+                                    const SizedBox(height: 10),
+                                    ...controller.yesterdayNotifications.map(
+                                      (item) => _NotificationCard(
+                                        item: item,
+                                        onTap: () =>
+                                            controller.markSingleAsRead(item),
+                                        isInterior: isInterior,
+                                        cardBackground: cardBackground,
+                                        cardBorder: cardBorder,
+                                        subtitleColor: subtitleColor,
+                                        messageColor: messageColor,
+                                        timeLabel: controller.timeLabel(item),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 14),
-                                ],
-                                if (controller
-                                    .yesterdayNotifications
-                                    .isNotEmpty) ...[
-                                  Text(
-                                    'Yesterday',
-                                    style: TextStyle(
-                                      color: sectionColor,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
+                                    const SizedBox(height: 14),
+                                  ],
+                                  if (controller
+                                      .olderNotifications
+                                      .isNotEmpty) ...[
+                                    Text('Earlier', style: sectionTextStyle),
+                                    const SizedBox(height: 10),
+                                    ...controller.olderNotifications.map(
+                                      (item) => _NotificationCard(
+                                        item: item,
+                                        onTap: () =>
+                                            controller.markSingleAsRead(item),
+                                        isInterior: isInterior,
+                                        cardBackground: cardBackground,
+                                        cardBorder: cardBorder,
+                                        subtitleColor: subtitleColor,
+                                        messageColor: messageColor,
+                                        timeLabel: controller.timeLabel(item),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ...controller.yesterdayNotifications.map(
-                                    (item) => _NotificationCard(
-                                      item: item,
-                                      onTap: () =>
-                                          controller.markSingleAsRead(item),
-                                      isInterior: isInterior,
-                                      cardBackground: cardBackground,
-                                      cardBorder: cardBorder,
-                                      subtitleColor: subtitleColor,
-                                      messageColor: messageColor,
-                                      timeLabel: controller.timeLabel(item),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14),
-                                ],
-                                if (controller
-                                    .olderNotifications
-                                    .isNotEmpty) ...[
-                                  Text(
-                                    'Earlier',
-                                    style: TextStyle(
-                                      color: sectionColor,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ...controller.olderNotifications.map(
-                                    (item) => _NotificationCard(
-                                      item: item,
-                                      onTap: () =>
-                                          controller.markSingleAsRead(item),
-                                      isInterior: isInterior,
-                                      cardBackground: cardBackground,
-                                      cardBorder: cardBorder,
-                                      subtitleColor: subtitleColor,
-                                      messageColor: messageColor,
-                                      timeLabel: controller.timeLabel(item),
-                                    ),
-                                  ),
-                                ],
-                                if (controller.notifications.isEmpty &&
-                                    controller.errorMessage.value.isEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 42),
-                                    child: Center(
-                                      child: Text(
-                                        'No notifications yet',
-                                        style: TextStyle(
-                                          color: subtitleColor,
-                                          fontSize: 14,
+                                  ],
+                                  if (controller.notifications.isEmpty &&
+                                      controller.errorMessage.value.isEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 42),
+                                      child: Center(
+                                        child: Text(
+                                          'No notifications yet',
+                                          style: TextStyle(
+                                            color: subtitleColor,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                if (controller.errorMessage.value.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 18),
-                                    child: Text(
-                                      controller.errorMessage.value,
-                                      style: const TextStyle(
-                                        color: Color(0xFFFF7A7A),
-                                        fontSize: 12,
+                                  if (controller.errorMessage.value.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 18),
+                                      child: Text(
+                                        controller.errorMessage.value,
+                                        style: const TextStyle(
+                                          color: Color(0xFFFF7A7A),
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                  ),
+                    ),
                   ],
                 ),
               ),
@@ -269,27 +254,28 @@ class _NotificationCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.all(10),
+          constraints: const BoxConstraints(minHeight: 73),
+          padding: const EdgeInsets.fromLTRB(11, 9, 11, 9),
           decoration: BoxDecoration(
             color: cardBackground,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: cardBorder),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: cardBorder, width: 1),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: colors.background,
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _resolveIcon(item.type),
-                  size: 20,
+                  size: 24,
                   color: colors.foreground,
                 ),
               ),
@@ -305,20 +291,24 @@ class _NotificationCard extends StatelessWidget {
                             _toHeaderText(item.type),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
+                            style: GoogleFonts.manrope(
                               color: subtitleColor,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              height: 16 / 12,
+                              letterSpacing: 0,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           timeLabel,
-                          style: TextStyle(
+                          style: GoogleFonts.manrope(
                             color: subtitleColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
+                            height: 16 / 12,
+                            letterSpacing: 0,
                           ),
                         ),
                         if (!item.isRead) ...[
@@ -332,12 +322,14 @@ class _NotificationCard extends StatelessWidget {
                       item.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: GoogleFonts.manrope(
                         color: messageColor,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: item.isRead
-                            ? FontWeight.w500
+                            ? FontWeight.w600
                             : FontWeight.w700,
+                        height: 1,
+                        letterSpacing: 0,
                       ),
                     ),
                     if (item.message.trim().isNotEmpty) ...[
@@ -473,7 +465,7 @@ class _UnreadDot extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: const BoxDecoration(
-        color: Color(0xFFD09A2F),
+        color: Color(0xFFEDA83A),
         shape: BoxShape.circle,
       ),
     );
